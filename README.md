@@ -33,6 +33,7 @@ Paste a game (PGN) or load your chess.com games — Stockfish 19 reviews every m
 
 - ♟ **Every move classified** with rules close to chess.com (thresholds depend on the players' ratings), game **accuracy**, evaluation graph and eval bar.
 - 🤖 **AI coach** explains moves in plain language and **answers your questions** about the position ("what's the threat?", "what's the plan?") or anything else. Explanations are based on Stockfish's calculation. Offline, the regular coach is shown.
+- ⚔ **Bots of famous players** — play against a bot in the style of Fischer, Spassky, Kasparov, Karpov, Tal, Capablanca, Carlsen, Morphy, Alekhine, Petrosian or Polgár: the player's openings and style, strength from Stockfish (pick the real rating or an easier level). Imitations, not affiliated with the players.
 - ♞ **chess.com games** — enter a username, pick a month and a game, the analysis starts by itself.
 - 🎯 **Your own lines** — move pieces on the board, Stockfish evaluates each move instantly; lines are saved.
 - 📚 **lichess-style studies** — chapters, comments, arrows and circles, PGN export.
