@@ -1,9 +1,15 @@
 {
- "updated": "2026-11-14 23:48",
+ "updated": "2026-11-14 23:50",
  "github": {
   "views": 80,
   "visitors": 19,
   "uniques_14d": 19,
+  "windows": [
+   {
+    "end": "2026-11-13",
+    "uniques": 19
+   }
+  ],
   "days": {
    "2026-10-26": [
     0,
