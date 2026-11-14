@@ -1798,6 +1798,9 @@ function openBox(kind) {
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
       + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label><div class="hint" id="sStats" style="white-space:pre-line"></div>`
+      + `<label class="f">${esc(pick('Ми в мережі', 'Follow us'))}</label><div class="social">`   // 1.26.6: з верху сторінки сюди
+      + `<button data-link="TIKTOK_URL">♪ TikTok</button><button data-link="TELEGRAM_URL">✈ Telegram</button>`
+      + `<button data-link="GITHUB_URL">🐙 GitHub</button></div>`
       + `<div class="hint">${esc(pick('Версія', 'Version'))} ${esc(D.APP_VERSION)}</div>`
       + `<div class="row"><button id="sReset">${esc(tr('Скинути налаштування'))}</button><button id="sDone" class="primary">${esc(tr('Готово'))}</button></div>`;
     const on = (id, ev, fn) => $(id).addEventListener(ev, fn);
