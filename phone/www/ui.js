@@ -2202,6 +2202,10 @@ function wire() {
   click('bCc', openChesscom); click('bBots', () => toggleBox('bots'));
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
+  document.addEventListener('click', e => {     // TikTok / Telegram / GitHub під верхніми кнопками (1.26.2)
+    const b = e.target.closest('[data-link]'), u = b && D[b.dataset.link];
+    if (u) { if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank'); }
+  });
   click('bPgn', () => toggleBox('pgn'));
   click('bFile', () => $('fileInput').click());
   click('bNew', () => startFree());

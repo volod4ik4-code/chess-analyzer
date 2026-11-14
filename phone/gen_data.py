@@ -19,7 +19,8 @@ for _b in ca.BOTS:
     ca.STATE["lang"] = _keep
     OPEN[_b["id"]] = (_u, _e)
 data = {
-    "APP_VERSION": ca.APP_VERSION, "DONATE_URL": ca.DONATE_URL, "DONATE_CARD": ca.DONATE_CARD, "CHANGELOG": ca.changelog_view(),
+    "APP_VERSION": ca.APP_VERSION, "DONATE_URL": ca.DONATE_URL, "DONATE_CARD": ca.DONATE_CARD,
+    "TIKTOK_URL": ca.TIKTOK_URL, "TELEGRAM_URL": ca.TELEGRAM_URL, "GITHUB_URL": ca.GITHUB_URL, "CHANGELOG": ca.changelog_view(),
     "QUALITY": ca.QUALITY, "QUALITY_EN": ca.QUALITY_EN, "TR_EN": ca.TR_EN,
     "BOARD_THEMES": ca.BOARD_THEMES, "BAD": list(ca.BAD), "GRAPH_MARKS": list(ca.GRAPH_MARKS),
     "DEFAULTS": ca.DEFAULTS, "SHAPE_COLORS": ca.SHAPE_COLORS, "ARROW_MODES": list(ca.ARROW_MODES),
