@@ -118,7 +118,7 @@ function applyLang() {
   const T = (id, uk, en) => { $(id).textContent = pick(uk, en); };
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPgn', '📋 PGN', '📋 PGN'); T('bFile', '📂 Файл', '📂 File'); T('bNew', '♟ Нова', '♟ New');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPgn', '📋 PGN', '📋 PGN'); T('bNew', '♟ Нова', '♟ New');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -2207,7 +2207,6 @@ function wire() {
     if (u) { if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank'); }
   });
   click('bPgn', () => toggleBox('pgn'));
-  click('bFile', () => $('fileInput').click());
   click('bNew', () => startFree());
   click('bStudies', () => toggleBox('studies'));
   click('bRun', startAnalysis);

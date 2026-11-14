@@ -109,8 +109,9 @@ export class BoardView {
 
   setPosition(fen, last = null, badge = null, arrow = null, shapes = null) {
     this._cancelAnim();
+    const same = fen === this.fen;      // та сама позиція (прийшла оцінка ходу) - фігура в руці лишається (1.26.5)
     this.fen = fen; this.last = last; this.badge = badge; this.arrow = arrow; this.shapes = shapes || [];
-    this._dropInput();
+    if (!same) this._dropInput();
     this.render();
   }
 
