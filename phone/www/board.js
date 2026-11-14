@@ -282,8 +282,8 @@ export class BoardView {
 
   _down(e) {
     if (this.anim) {
-      if (!this.premoveColor || !this._animFinish) return;
-      this._animFinish();                 // партія з ботом: дотик під час анімації її завершує
+      if (!this._animFinish) return;
+      this._animFinish();                 // дотик під час анімації її завершує - можна ходити далі (1.26.1.5: і в аналізі)
     }
     const sq = this.sqAt(e.clientX, e.clientY);
     if (!sq) return;
