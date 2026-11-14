@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1f1d1b">
+<title>Chess Analyzer</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+  <header id="top">
+    <div class="brand"><span id="title">♞ Chess Analyzer</span><span id="ver"></span></div>
+    <div class="tools">
+      <button id="bStudies" class="icon" aria-label="Studies">📚</button>
+      <button id="bSettings" class="icon" aria-label="Settings">⚙</button>
+      <button id="bNews" class="icon" aria-label="What's new">✨</button>
+      <button id="bDonate" class="icon donate" aria-label="Buy me a coffee">☕</button>
+    </div>
+  </header>
+  <nav id="actions">
+    <button id="bCc" class="cc"></button>
+    <button id="bBots" class="bots"></button>
+    <button id="bPgn"></button>
+    <button id="bFile"></button>
+    <button id="bNew"></button>
+    <button id="bRun" class="primary"></button>
+  </nav>
+
+  <section id="boardArea">
+    <div class="player" id="pTop"><span class="pname"></span><span class="pacc"></span></div>
+    <div id="boardRow">
+      <div id="evalbar"><div id="evalFill"></div><span id="evalText"></span></div>
+      <div id="board"></div>
+    </div>
+    <div class="player" id="pBot"><span class="pname"></span><span class="pacc"></span></div>
+    <div id="nav">
+      <button id="nStart">⏮</button><button id="nPrev">◀</button><button id="nNext">▶</button><button id="nEnd">⏭</button>
+      <button id="nPlay">⏯</button><button id="nFlip">⇅</button><button id="nDraw">✏️</button>
+    </div>
+    <div id="botBar" class="row" hidden><button id="bbUndo"></button><button id="bbHint"></button><button id="bbResign"></button></div>
+    <div id="drawBar" hidden>
+      <span id="drawHint"></span>
+      <span class="chips"></span>
+      <button id="drawClear"></button>
+    </div>
+  </section>
+
+  <main id="panel">
+    <div id="status"><div id="statusText"></div><div id="progress" hidden><div></div></div></div>
+    <div id="updCard" class="card upd" hidden></div>
+    <div id="botCard" class="card botcard" hidden></div>
+    <div id="info" class="card"></div>
+    <div id="varCard" class="card" hidden>
+      <div class="cardHead" id="varTitle"></div>
+      <div id="varMoves" class="chiplist"></div>
+      <div class="row wrap">
+        <button id="vBack"></button><button id="vUndo"></button><button id="vDel"></button>
+      </div>
+    </div>
+    <div id="coach" class="card"><div id="coachBody"></div>
+      <div id="askRow" class="askrow"><input id="askIn" type="text" maxlength="500" enterkeyhint="send"><button id="askBtn">➤</button><button id="askClear"></button></div></div>
+    <div id="studyCard" class="card" hidden>
+      <div class="cardHead"><span id="stTitle"></span><button id="stClose" class="x">✕</button></div>
+      <input id="stName" type="text" maxlength="80">
+      <div class="sub" id="stChTitle"></div>
+      <div id="stChapters" class="list"></div>
+      <label class="sub" id="stChNameL"></label>
+      <input id="stChName" type="text" maxlength="80">
+      <div class="row wrap"><button id="stAdd"></button><button id="stDel"></button></div>
+      <div class="sub" id="stStatus"></div>
+      <div class="sub" id="stNoteL"></div>
+      <textarea id="stNote" rows="4"></textarea>
+      <div class="hint" id="stHint"></div>
+      <div class="row wrap"><button id="stExport"></button><button id="stAll"></button></div>
+    </div>
+    <div class="card graphCard"><canvas id="graph"></canvas></div>
+    <div class="card" id="movesCard"><div id="moves"></div></div>
+    <div class="card" id="summaryCard"></div>  </main>
+</div>
+
+<div id="overlay" hidden>
+  <div class="box" id="box">
+    <div class="boxHead" id="boxHead"><span id="boxTitle"></span><button class="x" id="boxX">✕</button></div>
+    <div class="boxBody" id="boxBody"></div>
+  </div>
+</div>
+<div id="modal" hidden><div class="mbox"><div id="mText"></div><div class="row end" id="mBtns"></div></div></div>
+<input type="file" id="fileInput" accept=".pgn,.txt,text/plain,application/x-chess-pgn,application/vnd.chess-pgn,*/*" hidden>
+<script type="module" src="ui.js"></script>
+</body>
+</html>

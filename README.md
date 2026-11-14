@@ -33,7 +33,7 @@ Paste a game (PGN) or load your chess.com games — Stockfish 19 reviews every m
 
 - ♟ **Every move classified** with rules close to chess.com (thresholds depend on the players' ratings), game **accuracy**, evaluation graph and eval bar.
 - 🤖 **AI coach** explains moves in plain language and **answers your questions** about the position ("what's the threat?", "what's the plan?") or anything else. Explanations are based on Stockfish's calculation. Offline, the regular coach is shown.
-- ⚔ **Bots of famous players** — play against a bot in the style of Fischer, Spassky, Kasparov, Karpov, Tal, Capablanca, Carlsen, Morphy, Alekhine, Petrosian or Polgár: the player's openings and style, strength from Stockfish. Beat each one for ★★★ (at the player's real rating, no takebacks, no hint); the bots chat with you thanks to AI, without giving hints. Imitations, not affiliated with the players; photos from Wikimedia Commons (credits in the app).
+- ⚔ **Bots of famous players** — play against a bot in the style of 20 players — legends (Fischer, Kasparov, Tal, Morphy…), today's top players (Carlsen, Nakamura, Gukesh…) and streamers: the player's openings and style, strength from Stockfish. Beat each one for ★★★ (at the player's real rating, no takebacks, no hint); the bots chat with you thanks to AI, without giving hints. Imitations, not affiliated with the players; photos from Wikimedia Commons (credits in the app).
 - ♞ **chess.com games** — enter a username, pick a month and a game, the analysis starts by itself.
 - 🎯 **Your own lines** — move pieces on the board, Stockfish evaluates each move instantly; lines are saved.
 - 📚 **lichess-style studies** — chapters, comments, arrows and circles, PGN export.
@@ -57,7 +57,34 @@ Paste a game (PGN) or load your chess.com games — Stockfish 19 reviews every m
 No. Sometimes one or two of ~70 antivirus engines on VirusTotal report something like `BehavesLike…` — that is a **behaviour-based guess**, not a detected virus. The app runs the Stockfish engine in the background, goes online (updates, chess.com, AI coach) and can update itself, which makes some antiviruses suspicious. You can check the launcher by its SHA-256 hash:
 [`8D8DE7EBB61848CD84BB3292342AEBC7C8662A6C8BC2278C13E32AFF5F74F363`](https://www.virustotal.com/gui/file/8D8DE7EBB61848CD84BB3292342AEBC7C8662A6C8BC2278C13E32AFF5F74F363)
 
-The AI coach receives only the chess position and moves — no personal data. It can be turned off in ⚙ Settings.
+The AI coach receives only the chess position and moves — no personal data. It can be turned off in ⚙ Settings. See the [Privacy Policy](PRIVACY.md).
+
+## Source code
+
+All source code is in this repository:
+
+| Path | What it is |
+|---|---|
+| `chess_analyzer.py` | The Windows app (Python + Tk + python-chess) |
+| `launcher/` | `launcher.py` — the small `ChessAnalyzer.exe` launcher (PyInstaller) that runs `app\chess_analyzer.py` |
+| `phone/www/` | The Android app's page (HTML/JS, runs in a WebView) |
+| `phone/android/` | Android wrapper (manifest, resources, Java) |
+| `phone/build.ps1`, `phone/gen_data.py` | Android build script and data generator (`data.js` is generated from `chess_analyzer.py`) |
+
+Run from source on Windows: `pip install chess`, then `python chess_analyzer.py` (put `stockfish.exe` next to it or choose the engine in ⚙ Settings).
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- Committers and reviewers: [volod4ik4-code](https://github.com/volod4ik4-code)
+- Approvers: [volod4ik4-code](https://github.com/volod4ik4-code)
+
+Only release files built from this repository are signed. Privacy: the program connects to the internet only for the features listed in the [Privacy Policy](PRIVACY.md) (update check, AI coach, chess.com games); it sends no personal data and has no analytics.
+
+## License
+
+[GPL-3.0](LICENSE). The bundled Stockfish engine is GPL-3.0 as well.
 
 ## Support ☕
 

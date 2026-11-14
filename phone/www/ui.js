@@ -1,0 +1,2288 @@
+// Телефонна версія аналізатора: екран, навігація, власні варіанти, дослідження, налаштування.
+// Поведінка повторює chess_analyzer.py (App), назви функцій - схожі.
+import { D } from './data.js';
+import { Chess } from './chess.js';
+import { aiFacts, askFacts, fetchAiCoach, botBookMove, botChoose, botState, botStarsFor, starsText, botChatFacts, gameAccuracy } from './logic.js';
+import { S, pick, tr, qname, QUALITY, BAD, START_FEN, MATE, Pos, coachLines, bookNote, fmtEval,
+  expectedPoints, evaluateMove, analyzeGame, posEval, Book } from './logic.js';
+import { Engine } from './engine.js';
+import { BoardView, badgeSvg } from './board.js';
+
+const $ = id => document.getElementById(id);
+const bridge = window.AndroidBridge || null;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (_) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (_) { /* */ } },
+};
+
+// ------------------------------------------------------------ налаштування ---
+const DEF = { lang: 'en', board: D.DEFAULTS.board, depth: D.DEFAULTS.depth, arrow: D.DEFAULTS.arrow,
+  anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach,
+  engine: window.AndroidBridge && window.AndroidBridge.engineStart ? 'native' : 'lite',
+  bot: [D.BOTS[0].id, 0, 0], botStars: {} };      // останній вибір у «Ботах»: хто, колір (0 білі / 1 чорні / 2 випадково), сила
+const saved = store.get('ca.settings', null);
+const cfg = Object.assign({}, DEF, saved || {});
+// мова за замовчуванням - англійська, як на ПК (1.22.5: раніше бралась мова телефона)
+S.lang = cfg.lang;
+const saveCfg = () => store.set('ca.settings', cfg);
+const DEPTHS = [8, 10, 12, 14, 16, 18, 20, 22, 24];
+const ARROW_LABELS = {
+  off: ['вимкнено', 'off'], bad: ['після помилок', 'after mistakes'],
+  all: ['після кожного ходу', 'after every move'], hint: ['найкращий хід зараз', 'best move now'],
+};
+
+const engine = new Engine();
+engine.maxMs = 0;                 // без межі часу на хід - як на ПК (аналіз може бути довгим)
+const board = new BoardView($('board'), { onMove: (u, d) => onUserMove(u, d), onShapes: sh => onShapes(sh) });
+board.theme = cfg.board;
+
+const A = {
+  aiCache: {}, aiFailed: {}, aiBusy: new Set(), aiCur: null, aiTimer: null, aiErr: null, aiOff: false, coachLines: null,
+  askThreads: {}, askCtx: null, coachLast: [null, null, false, false],
+  bot: null, botInject: false, coachHead: null,
+  res: null, game: null, index: 0, v: null, varBusy: false, varToken: 0,
+  lines: [], notes: {}, shapes: {}, docId: 0, jobs: 0, cancel: false, analysing: false,
+  study: null, studyId: null, chapter: null, playing: false, playTimer: null, names: null,
+  book: undefined, bookErr: null, saveTimer: null, statusFn: () => '',
+};
+
+// ------------------------------------------------------------ дрібниці ---
+function setStatus(fn) { A.statusFn = typeof fn === 'function' ? fn : () => fn; $('statusText').textContent = A.statusFn(); }
+function progress(i, n) {
+  const p = $('progress');
+  p.hidden = !n;
+  if (n) p.firstElementChild.style.width = (100 * i / n).toFixed(1) + '%';
+}
+function keepAwake(on) { try { bridge && bridge.keepAwake(!!on); } catch (_) { /* */ } }
+function now() { const d = new Date(), z = x => String(x).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; }
+function plural(n, uk, en) {
+  if (S.lang === 'en') return `${n} ${n === 1 ? en[0] : en[1]}`;
+  const m10 = n % 10, m100 = n % 100;
+  const f = m10 === 1 && m100 !== 11 ? uk[0] : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? uk[1] : uk[2];
+  return `${n} ${f}`;
+}
+
+function modal(text, btns) {
+  return new Promise(resolve => {
+    $('mText').textContent = text;
+    const box = $('mBtns'); box.innerHTML = '';
+    for (const [label, val] of btns) {
+      const b = document.createElement('button');
+      b.textContent = label;
+      if (val === true) b.className = 'primary';
+      b.onclick = () => { $('modal').hidden = true; A.modalClose = null; resolve(val); };
+      box.appendChild(b);
+    }
+    A.modalClose = () => { $('modal').hidden = true; A.modalClose = null; resolve(false); };
+    $('modal').hidden = false;
+  });
+}
+const msg = text => modal(text, [['OK', true]]);
+const ask = text => modal(text, [[pick('Скасувати', 'Cancel'), false], [pick('Так', 'Yes'), true]]);
+
+// ------------------------------------------------------------ база дебютів ---
+async function getBook() {
+  if (A.book !== undefined) return A.book;
+  try {
+    const r = await fetch('book.json');
+    A.book = new Book(await r.json());
+    A.bookErr = null;
+  } catch (e) { A.book = null; A.bookErr = String(e); }
+  return A.book;
+}
+
+// ------------------------------------------------------------ розмітка ---
+function layout() {
+  const W = window.innerWidth, H = window.innerHeight;
+  const wide = W > H && W >= 600;
+  $('app').classList.toggle('wide', wide);
+  const showEval = cfg.evalbar && !botLive();       // у партії з ботом шкали немає
+  $('evalbar').hidden = !showEval;
+  const evalW = showEval ? 20 : 0;
+  const top = $('top').offsetHeight + $('actions').offsetHeight;
+  const fixed = 52 + $('nav').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
+  let size = wide ? Math.min(H - top - fixed, W * 0.55 - evalW) : Math.min(W - 20 - evalW, H - top - fixed - 150);
+  size = Math.max(200, Math.floor(size / 8) * 8);
+  board.setSize(size);
+  $('evalbar').style.height = size + 'px';
+  if (wide) $('boardArea').style.width = (size + evalW + 20) + 'px'; else $('boardArea').style.width = '';
+  drawGraph();
+}
+
+function applyLang() {
+  S.lang = cfg.lang;
+  document.documentElement.lang = cfg.lang;
+  document.title = tr('Аналізатор шахових партій');
+  const T = (id, uk, en) => { $(id).textContent = pick(uk, en); };
+  T('title', '♞ Аналізатор', '♞ Chess Analyzer');
+  $('ver').textContent = 'v' + D.APP_VERSION;
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPgn', '📋 PGN', '📋 PGN'); T('bFile', '📂 Файл', '📂 File'); T('bNew', '♟ Нова', '♟ New');
+  setRunLabel();
+  $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
+  $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
+  $('vDel').textContent = tr('🗑 Видалити варіант');
+  T('drawHint', 'Торкніться — коло, проведіть — стрілка', 'Tap: circle, swipe: arrow');
+  T('drawClear', 'Стерти', 'Clear');
+  $('stTitle').textContent = tr('📚  ДОСЛІДЖЕННЯ'); $('stChTitle').textContent = tr('РОЗДІЛИ');
+  $('stChNameL').textContent = tr('Назва розділу'); $('stAdd').textContent = tr('➕ Додати поточну партію');
+  $('stDel').textContent = tr('🗑 Видалити'); $('stExport').textContent = tr('⤓ Експорт PGN');
+  $('stAll').textContent = tr('Усі дослідження');
+  T('stHint', '✏️ під дошкою — стрілки й кола: торкніться клітинки — коло, проведіть пальцем — стрілка. '
+    + 'Та сама позначка ще раз — стерти.', '✏️ below the board draws arrows and circles: tap a square for a circle, '
+    + 'swipe for an arrow. Draw the same mark again to erase it.');
+  $('statusText').textContent = A.statusFn();
+  renderPlayers(); renderSummary(); renderMoves(); drawGraph(); renderStudyPanel(); renderUpdate();
+  refreshView();
+  if (A.boxKind) reopenBox();
+}
+
+function setRunLabel() {
+  const running = A.analysing && A.runDoc === A.docId;
+  $('bRun').textContent = running ? pick('■ Стоп', '■ Stop') : pick('▶ Аналіз', '▶ Analyze');
+}
+
+// ------------------------------------------------------------ гравці, шкала ---
+function setNames(white, we, black, be) { A.names = [white, we, black, be]; renderPlayers(); }
+function renderPlayers() {
+  const [white, we, black, be] = A.names || ['Білі', '', 'Чорні', ''];
+  const w = `○  ${tr(white)}` + (we ? `  (${we})` : ''), b = `●  ${tr(black)}` + (be ? `  (${be})` : '');
+  let wa = '', ba = '';
+  if (A.res && !A.res.free && A.res.summary) { wa = A.res.summary.white_acc.toFixed(1) + '%'; ba = A.res.summary.black_acc.toFixed(1) + '%'; }
+  const [top, bot] = board.flipped ? [[w, wa], [b, ba]] : [[b, ba], [w, wa]];
+  $('pTop').querySelector('.pname').textContent = top[0]; $('pTop').querySelector('.pacc').textContent = top[1];
+  $('pBot').querySelector('.pname').textContent = bot[0]; $('pBot').querySelector('.pacc').textContent = bot[1];
+}
+
+function setEval(cp) {
+  const wp = expectedPoints(cp), fill = $('evalFill'), t = $('evalText');
+  fill.style.height = wp + '%';
+  fill.style.top = board.flipped ? '0' : 'auto'; fill.style.bottom = board.flipped ? 'auto' : '0';
+  const a = Math.abs(cp);
+  t.textContent = a >= MATE - 100 ? (MATE - a ? 'M' + (MATE - a) : 'M') : (a / 100).toFixed(1);
+  const whiteAhead = cp >= 0, atBottom = whiteAhead !== board.flipped;
+  t.style.top = atBottom ? 'auto' : '3px'; t.style.bottom = atBottom ? '3px' : 'auto';
+  t.style.color = whiteAhead ? '#2b2927' : '#f0efec';
+}
+
+function currentCp() {
+  if (A.v) { const pe = A.v.pes[A.v.index]; return pe ? pe.cp : 0; }
+  return A.res ? A.res.evals[A.index] || 0 : 0;
+}
+
+// ------------------------------------------------------------ графік ---
+function drawGraph() {
+  const cv = $('graph'), dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 300, h = cv.clientHeight || 90;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+  const g = cv.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, w, h);
+  const ev = A.res ? A.res.evals : [];
+  if (ev.length < 2) {
+    g.fillStyle = D.COLORS.MUTED; g.font = '12px system-ui, sans-serif'; g.textAlign = 'center';
+    g.fillText(tr("Графік оцінки з'явиться після аналізу"), w / 2, h / 2 + 4);
+    return;
+  }
+  const n = ev.length - 1, X = i => i / n * w;
+  const pts = ev.map((cp, i) => [X(i), h * (1 - expectedPoints(cp) / 100)]);
+  g.fillStyle = '#d8d6d2';
+  g.beginPath(); g.moveTo(0, h); for (const [x, y] of pts) g.lineTo(x, y); g.lineTo(w, h); g.closePath(); g.fill();
+  g.strokeStyle = '#6b6762'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(0, h / 2); g.lineTo(w, h / 2); g.stroke();
+  g.setLineDash([]); g.strokeStyle = '#ffffff'; g.lineWidth = 1;
+  g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.stroke();
+  A.res.moves.forEach((m, i) => {
+    if (!D.GRAPH_MARKS.includes(m.quality)) return;
+    const [x, y] = pts[i + 1];
+    g.fillStyle = QUALITY[m.quality][0]; g.strokeStyle = '#1f1d1b';
+    g.beginPath(); g.arc(x, y, 3.5, 0, Math.PI * 2); g.fill(); g.stroke();
+  });
+  const k = A.v ? A.v.base : A.index;
+  g.strokeStyle = D.COLORS.ACCENT; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(X(k), 0); g.lineTo(X(k), h); g.stroke();
+}
+
+function graphPick(e) {
+  if (!A.res || A.res.evals.length < 2) return;
+  const rc = $('graph').getBoundingClientRect(), n = A.res.evals.length - 1;
+  jump(Math.round(Math.min(Math.max(e.clientX - rc.left, 0), rc.width) / rc.width * n));
+}
+
+// ------------------------------------------------------------ списки ходів ---
+function lineText(line, budget = 34) {
+  const parts = [];
+  for (let i = 0; i < line.rows.length; i++) {
+    const r = line.rows[i];
+    const part = i === 0 || r.label.endsWith('.') ? r.label + r.san : r.san;
+    if (parts.length && [...parts, part].join(' ').length > budget) { parts.push('…'); break; }
+    parts.push(part);
+  }
+  return parts.join(' ');
+}
+
+function qBadge(q) {
+  if (botLive()) return '';                  // у партії з ботом - без оцінок
+  if (!QUALITY[q]) return '<span class="dot pend">…</span>';     // хід ще оцінюється
+  const [c, s] = QUALITY[q];
+  return badgeSvg(s, c);
+}
+
+function renderMoves() {
+  const el = $('moves');
+  if (!A.res) { el.innerHTML = `<div class="empty">${esc(pick('Тут з\'являться ходи партії.', 'The game moves will appear here.'))}</div>`; return; }
+  const res = A.res, n = res.moves.length;
+  const byParent = {};
+  for (const ln of [...A.lines].sort((a, b) => a.base - b.base)) {
+    if (!ln.rows.length || ln.id == null) continue;
+    (byParent[Math.min(ln.base + 1, n)] ||= []).push(ln);
+  }
+  const lineHtml = ln => {
+    const pe = ln.pes[ln.pes.length - 1];
+    return `<div class="line${A.v === ln ? ' cur' : ''}" data-line="${ln.id}">↳ ${qBadge(ln.rows[0].quality)}<span>${esc(lineText(ln))}</span>`
+      + `<span class="ev" style="margin-left:auto">${pe && !botLive() ? fmtEval(pe.cp) : ''}</span></div>`;
+  };
+  const html = (byParent[0] || []).map(lineHtml);
+  if (!n && !html.length) { el.innerHTML = `<div class="empty">${esc(pick('Ходів ще немає.', 'No moves yet.'))}</div>`; return; }
+  const cell = (m, k) => `<span class="mv${!A.v && A.index === k ? ' cur' : ''}" data-k="${k}">${qBadge(m.quality)}`
+    + `<span>${esc(m.san)}</span><span class="ev">${fmtEval(res.evals[k])}</span></span>`;
+  let row = null;
+  const flush = () => {
+    if (!row) return;
+    html.push(`<span class="num">${row.num}</span>${row.w}${row.b}`);
+    for (const k of row.plies) for (const ln of byParent[k] || []) html.push(lineHtml(ln));
+    row = null;
+  };
+  res.moves.forEach((m, i) => {
+    const k = i + 1, num = parseInt(m.label, 10);
+    if (m.label.endsWith('.')) { flush(); row = { num: num + '.', w: cell(m, k), b: '<span></span>', plies: [k], open: true }; }
+    else if (row && row.open && row.num === num + '.') { row.b = cell(m, k); row.plies.push(k); row.open = false; }
+    else { flush(); row = { num: num + '…', w: '<span></span>', b: cell(m, k), plies: [k] }; }
+  });
+  flush();
+  el.innerHTML = html.join('');
+  scrollToCurrent();
+}
+
+function scrollToCurrent() {
+  const box = $('movesCard'), cur = $('moves').querySelector('.cur');
+  if (!cur) return;
+  const top = cur.offsetTop, bottom = top + cur.offsetHeight;
+  if (top < box.scrollTop) box.scrollTop = top - 8;
+  else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight + 8;
+}
+
+function markCurrent() {
+  for (const e of $('moves').querySelectorAll('.cur')) e.classList.remove('cur');
+  if (A.v) { const e = $('moves').querySelector(`[data-line="${A.v.id}"]`); if (e) e.classList.add('cur'); }
+  else { const e = $('moves').querySelector(`[data-k="${A.index}"]`); if (e) e.classList.add('cur'); }
+  scrollToCurrent();
+}
+
+function renderSummary() {
+  const el = $('summaryCard');
+  if (!A.res || A.res.free || !A.res.summary) { el.hidden = true; return; }
+  el.hidden = false;
+  const s = A.res.summary;
+  const rows = [`<tr><th></th><th>○ ${esc(tr('Білі'))}</th><th>● ${esc(tr('Чорні'))}</th></tr>`,
+    `<tr class="acc"><td>${esc(tr('Точність'))}</td><td class="n">${s.white_acc.toFixed(1)}%</td><td class="n">${s.black_acc.toFixed(1)}%</td></tr>`];
+  for (const q of Object.keys(QUALITY)) {
+    rows.push(`<tr><td>${qBadge(q)} <span style="color:${QUALITY[q][0]}">${esc(qname(q))}</span></td>`
+      + `<td class="n">${(s.white_counts || {})[q] || 0}</td><td class="n">${(s.black_counts || {})[q] || 0}</td></tr>`);
+  }
+  el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`;
+}
+
+// ------------------------------------------------------------ підказки ---
+function flash(el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+
+function setInfo(first, adv = '', theory = '', badge = null) {
+  flash($('info'));
+  $('info').innerHTML = `<div class="l1">${badge ? badgeSvg(badge[1], badge[0], '') : ''}<div>${first}</div></div>`
+    + (adv ? `<div class="l2">${esc(adv)}</div>` : '') + (theory ? `<div class="l3">${esc(theory)}</div>` : '');
+}
+
+function moveInfo(m) {
+  const [color, , note] = QUALITY[m.quality];
+  let s = `${esc(m.label)} ${esc(m.san)} — <span class="q" style="color:${color}">${esc(qname(m.quality))}</span>. ${esc(tr(note))}.`;
+  if (m.book && m.opening) s += `<br>${esc(m.opening)}`;
+  if (BAD.has(m.quality) && m.best_san) s += `<br>${esc(tr('Краще було'))} ${esc(m.best_san)} (${esc(tr('втрата'))} ${(m.loss / 100).toFixed(2)})`;
+  else if (m.best_san && !m.book && m.best_san !== m.san && !['Найкращий', 'Геніальний', 'Чудовий', 'Теорія'].includes(m.quality))
+    s += `<br>${esc(pick('Найкращий хід:', 'Best move:'))} ${esc(m.best_san)}`;      // 1.22.1
+  return s;
+}
+// «Хід білих» / «Хід чорних» - щоб порада рушія не читалась як заміна щойно зіграного ходу (1.22.1)
+const toMove = fen => (/ w /.test(fen) ? pick('Хід білих', 'White to move') : pick('Хід чорних', 'Black to move'));
+
+function theoryLine(fen, onPath = true) {
+  if (!onPath || !A.book || botLive()) return '';      // у партії з ботом дебютних підказок немає
+  const b = new Pos(fen), key = b.epd(), ucis = A.book.next[key];
+  if (!ucis || !ucis.length) return '';
+  const sans = ucis.map(u => b.san(u)).filter(Boolean);
+  if (!sans.length) return '';
+  const name = A.book.name(key);
+  return '📖 ' + pick('Теорія', 'Theory') + ': ' + sans.slice(0, 8).join(', ') + (name ? `  ·  ${name[0]} ${name[1]}` : '');
+}
+
+function recommend(fen, pe) {
+  if (!pe || !pe.best) return '';
+  const san = new Pos(fen).san(pe.best);
+  return san ? `${san} (${fmtEval(pe.cp)})` : '';
+}
+
+function bestArrow(row, peNow) {
+  const mode = cfg.arrow;
+  if (botLive()) return botHintArrow();      // у партії з ботом - лише взята підказка (1.25.0)
+  if (mode === 'hint') return (peNow || {}).best || null;
+  if (mode === 'off' || !row || !row.best_uci) return null;
+  if (row.quality === 'Теорія') return null;           // після теоретичного ходу «що було краще» не показуємо
+  if (mode === 'all') return row.best_uci === row.uci || ['Найкращий', 'Геніальний', 'Чудовий'].includes(row.quality) ? null : row.best_uci;
+  return BAD.has(row.quality) ? row.best_uci : null;
+}
+
+function showCoach(lines, ai = null) {
+  // 1.23.2: ai - дані ходу для ШІ-тренера; поки він думає або недоступний - звичайний тренер
+  A.coachLines = lines; A.aiCur = null; A.coachHead = null;
+  if (lines && botLive()) {                  // партія з ботом: замість тренера - суперник і чий хід
+    const [head, blines] = botCoach();
+    A.coachHead = head;
+    renderCoach(blines);
+    return;
+  }
+  if (lines && ai && cfg.ai && cfg.coach && !A.aiOff) {
+    const key = `${ai[0]}|${ai[1]}|${S.lang}|${ai[2]}`;     // з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
+    A.aiCur = key;
+    if (A.aiCache[key]) { renderCoach(lines, A.aiCache[key]); return; }
+    const failed = A.aiFailed[key];
+    if (failed == null || Date.now() - failed > 60000) {
+      renderCoach(lines, null, true);
+      clearTimeout(A.aiTimer);
+      A.aiTimer = setTimeout(() => aiStart(key, ai), 350);   // швидке гортання не шле зайвих запитів
+      return;
+    }
+  }
+  renderCoach(lines, null, false, !!(ai && cfg.ai));
+}
+
+function aiNote() {
+  const e = A.aiErr;
+  if (!e) return '';
+  if (e === 'quota') return pick('🤖 ШІ-тренер на сьогодні вичерпав безплатний ліміт — працює звичайний тренер.', "🤖 The AI coach has used up today's free limit — the regular coach is shown.");
+  if (e === 'rate') return pick('🤖 Забагато запитів до ШІ-тренера — спробуйте за хвилину.', '🤖 Too many AI coach requests — try again in a minute.');
+  if (e === 'net') return pick('🤖 ШІ-тренер недоступний (немає інтернету?) — працює звичайний тренер.', '🤖 The AI coach is unavailable (no internet?) — the regular coach is shown.');
+  return pick('🤖 ШІ-тренер зараз не відповів — працює звичайний тренер.', '🤖 The AI coach did not answer — the regular coach is shown.');
+}
+
+function renderCoach(lines, aiText = null, waiting = false, note = false, noFlash = false) {
+  A.coachLast = [lines, aiText, waiting, note];
+  const el = $('coach'), body = $('coachBody');
+  el.hidden = !cfg.coach || !lines;
+  if (!lines) return;
+  if (!noFlash) flash(el);
+  $('askRow').hidden = !cfg.ai || botLive();
+  const inp = $('askIn');
+  inp.placeholder = pick('Спитати ШІ-тренера про позицію…', 'Ask the AI coach about the position…');
+  $('askClear').textContent = pick('🗑 Очистити', '🗑 Clear');
+  let html;
+  if (A.coachHead) html = `<div class="ch">${esc(A.coachHead)}</div>` + lines.map(l => `<div class="ai">${esc(l)}</div>`).join('');
+  else if (aiText) html = `<div class="ch">${esc(pick('🤖 ШІ-тренер', '🤖 AI coach'))}</div><div class="ai">${esc(aiText)}</div>`;
+  // 1.23.3: поки ШІ думає - лише його заголовок; звичайний тренер - тільки якщо ШІ недоступний
+  else if (waiting) html = `<div class="ch">${esc(pick('🤖 ШІ-тренер', '🤖 AI coach'))}</div><div class="aimuted">${esc(pick('Думає…', 'Thinking…'))}</div>`;
+  else {
+    const extra = note ? aiNote() : '';
+    html = `<div class="ch">${esc(pick('🎓 Тренер', '🎓 Coach'))}</div><ul>${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`
+      + (extra ? `<div class="aimuted">${esc(extra)}</div>` : '');
+  }
+  // запитання гравця до цієї позиції і відповіді ШІ (1.23.5)
+  const thread = cfg.ai ? (A.askThreads[askKey()] || []) : [];
+  for (const it of thread) {
+    html += `<div class="q">❓ ${esc(it.q)}</div>` + (it.a ? `<div class="ai">${esc(it.a)}</div>`
+      : `<div class="aimuted">${esc(it.err ? askErrText(it.err) : pick('Думає…', 'Thinking…'))}</div>`);
+  }
+  body.innerHTML = html;
+}
+
+// ---- запитання до ШІ-тренера (1.23.5) ----
+function askKey() { const c = A.askCtx; return c ? c.fen + '|' + c.sans.join(' ') : ''; }
+
+function askSetMain(k) {
+  const res = A.res;
+  try { A.askCtx = { fen: res.fens[k], pe: res.pos_info[k], sans: res.moves.slice(0, k).map(m => m.san), last: aiMain(k) }; }
+  catch (_) { A.askCtx = null; }
+}
+
+function askSetVar(j) {
+  const v = A.v, res = A.res;
+  try {
+    const sans = res.moves.slice(0, v.base).map(m => m.san).concat(v.rows.slice(0, j).map(r => r.san));
+    A.askCtx = { fen: v.fens[j], pe: v.pes[j] || {}, sans, last: j ? aiVar(j) : null };
+  } catch (_) { A.askCtx = null; }
+}
+
+function askErrText(e) {
+  if (e === 'quota') return pick('🤖 ШІ-тренер на сьогодні вичерпав безплатний ліміт.', "🤖 The AI coach has used up today's free limit.");
+  if (e === 'rate') return pick('🤖 Забагато запитів — спробуйте за хвилину.', '🤖 Too many requests — try again in a minute.');
+  if (e === 'net') return pick("🤖 Немає зв'язку з ШІ-тренером (немає інтернету?).", "🤖 Can't reach the AI coach (no internet?).");
+  return pick('🤖 ШІ-тренер зараз не відповів — спробуйте ще раз.', '🤖 The AI coach did not answer — try again.');
+}
+
+// 1.23.6: очистити чат у поточній позиції
+function askClear() {
+  const key = askKey();
+  if (A.askThreads[key]) { delete A.askThreads[key]; if (A.coachLast[0]) renderCoach(...A.coachLast, true); }
+}
+
+async function askSend() {
+  const inp = $('askIn'), q = inp.value.trim().slice(0, 500), ctx = A.askCtx, key = askKey();
+  if (!q || !ctx || !cfg.ai) return;
+  inp.value = '';
+  const thread = (A.askThreads[key] ??= []);
+  const history = thread.filter(it => it.a).map(it => ({ q: it.q, a: it.a }));
+  const item = { q, a: null, err: null };
+  thread.push(item);
+  const rerender = () => { if (A.coachLast[0]) renderCoach(...A.coachLast, true); };
+  rerender();
+  let facts;
+  try { facts = askFacts(ctx.fen, ctx.pe, ctx.sans, ctx.last); } catch (_) { facts = pick('Позиція (FEN): ', 'Position (FEN): ') + ctx.fen; }
+  try { item.a = await fetchAiCoach(facts, S.lang, q, history); } catch (e) { item.err = e.message || 'ai'; }
+  if (askKey() === key) rerender();
+}
+
+// 1.23.7: ШІ починає думати, щойно є швидка оцінка ходу (повний аналіз Stockfish ще йде)
+function aiPrefetch(ai) {
+  if (!ai || !cfg.ai || !cfg.coach || A.aiOff) return;
+  const key = `${ai[0]}|${ai[1]}|${S.lang}|${ai[2]}`;
+  if (A.aiCache[key] || A.aiBusy.has(key) || A.aiFailed[key] != null) return;
+  aiStart(key, ai, true);
+}
+
+async function aiStart(key, ai, force = false) {
+  if ((key !== A.aiCur && !force) || A.aiBusy.has(key)) return;
+  let facts;
+  try { facts = aiFacts(...ai); } catch (_) { A.aiFailed[key] = Date.now(); A.aiErr = 'facts'; if (key === A.aiCur) renderCoach(A.coachLines, null, false, true); return; }
+  A.aiBusy.add(key);
+  let text = null;
+  try { text = await fetchAiCoach(facts, key.split('|')[2]); A.aiCache[key] = text; A.aiErr = null; }
+  catch (e) { A.aiFailed[key] = Date.now(); A.aiErr = e.message; if (e.message === 'quota') A.aiOff = true; }
+  A.aiBusy.delete(key);
+  if (key === A.aiCur) renderCoach(A.coachLines, text, false, !text);
+}
+
+function aiMain(k) {
+  const res = A.res;
+  if (!res || res.free || k <= 0) return null;
+  const m = res.moves[k - 1];
+  if (!m || !m.quality || !res.pos_info || !res.pos_info[k]) return null;
+  return [res.fens[k - 1], m.uci, m.quality, m.best_san || '', res.pos_info[k - 1], res.pos_info[k]];
+}
+
+function aiVar(j) {
+  const v = A.v, row = v && v.rows[j - 1];
+  if (!row || row.pending || !row.quality || !v.pes[j]) return null;
+  return [v.fens[j - 1], row.uci, row.quality, row.best_san || '', v.pes[j - 1], v.pes[j]];
+}
+
+function coachMain(k) {
+  const res = A.res;
+  if (k === 0) return [pick('Почніть партію: перетягніть фігуру або торкніться її.', 'Start the game: drag a piece or tap it.')];
+  const m = res.moves[k - 1];
+  return [...coachLines(res.fens[k - 1], m.uci, m.quality, m.best_san, res.pos_info[k - 1], res.pos_info[k]), ...bookNote(m)];
+}
+
+function coachVar(j) {
+  const v = A.v, row = v.rows[j - 1];
+  return [...coachLines(v.fens[j - 1], row.uci, row.quality, row.best_san, v.pes[j - 1], v.pes[j]), ...bookNote(row)];
+}
+
+// ------------------------------------------------------------ партія ---
+function parsePgn(text) {
+  const t = String(text || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n').trim();
+  if (!t) return null;
+  const first = t.split(/\n\s*\n(?=\s*\[Event\s)/)[0];
+  const c = new Chess();
+  try { c.loadPgn(first); } catch (_) { return null; }
+  const hist = c.history({ verbose: true });
+  if (!hist.length) return null;
+  const headers = (c.getHeaders ? c.getHeaders() : c.header()) || {};
+  return { root: hist[0].before || START_FEN, moves: hist.map(m => m.from + m.to + (m.promotion || '')), headers };
+}
+
+function loadPgn(text) {
+  const g = parsePgn(text);
+  if (!g) { msg(tr('Не вдалося прочитати PGN або в ньому немає ходів.')); return false; }
+  stopPlay();
+  newDoc();
+  A.game = g;
+  resetView();
+  const h = g.headers, white = h.White || 'Білі', black = h.Black || 'Чорні';
+  setNames(white, h.WhiteElo || '', black, h.BlackElo || '');
+  setStatus(() => `${tr('Завантажено:')} ${tr(white)} — ${tr(black)}`);
+  startAnalysis();
+  return true;
+}
+
+function startFree(res = null) {
+  stopPlay(); clearVar();
+  if (!res) {
+    newDoc();
+    res = { free: true, fens: [START_FEN], evals: [0], pos_info: [null], moves: [], book_path: [true], depth: null,
+      summary: { white: 'Білі', black: 'Чорні', white_rating: null, black_rating: null, white_acc: 0, black_acc: 0,
+        white_counts: {}, black_counts: {}, result: '*', opening: null } };
+  }
+  A.game = null; A.res = res; A.index = 0;
+  setNames('Білі', '', 'Чорні', '');
+  renderSummary(); renderMoves(); drawGraph();
+  goto(0, false);
+  setStatus(() => pick('Грай з початкової позиції: перетягни фігуру або торкнися її.', 'Play from the starting position: drag a piece or tap it.'));
+  getBook();
+}
+
+function resetView() {
+  clearVar();
+  A.res = null; A.index = 0; board.interactive = false;
+  renderPlayers(); renderSummary(); renderMoves(); drawGraph();
+  board.setPosition(START_FEN);
+  setEval(0); setInfo(''); showCoach(null);
+}
+
+async function startAnalysis() {
+  if (A.analysing && A.runDoc === A.docId) { A.cancel = true; engine.stop(); return; }
+  if (!A.game) { msg(tr('Спочатку завантаж партію (PGN з буфера або файл).')); return; }
+  clearVar();
+  board.interactive = false;
+  A.cancel = false;
+  const doc = A.docId, game = A.game, depth = cfg.depth;
+  A.analysing = true; A.runDoc = doc; A.jobs++;
+  setRunLabel();
+  progress(0, game.moves.length);
+  keepAwake(true);
+  try {
+    setStatus(() => tr('Готую базу дебютів…'));
+    const book = await getBook();
+    setStatus(() => pick('Запускаю Stockfish…', 'Starting Stockfish…'));
+    await ensureEngine();
+    if (doc !== A.docId) return;
+    engine.searchMs = 0; engine.slowestMs = 0;
+    var tAnalysis = performance.now();
+    setInfo(esc(pick('⏳ Аналіз на телефоні може тривати кілька хвилин, а деякі ходи — по 5–10 секунд. Це нормально: '
+      + 'телефон рахує повільніше за комп\'ютер.',
+    '⏳ Analysis on a phone can take a few minutes, and some moves 5–10 seconds. This is normal: '
+      + 'a phone calculates more slowly than a computer.')));
+    setStatus(() => tr('Аналіз…'));
+    const res = await analyzeGame(engine, game, depth, {
+      book, cancelled: () => A.cancel || doc !== A.docId,
+      progress: (i, n, part) => {
+        if (doc !== A.docId) return;
+        progress(i, n);
+        const nps = engine.nps ? `  ·  ${Math.round(engine.nps / 1000)} ${pick('тис. поз./с', 'k pos/s')}` : '';
+        setStatus(() => `${tr('Аналіз…')} ${tr('хід')} ${i} ${tr('з')} ${n}${nps}  ·  `
+          + pick('готові ходи вже можна дивитися', 'finished moves can be viewed already'));
+        if (part) showPartial(part);
+      },
+    });
+    if (doc === A.docId) {
+      showResults(res);
+      // розбивка часу: увесь аналіз / сам рушій (щоб було видно, що гальмує)
+      const all = (performance.now() - tAnalysis) / 1000, eng = (engine.searchMs || 0) / 1000;
+      const base = A.statusFn();
+      setStatus(() => `${base}  ·  ${pick('за', 'in')} ${all.toFixed(0)} ${tr('с')} (${pick('рушій', 'engine')} `
+        + `${eng.toFixed(0)} ${tr('с')}, ${tr('глибина')} ${depth}, ${res.moves.length} ${pick('ходів', 'moves')}, `
+        + `${pick('найдовший хід', 'slowest move')} ${((engine.slowestMs || 0) / 1000).toFixed(1)} ${tr('с')})`);
+    }
+  } catch (e) {
+    if (doc === A.docId) {
+      if (A.res && A.res.partial) {          // лишаємо те, що встигли проаналізувати
+        delete A.res.partial; A.partialSeen = false;
+        goto(A.index, false);
+      }
+      if (A.cancel) setStatus(() => tr('Скасовано.'));
+      else { setStatus(() => tr('Помилка аналізу')); msg(`${tr('Помилка аналізу')}: ${e.message || e}`); }
+    }
+  } finally {
+    A.jobs--;
+    if (A.runDoc === doc) A.analysing = false;
+    if (A.jobs <= 0) keepAwake(false);
+    if (doc === A.docId) progress(0, 0);
+    setRunLabel();
+  }
+}
+
+function showResults(res, save = true) {
+  A.res = res;
+  if (save && A.chapter) { A.chapter.result = res; autosave(); }
+  const s = res.summary;
+  let extra = '';
+  if (s.opening) extra = `  ·  ${s.opening[0]} ${s.opening[1]}`;
+  else if (A.bookErr) extra = '  ·  ' + tr('без теорії (базу дебютів не завантажено)');
+  setStatus(() => `${tr('Готово')} · ${tr('результат')} ${s.result}${extra}`);
+  renderPlayers(); renderSummary(); renderMoves(); drawGraph();
+  board.interactive = true;
+  const keep = A.partialSeen && A.index >= 0 && A.index < res.fens.length;
+  A.partialSeen = false;
+  goto(keep ? A.index : 0, false);        // гравець уже гортав готові ходи - лишаємо там
+}
+
+// Проміжний результат аналізу (1.22.0): готові ходи видно й можна гортати, поки рушій рахує далі.
+// Дошка в цей час лише для перегляду (без власних варіантів), розділ дослідження не зберігається.
+function showPartial(res) {
+  const first = !(A.res && A.res.partial);
+  if (A.v) clearVar();
+  A.res = res; A.partialSeen = true;
+  const sc = [$('moves'), $('panel'), $('moves').parentElement].map(e => [e, e.scrollTop]);   // не смикати прокрутку
+  renderPlayers(); renderSummary(); renderMoves();
+  if (first) { goto(0, false); return; }
+  for (const [e, y] of sc) e.scrollTop = y;
+  const cur = $('moves').querySelector(`[data-k="${A.index}"]`);
+  if (cur) cur.classList.add('cur');
+  drawGraph();
+}
+
+// ------------------------------------------------------------ навігація ---
+function step(delta) {
+  if (A.v) {
+    if (A.varBusy) return;
+    const j = A.v.index + delta;
+    if (j < 0) exitVar(); else gotoVar(j);
+  } else goto(A.index + delta);
+}
+function goStart() { if (A.v) clearVar(); goto(0); }
+function goEnd() { if (A.v) { if (!A.varBusy) gotoVar(A.v.rows.length); } else goto(1e6); }
+function jump(k) { if (A.v) { if (A.varBusy) return; clearVar(); } goto(k); }
+
+function goto(k, animate = null) {
+  if (!A.res) return;
+  if (A.v) clearVar();
+  const res = A.res, n = res.fens.length - 1;
+  k = Math.max(0, Math.min(n, k));
+  const prev = A.index;
+  A.index = k;
+  if (animate === null) animate = k === prev + 1;
+  let last = null, badge = null, info = esc(tr('Початкова позиція'));
+  const rec = recommend(res.fens[k], res.pos_info[k]);
+  if (k >= 1) {
+    const m = res.moves[k - 1];
+    last = m.uci; badge = [QUALITY[m.quality][0], QUALITY[m.quality][1]];
+    info = moveInfo(m);
+  }
+  let adv = '';
+  if (rec && k < n && !botLive()) {
+    const d = (res.pos_info[k] || {}).depth || res.depth;
+    adv = `${toMove(res.fens[k])} — ${tr('Stockfish радить:')} ${rec}` + (d ? `  (${tr('глибина')} ${d})` : '');
+  }
+  const arrow = bestArrow(k >= 1 ? res.moves[k - 1] : null, k < n ? res.pos_info[k] : null);
+  const fen = res.fens[k], shapes = A.shapes[String(k)] || [];
+  if (animate && k >= 1 && cfg.anim) {
+    const prevLast = k >= 2 ? res.moves[k - 2].uci : null;
+    board.animate(res.fens[k - 1], prevLast, last, () => board.setPosition(fen, last, badge, arrow, shapes), badge);
+  } else board.setPosition(fen, last, badge, arrow, shapes);
+  board.interactive = !res.partial;
+  setEval(res.evals[k] || 0);
+  const onPath = k < (res.book_path || []).length ? res.book_path[k] : true;
+  setInfo(info, adv, theoryLine(fen, onPath), badge);
+  askSetMain(k);
+  showCoach(coachMain(k), aiMain(k));
+  if (A.bot || A.botUi) setTimeout(botTick, 30);
+  renderVar();
+  markCurrent();
+  drawGraph();
+  showNote();
+}
+
+function refreshView() {
+  if (A.v) showVarState(A.v.index, false);
+  else if (A.res) goto(A.index, false);
+}
+
+function togglePlay() {
+  if (!A.res) return;
+  if (A.v) exitVar();
+  if (A.playing) { stopPlay(); return; }
+  if (A.index >= A.res.fens.length - 1) goto(0, false);
+  A.playing = true;
+  $('nPlay').classList.add('on');
+  playTick();
+}
+function playTick() {
+  if (!A.playing || !A.res) return;
+  if (A.index >= A.res.fens.length - 1) { stopPlay(); return; }
+  step(1);
+  A.playTimer = setTimeout(playTick, 900);
+}
+function stopPlay() {
+  A.playing = false;
+  clearTimeout(A.playTimer); A.playTimer = null;
+  $('nPlay').classList.remove('on');
+}
+
+function flipBoard() {
+  board.flip();
+  renderPlayers();
+  setEval(currentCp());
+  docChanged();
+}
+
+// ------------------------------------------------------------ власні варіанти ---
+async function onUserMove(uci, dragged) {
+  const redraw = () => board.setPosition(board.fen, board.last, board.badge, board.arrow, board.shapes);
+  if (!A.res || A.varBusy) { redraw(); return; }
+  // партія з ботом: фігурами бота ходить лише бот
+  if (botLive() && !A.botInject && (A.v ? A.v.fens[A.v.index] : A.res.fens[A.index]).split(' ')[1] === A.bot.color) { redraw(); return; }
+  stopPlay();
+  const res = A.res;
+  if (A.v) {
+    const v = A.v, j = v.index, base = v.base;
+    if (j < v.rows.length && v.rows[j].uci === uci) { gotoVar(j + 1, !dragged); return; }
+    if (j === 0 && base < res.moves.length && res.moves[base].uci === uci) { clearVar(); goto(base + 1, !dragged); return; }
+    const same = findLine(base, [...v.rows.slice(0, j).map(r => r.uci), uci]);
+    if (same) { openLine(same, j + 1, !dragged); return; }
+  }
+  if (!A.v) {
+    const k = A.index;
+    if (k < res.moves.length && res.moves[k].uci === uci) { goto(k + 1, !dragged); return; }
+    const same = findLine(k, [uci]);
+    if (same) { openLine(same, 1, !dragged); return; }
+    const prev = k >= 1 ? res.moves[k - 1] : null;
+    let baseOpening = '';
+    if (res.book_path[k]) for (const m of res.moves.slice(0, k).reverse()) if (m.opening) { baseOpening = m.opening; break; }
+    A.v = { base: k, rows: [], index: 0, fens: [res.fens[k]], pes: [res.pos_info[k]],
+      prev_drop: prev ? prev.drop : 0, prev_cap: prev ? prev.cap_sq : null,
+      book_path: [!!res.book_path[k]], base_opening: baseOpening, opening: baseOpening, id: null };
+  }
+  let v = A.v;
+  let j = v.index;
+  if (j < v.rows.length) {
+    // новий хід посеред варіанту: старий лишається, новий - його копія до цього місця плюс хід
+    v = { ...v, id: null, rows: v.rows.slice(0, j), fens: v.fens.slice(0, j + 1), pes: v.pes.slice(0, j + 1),
+      book_path: v.book_path.slice(0, j + 1) };
+    v.opening = j >= 1 ? (v.rows[j - 1].opening || v.base_opening) : v.base_opening;
+    A.v = v;
+  }
+  const b = new Pos(v.fens[j]);
+  if (!b.isLegal(uci)) { showVarState(j, false); return; }
+  // хід з'являється одразу (позначка «…»), а Stockfish оцінює його у фоні - можна ходити далі
+  const after = b.copy(); after.push(uci);
+  const row = { label: b.turn === 'w' ? `${b.fullmove}.` : `${b.fullmove}…`, san: b.san(uci), uci,
+    fen: after.fen(), pending: true, quality: null };
+  v.rows.push(row); v.fens.push(row.fen); v.pes.push(null);
+  v.index = v.rows.length;
+  if (!A.lines.includes(v)) { v.id = nextLineId(); A.lines.push(v); }
+  renderMoves();
+  showVarState(v.index, !dragged);
+  queueEval(v, row);
+}
+
+// ---- черга оцінок ходів гравця: по одному, по порядку (кожна оцінка спирається на попередню)
+function queueEval(v, row) {
+  if (!A.pendingEvals) A.statusBeforeEval = A.statusFn;
+  A.pendingEvals = (A.pendingEvals || 0) + 1;
+  evalStatus();
+  A.evalChain = (A.evalChain || Promise.resolve()).then(() => evalRow(v, row)).catch(() => {}).then(() => {
+    A.pendingEvals--;
+    evalStatus();
+  });
+}
+
+function evalStatus() {
+  if (A.pendingEvals > 0) setStatus(() => `⏳ ${pick('Stockfish оцінює ходи', 'Stockfish is evaluating moves')}… (${A.pendingEvals})`);
+  else if (A.statusBeforeEval) { setStatus(A.statusBeforeEval); A.statusBeforeEval = null; }
+}
+
+async function evalRow(v, row) {
+  let j = v.rows.indexOf(row) + 1;                 // номер ходу у варіанті (позиція до ходу - j-1)
+  if (j <= 0 || !row.pending || !A.res) return;    // хід уже скасували або оцінили
+  const res = A.res, prevRow = j >= 2 ? v.rows[j - 2] : null;
+  if (prevRow && prevRow.pending) return;
+  const b = new Pos(v.fens[j - 1]);
+  const s = res.summary || {};
+  const rating = b.turn === 'w' ? s.white_rating : s.black_rating;
+  const prevDrop = prevRow ? prevRow.drop : v.prev_drop;
+  const prevCap = prevRow ? prevRow.cap_sq : v.prev_cap;
+  const depth = cfg.depth, book = A.book || null;
+  let bookHit = false, openingStr = prevRow ? (prevRow.opening || v.base_opening) : v.base_opening;
+  const epd = new Pos(row.fen).epd();
+  if (book && v.book_path[j - 1] && book.has(epd)) {
+    bookHit = true;
+    const name = book.name(epd);
+    if (name) openingStr = `${name[0]} · ${name[1]}`;
+  }
+  try {
+    if (!engine.w) setStatus(() => pick('Запускаю Stockfish…', 'Starting Stockfish…'));
+    await ensureEngine();
+    const t0 = performance.now(), hist = { root: v.fens[j - 1], moves: [] };
+    let pb = v.pes[j - 1];
+    if (!pb || pb.req_depth !== depth) pb = posEval(await engine.analyse(hist.root, [], depth), depth);
+    // 1.23.7: спершу швидка оцінка (на 4 глибини менше) - за нею ШІ-тренер починає думати одразу
+    const qd = depth - 4;
+    if (qd >= 8 && cfg.ai && cfg.coach && !A.aiOff && !botLive()) {
+      try {
+        const [rq, peq] = await evaluateMove(engine, qd, new Pos(v.fens[j - 1]), { root: v.fens[j - 1], moves: [] }, row.uci, pb,
+          prevDrop, prevCap, rating, bookHit);
+        if (row.pending) aiPrefetch([v.fens[j - 1], row.uci, rq.quality, rq.best_san || '', pb, peq]);
+      } catch (_) { /* */ }
+    }
+    const [r, peAfter] = await evaluateMove(engine, depth, b, hist, row.uci, pb, prevDrop, prevCap, rating, bookHit);
+    r.elapsed = (performance.now() - t0) / 1000;
+    r.opening = bookHit ? openingStr : '';
+    Object.assign(row, r);
+    delete row.pending;
+    // той самий хід може бути в кількох варіантах (гілки ділять початок) - оновлюємо всі
+    for (const L of new Set([...A.lines, ...(A.v ? [A.v] : [])])) {
+      const i = L.rows.indexOf(row) + 1;
+      if (i <= 0) continue;
+      L.pes[i - 1] = pb; L.pes[i] = peAfter;
+      L.book_path[i] = bookHit && row.quality === 'Теорія';
+      if (i === L.rows.length) L.opening = r.opening || openingStr;
+    }
+  } catch (e) {
+    row.pending = false; row.failed = true;
+    row.quality = 'Добрий'; row.best_uci = null; row.best_san = ''; row.drop = 0; row.cap_sq = null; row.acc = 100;
+    msg(`${pick('Помилка Stockfish', 'Stockfish error')}: ${e.message || e}`);
+  }
+  renderMoves();
+  docChanged();
+  if (A.v && A.v.rows.includes(row)) {
+    const at = A.v.rows.indexOf(row) + 1;
+    if (A.v.index === at || A.v.index === at - 1) showVarState(A.v.index, false); else renderVar();
+  }
+}
+
+function gotoVar(j, animate = null) {
+  const v = A.v;
+  if (!v || A.varBusy) return;
+  j = Math.max(0, Math.min(v.rows.length, j));
+  const prev = v.index;
+  v.index = j;
+  if (animate === null) animate = j === prev + 1;
+  showVarState(j, animate);
+}
+
+function showVarState(j, animate = false) {
+  const v = A.v;
+  if (!v) return;
+  const res = A.res, fen = v.fens[j];
+  let last = null, badge = null, info;
+  const rec = recommend(fen, v.pes[j]);
+  if (j === 0) info = esc(tr('Початок варіанту — позиція з партії.'));
+  else {
+    const row = v.rows[j - 1];
+    last = row.uci;
+    if (row.pending) info = esc(`⏳ ${row.label} ${row.san} — ${pick('Stockfish оцінює цей хід…', 'Stockfish is evaluating this move…')}`);
+    else { badge = botLive() ? null : [QUALITY[row.quality][0], QUALITY[row.quality][1]]; info = moveInfo(row); }
+  }
+  let adv = '';
+  if (rec && !botLive()) {
+    const d = v.pes[j].depth, el = j >= 1 ? v.rows[j - 1].elapsed : null;
+    const parts = [...(d ? [`${tr('глибина')} ${d}`] : []), ...(el ? [`${el.toFixed(1)} ${tr('с')}`] : [])];
+    adv = `${toMove(fen)} — ${tr('Stockfish радить:')} ${rec}` + (parts.length ? `  (${parts.join(', ')})` : '');
+  }
+  const arrow = bestArrow(j >= 1 ? v.rows[j - 1] : null, v.pes[j]);
+  const shapes = A.shapes[lineKey(v, j)] || [];
+  if (animate && j >= 1 && cfg.anim) {
+    const prevLast = j >= 2 ? v.rows[j - 2].uci : v.base >= 1 ? res.moves[v.base - 1].uci : null;
+    board.animate(v.fens[j - 1], prevLast, last, () => board.setPosition(fen, last, badge, arrow, shapes), badge);
+  } else board.setPosition(fen, last, badge, arrow, shapes);
+  board.interactive = true;
+  let known = j;                                       // поки хід оцінюється - остання відома оцінка
+  while (known > 0 && !v.pes[known]) known--;
+  setEval(v.pes[known] ? v.pes[known].cp : 0);
+  const onPath = j < v.book_path.length ? !!v.book_path[j] : false;
+  setInfo(info, adv, theoryLine(fen, onPath), badge);
+  const pend = j >= 1 && v.rows[j - 1].pending;
+  askSetVar(j);
+  showCoach(j === 0 ? [tr('Початок варіанту — позиція з партії.')]
+    : pend ? [pick('Тренер пояснить хід, щойно Stockfish його оцінить.', 'The coach will explain the move once Stockfish has evaluated it.')]
+      : coachVar(j), j >= 1 && !pend ? aiVar(j) : null);
+  if (pend && cfg.ai && cfg.coach && !A.aiOff && !botLive()) renderCoach(A.coachLines, null, true);   // 1.23.7: ШІ вже думає
+  if (A.bot || A.botUi) setTimeout(botTick, 30);
+  renderVar();
+  markCurrent();
+  drawGraph();
+  showNote();
+}
+
+function renderVar() {
+  const v = A.v, card = $('varCard');
+  card.hidden = !v || botLive();             // у партії з ботом кнопки - під дошкою
+  if (!v) return;
+  $('varMoves').innerHTML = v.rows.map((r, i) => `<span class="mchip${v.index === i + 1 ? ' cur' : ''}" data-j="${i + 1}">`
+    + `${qBadge(r.quality)}${esc(r.label + r.san)}</span>`).join('');
+  $('vUndo').disabled = !v.rows.length;
+  $('vDel').disabled = false;
+}
+
+function undoVar(bot = false) {
+  if (bot !== true && botLive()) { botUndo(); return; }
+  const v = A.v;
+  if (!v || A.varBusy || !v.rows.length) return;
+  v.rows.pop(); v.fens.pop(); v.pes.pop();
+  v.book_path.length = Math.min(v.book_path.length, v.rows.length + 1);
+  const rows = v.rows;
+  v.opening = rows.length ? (rows[rows.length - 1].opening || v.base_opening) : v.base_opening;
+  if (!rows.length) { dropLine(v); exitVar(); renderMoves(); docChanged(); return; }
+  const twin = findLine(v.base, rows.map(r => r.uci), v);
+  if (twin) { dropLine(v); renderMoves(); docChanged(); openLine(twin, rows.length); return; }
+  pruneAnnotations(); renderMoves(); docChanged();
+  v.index = rows.length;
+  showVarState(v.index, false);
+}
+
+function deleteVar() {
+  const v = A.v;
+  if (!v || A.varBusy) return;
+  dropLine(v); exitVar(); renderMoves(); docChanged();
+}
+
+const lineById = id => A.lines.find(ln => String(ln.id) === String(id)) || null;
+const nextLineId = () => Math.max(0, ...A.lines.map(ln => ln.id || 0)) + 1;
+function findLine(base, ucis, exclude = null) {
+  return A.lines.find(ln => ln !== exclude && ln.base === base && ln.rows.length >= ucis.length
+    && ucis.every((u, i) => ln.rows[i].uci === u)) || null;
+}
+function dropLine(line) {
+  const i = A.lines.indexOf(line);
+  if (i >= 0) A.lines.splice(i, 1);
+  pruneAnnotations();
+}
+function pruneAnnotations() {
+  if (!A.res) return;
+  const keys = new Set(A.res.fens.map((_, k) => String(k)));
+  for (const ln of A.lines) for (let j = 1; j <= ln.rows.length; j++) keys.add(lineKey(ln, j));
+  for (const d of [A.notes, A.shapes]) for (const k of Object.keys(d)) if (!keys.has(k)) delete d[k];
+}
+const lineKey = (line, j) => [String(line.base), ...line.rows.slice(0, j).map(r => r.uci)].join('/');
+const nodeKey = () => (A.v ? lineKey(A.v, A.v.index) : String(A.index));
+
+function openLine(line, j = 1, animate = false) {
+  if (A.varBusy) return;
+  stopPlay();
+  if (A.v !== line) { A.varToken++; A.v = line; A.index = line.base; }
+  line.index = Math.max(0, Math.min(line.rows.length, j));
+  showVarState(line.index, animate);
+}
+function exitVar() { if (!A.v) return; const base = A.v.base; clearVar(); goto(base, false); }
+function clearVar() {
+  A.v = null; A.varToken++; A.varBusy = false;
+  renderVar();
+  board.interactive = !!A.res && !A.res.partial;
+}
+
+// ------------------------------------------------------------ дослідження ---
+function newDoc() {
+  flushSave();
+  A.bot = null;                              // партія з ботом (якщо була) на цьому закінчується
+  if (A.botUi) setTimeout(botUiSync, 0);
+  A.docId++;
+  A.lines = []; A.notes = {}; A.shapes = {}; A.chapter = null;
+  if (A.analysing) engine.stop();
+  setRunLabel();
+  renderStudyPanel();
+}
+function docChanged(delay = 0) { if (A.chapter) autosave(delay); }
+function autosave(delay = 0) {
+  if (!A.study) return;
+  clearTimeout(A.saveTimer);
+  A.saveTimer = setTimeout(saveStudyNow, delay);
+}
+function flushSave() { if (A.saveTimer) { clearTimeout(A.saveTimer); A.saveTimer = null; saveStudyNow(); } }
+function saveStudyNow() {
+  A.saveTimer = null;
+  if (!A.study) return;
+  if (A.chapter) A.chapter.flipped = board.flipped;
+  A.study.updated = now();
+  if (!store.set('ca.study.' + A.studyId, A.study)) {
+    msg(`${tr('Не вдалося зберегти дослідження:')} ${pick('у телефоні замало місця для даних програми.', 'not enough storage for the app data.')}`);
+    return;
+  }
+  const ids = store.get('ca.studies', []);
+  if (!ids.includes(A.studyId)) { ids.push(A.studyId); store.set('ca.studies', ids); }
+}
+function listStudies() {
+  return store.get('ca.studies', []).map(id => ({ id, s: store.get('ca.study.' + id, null) })).filter(x => x.s)
+    .sort((a, b) => String(b.s.updated || '').localeCompare(String(a.s.updated || '')));
+}
+
+function onShapes(shapes) {
+  if (!A.res) return;
+  const key = nodeKey();
+  if (shapes.length) A.shapes[key] = shapes; else delete A.shapes[key];
+  docChanged();
+}
+
+function nodeTitle() {
+  if (A.v) {
+    const j = A.v.index;
+    if (j >= 1) { const r = A.v.rows[j - 1]; return `↳ ${r.label}${r.san}`; }
+    return tr('Початок варіанту — позиція з партії.');
+  }
+  if (A.res && A.index >= 1) { const m = A.res.moves[A.index - 1]; return `${m.label} ${m.san}`; }
+  return tr('Початкова позиція');
+}
+
+function showNote() {
+  if (!A.study) return;
+  const ta = $('stNote');
+  $('stNoteL').textContent = pick('КОМЕНТАР', 'COMMENT') + ' · ' + nodeTitle();
+  const on = !!A.chapter && !!A.res;
+  ta.disabled = !on;
+  ta.placeholder = on ? pick('Ваш коментар до цієї позиції…', 'Your comment on this position…')
+    : pick('Додайте партію в дослідження, щоб писати коментарі.', 'Add the game to the study to write comments.');
+  A.noteKey = nodeKey();
+  if (document.activeElement !== ta || ta.value !== (A.notes[A.noteKey] || '')) ta.value = on ? (A.notes[A.noteKey] || '') : '';
+}
+function onNoteEdit() {
+  if (!A.chapter || !A.res) return;
+  const text = $('stNote').value;
+  if (text.trim()) A.notes[A.noteKey] = text; else delete A.notes[A.noteKey];
+  docChanged(700);
+}
+
+function renderStudyPanel() {
+  const st = A.study;
+  $('studyCard').hidden = !st;
+  if (!st) return;
+  if (document.activeElement !== $('stName')) $('stName').value = st.name;
+  const cur = A.chapter ? st.chapters.indexOf(A.chapter) : -1;
+  $('stChapters').innerHTML = st.chapters.length ? st.chapters.map((ch, i) => `<div class="it${i === cur ? ' cur' : ''}" data-ch="${i}">`
+    + `${esc(ch.name || '?')}<small>${esc(ch.result && ch.result.free ? pick('вільна гра', 'free play') : plural((ch.result.moves || []).length, ['хід', 'ходи', 'ходів'], ['move', 'moves']))}</small></div>`).join('')
+    : `<div class="hint">${esc(tr('У дослідженні ще немає розділів.'))}</div>`;
+  if (document.activeElement !== $('stChName')) $('stChName').value = A.chapter ? A.chapter.name : '';
+  $('stChName').disabled = !A.chapter;
+  $('stDel').disabled = !A.chapter;
+  $('stAdd').disabled = !A.res || !!A.chapter;
+  $('stStatus').textContent = plural(st.chapters.length, ['розділ', 'розділи', 'розділів'], ['chapter', 'chapters'])
+    + (A.chapter ? '' : (A.res ? '  ·  ' + pick('партія на дошці не в дослідженні', 'the game on the board is not in the study') : ''));
+  showNote();
+}
+
+function chapterGame(ch) {
+  const res = ch.result;
+  return { root: res.fens[0], moves: res.moves.map(m => m.uci), headers: ch.headers || {} };
+}
+
+function openChapter(i) {
+  const st = A.study, ch = st && st.chapters[i];
+  if (!ch) return;
+  const res = ch.result;
+  if (!res || !Array.isArray(res.fens) || !res.fens.length || !Array.isArray(res.moves)) { msg(tr('Розділ пошкоджений, його не вдалося відкрити.')); return; }
+  stopPlay();
+  newDoc();
+  A.chapter = ch;
+  A.lines = (ch.lines ||= []); A.notes = (ch.notes ||= {}); A.shapes = (ch.shapes ||= {});
+  // ходи, які не встигли оцінити до закриття програми, відкидаємо (їх оцінка вже не прийде)
+  for (let i = A.lines.length - 1; i >= 0; i--) {
+    const ln = A.lines[i], p = ln.rows.findIndex(r => r.pending);
+    if (p < 0) continue;
+    ln.rows.length = p; ln.fens.length = p + 1; ln.pes.length = p + 1;
+    ln.book_path.length = Math.min(ln.book_path.length, p + 1);
+    if (!ln.rows.length) A.lines.splice(i, 1);
+  }
+  st.current = i;
+  if (!!ch.flipped !== board.flipped) board.flip();
+  if (res.free) startFree(res);
+  else {
+    A.game = chapterGame(ch);
+    resetView();
+    const s = res.summary || {};
+    setNames(s.white || 'Білі', s.white_elo || '', s.black || 'Чорні', s.black_elo || '');
+    showResults(res, false);
+  }
+  renderStudyPanel();
+  autosave();
+}
+
+function addDocToStudy(st) {
+  if (!A.res) return false;
+  const free = !!A.res.free, s = A.res.summary || {};
+  const name = free ? `${pick('Розділ', 'Chapter')} ${st.chapters.length + 1}` : `${s.white || '?'} – ${s.black || '?'}`;
+  const ch = { name, headers: A.game ? { ...A.game.headers } : {}, result: A.res, lines: A.lines, notes: A.notes,
+    shapes: A.shapes, flipped: board.flipped };
+  st.chapters.push(ch);
+  st.current = st.chapters.length - 1;
+  A.chapter = ch;
+  return true;
+}
+
+function addChapter() {
+  if (!A.study) return;
+  if (A.analysing && A.runDoc === A.docId) { msg(tr('Зачекайте, поки закінчиться аналіз партії.')); return; }
+  if (A.chapter || !addDocToStudy(A.study)) return;
+  saveStudyNow(); renderStudyPanel(); showNote();
+}
+
+async function deleteChapter() {
+  const st = A.study, ch = A.chapter;
+  if (!st || !ch) return;
+  if (!await ask(pick(`Видалити розділ «${ch.name}»?`, `Delete the chapter "${ch.name}"?`))) return;
+  const i = st.chapters.indexOf(ch);
+  if (i >= 0) st.chapters.splice(i, 1);
+  A.chapter = null;
+  st.current = Math.max(0, Math.min(st.current || 0, st.chapters.length - 1));
+  saveStudyNow(); renderStudyPanel();
+}
+
+function closeStudy() { flushSave(); A.study = null; A.studyId = null; A.chapter = null; renderStudyPanel(); }
+
+function shapeComment(shapes) {
+  const csl = (shapes || []).filter(s => s.length === 3), cal = (shapes || []).filter(s => s.length === 5);
+  return [csl.length ? `[%csl ${csl.join(',')}]` : '', cal.length ? `[%cal ${cal.join(',')}]` : ''].filter(Boolean).join(' ');
+}
+
+/** Розділ у PGN: основна лінія, варіанти гравця, коментарі, стрілки ([%csl]/[%cal]) - як chapter_pgn. */
+function chapterPgn(ch, studyName = '') {
+  const res = ch.result, notes = ch.notes || {}, shapes = ch.shapes || {};
+  const root = { children: [] }, byKey = { 0: root };
+  let node = root;
+  res.moves.forEach((m, i) => { const c = { uci: m.uci, san: m.san, children: [] }; node.children.push(c); node = c; byKey[i + 1] = c; });
+  for (const ln of ch.lines || []) {
+    let nd = byKey[ln.base];
+    if (!nd) continue;
+    let path = String(ln.base);
+    for (const r of ln.rows) {
+      path += '/' + r.uci;
+      let c = nd.children.find(x => x.uci === r.uci);
+      if (!c) { c = { uci: r.uci, san: r.san, children: [] }; nd.children.push(c); }
+      nd = c; byKey[path] = nd;
+    }
+  }
+  for (const [key, nd] of Object.entries(byKey)) {
+    nd.comment = [shapeComment(shapes[key]), (notes[key] || '').replace(/[{}]/g, '').trim()].filter(Boolean).join(' ');
+  }
+  const out = [];
+  const num = (p, force) => (p.turn === 'w' ? `${p.fullmove}. ` : force ? `${p.fullmove}... ` : '');
+  const walk = (pos, nd, needNum) => {
+    while (nd.children.length) {
+      const [main, ...alts] = nd.children;
+      out.push(num(pos, needNum) + main.san);
+      if (main.comment) out.push(`{ ${main.comment} }`);
+      let need = !!main.comment;
+      for (const alt of alts) {
+        out.push('(' + num(pos, true) + alt.san);
+        if (alt.comment) out.push(`{ ${alt.comment} }`);
+        const p2 = pos.copy(); p2.push(alt.uci);
+        walk(p2, alt, !!alt.comment);
+        out[out.length - 1] += ')';
+        need = true;
+      }
+      pos = pos.copy(); pos.push(main.uci); nd = main; needNum = need;
+    }
+  };
+  if (root.comment) out.push(`{ ${root.comment} }`);
+  walk(new Pos(res.fens[0]), root, true);
+  const h = { ...(ch.headers || {}) };
+  const result = h.Result || (res.summary && res.summary.result) || '*';
+  const tags = [['Event', studyName ? `${studyName}: ${ch.name || ''}` : ch.name || '?'], ['Site', h.Site || '?'],
+    ['Date', h.Date || '????.??.??'], ['Round', h.Round || '?'], ['White', h.White || '?'], ['Black', h.Black || '?'], ['Result', result]];
+  for (const k of ['Event', 'Site', 'Date', 'Round', 'White', 'Black', 'Result', 'FEN', 'SetUp']) delete h[k];
+  if (res.fens[0] !== START_FEN) tags.push(['SetUp', '1'], ['FEN', res.fens[0]]);
+  for (const [k, v] of Object.entries(h)) tags.push([k, v]);
+  const head = tags.map(([k, v]) => `[${k} "${String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"]`).join('\n');
+  return `${head}\n\n${out.join(' ')} ${result}\n`;
+}
+
+function shareText(text, filename) {
+  if (bridge && bridge.share) { bridge.share(text, filename); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/x-chess-pgn' }));
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function exportStudy() {
+  const st = A.study;
+  if (!st) return;
+  flushSave();
+  if (!st.chapters.length) { msg(tr('У дослідженні ще немає розділів.')); return; }
+  const text = st.chapters.map(ch => chapterPgn(ch, st.name)).join('\n');
+  const name = (st.name || 'study').replace(/[\\/:*?"<>|]+/g, '_').trim().slice(0, 60) || 'study';
+  shareText(text, name + '.pgn');
+}
+
+function openStudy(id) {
+  flushSave();
+  const st = store.get('ca.study.' + id, null);
+  if (!st || !Array.isArray(st.chapters)) { msg(tr('Не вдалося відкрити дослідження.')); return; }
+  A.study = st; A.studyId = id; A.chapter = null;
+  closeBox();
+  renderStudyPanel();
+  if (st.chapters.length) openChapter(Math.min(st.current || 0, st.chapters.length - 1));
+  showStudyCard();
+}
+
+function showStudyCard() { $('panel').scrollTop = Math.max(0, $('studyCard').offsetTop - 8); }
+
+async function deleteStudy(id) {
+  const st = store.get('ca.study.' + id, null);
+  if (!await ask(pick(`Видалити дослідження «${st ? st.name : ''}»? Його не можна буде відновити.`,
+    `Delete the study "${st ? st.name : ''}"? It cannot be restored.`))) return;
+  if (A.studyId === id) { clearTimeout(A.saveTimer); A.saveTimer = null; A.study = null; A.studyId = null; A.chapter = null; renderStudyPanel(); }
+  store.del('ca.study.' + id);
+  store.set('ca.studies', store.get('ca.studies', []).filter(x => x !== id));
+  reopenBox();
+}
+
+function createStudy(name) {
+  if (A.analysing && A.runDoc === A.docId) { msg(tr('Зачекайте, поки закінчиться аналіз партії.')); return; }
+  flushSave();
+  const st = { name: name.trim() || pick('Нове дослідження', 'New study'), created: now(), updated: now(), current: 0, chapters: [] };
+  A.study = st; A.studyId = 'study-' + Date.now().toString(36); A.chapter = null;
+  addDocToStudy(st);
+  saveStudyNow();
+  closeBox();
+  renderStudyPanel();
+  showStudyCard();
+}
+
+// ------------------------------------------------------------ партії з chess.com (з 1.21.0) ---
+// Відкритий API chess.com (без входу - лише нік): місяці з партіями, далі партії місяця з PGN.
+const CC_API = 'https://api.chess.com/pub/player/';
+const CC_CLASSES = [['bullet', 'Куля', 'Bullet'], ['blitz', 'Бліц', 'Blitz'], ['rapid', 'Рапід', 'Rapid'], ['daily', 'Щоденні', 'Daily']];
+const CC_MONTHS = [['Січень', 'January'], ['Лютий', 'February'], ['Березень', 'March'], ['Квітень', 'April'], ['Травень', 'May'],
+  ['Червень', 'June'], ['Липень', 'July'], ['Серпень', 'August'], ['Вересень', 'September'], ['Жовтень', 'October'],
+  ['Листопад', 'November'], ['Грудень', 'December']];
+const CC = { user: store.get('ca.ccUser', ''), months: [], month: 0, type: 'all', rows: [], cache: {}, seq: 0, status: null };
+
+async function ccGet(url) {
+  const r = await fetch(url, { headers: { Accept: 'application/json' }, cache: 'no-store' });
+  if (!r.ok) { const e = new Error('http'); e.code = r.status; throw e; }
+  return r.json();
+}
+function ccGames(data, user) {
+  const me = user.toLowerCase(), rows = [];
+  for (const g of data.games || []) {
+    if ((g.rules || 'chess') !== 'chess' || !g.pgn) continue;
+    const w = g.white || {}, b = g.black || {};
+    const white = (w.username || '').toLowerCase() === me;
+    const [mine, opp] = white ? [w, b] : [b, w];
+    const result = mine.result === 'win' ? 'win' : opp.result === 'win' ? 'loss' : 'draw';
+    let opening = '';
+    const m = /\[ECOUrl "[^"]*\/openings\/([^"]+)"\]/.exec(g.pgn);
+    if (m) opening = m[1].split(/(?:-|\.\.\.)\d/)[0].replace(/-/g, ' ');
+    rows.push({ end: g.end_time || 0, white, opp: opp.username || '?', oppRating: opp.rating || null, result,
+      cls: g.time_class || '', tc: String(g.time_control || ''), opening, pgn: g.pgn });
+  }
+  return rows.sort((a, b) => b.end - a.end);
+}
+function ccTime(tc) {
+  if (tc.includes('/')) { const d = Math.floor(+tc.split('/')[1] / 86400); return isNaN(d) ? tc : pick(`${d} д`, `${d} d`); }
+  const [base, inc] = tc.split('+'), b = +base;
+  if (isNaN(b)) return tc;
+  const main = b >= 60 ? String(Math.floor(b / 60)) : pick(`${b} с`, `${b} s`);
+  return inc && inc !== '0' ? `${main}+${inc}` : main + (b >= 60 ? pick(' хв', ' min') : '');
+}
+function ccSetStatus(fn) { CC.status = fn; const el = $('ccStatus'); if (el) el.textContent = fn ? fn() : ''; }
+function ccErr(e, user) {
+  if (e && e.code === 404) return () => pick(`Гравця «${user}» на chess.com не знайдено.`, `Player «${user}» was not found on chess.com.`);
+  if (e && e.code === 429) return () => pick('chess.com просить зачекати хвилинку — спробуйте ще раз.', 'chess.com asks to wait a minute — please try again.');
+  return () => pick('Не вдалося з’єднатися з chess.com. Перевірте інтернет.', 'Could not connect to chess.com. Check your internet connection.');
+}
+function ccView() { return CC.rows.filter(r => CC.type === 'all' || r.cls === CC.type); }
+function ccCount() {
+  const n = ccView().length;
+  return () => `${plural(n, ['партія', 'партії', 'партій'], ['game', 'games'])} · ${pick('торкніться партії — аналіз', 'tap a game to analyze')}`;
+}
+
+// ------------------------------------------------------------ боти (1.24.0; 1.25.0 - зірки, фото, екран гри) ---
+// Гра проти Stockfish у стилі відомих шахістів: звичайна вільна гра, де за одну сторону ходить бот.
+// Поки партія йде - екран гри: фото й зірки, репліки бота (ШІ), «Повернути хід» / «Підказка» (1 раз) / «Здатися»;
+// аналізу немає (шкала, графік, «Оцінка партії», оцінки ходів). Після партії - зірки й звичайний аналізатор.
+const botById = id => D.BOTS.find(b => b.id === id) || D.BOTS[0];
+const botName = b => pick(b.uk, b.en);
+const botPhoto = id => 'data:image/png;base64,' + D.BOT_PHOTOS[id];
+// 1.26.0: «тривожний» Witty Alien (задум автора програми) - поки його видно, фото інколи «збоїть»;
+// наведення або дотик - він «дивиться» (очі горять). Картинки з data-alien - картка партії, меню ботів.
+const ALIEN = 'wittyalien';
+const alienSrc = k => (k === 'base' ? botPhoto(ALIEN) : 'data:image/png;base64,' + D.BOT_PHOTO_FX[ALIEN][k]);
+const alienImgs = () => [...document.querySelectorAll('img[data-alien]')].filter(i => i.offsetParent);
+function alienShow(k) { const s = alienSrc(k); for (const i of alienImgs()) i.src = s; }
+function alienKick() { if (!A.alienT && alienImgs().length) A.alienT = setTimeout(alienTick, 2500 + Math.random() * 4000); }
+function alienTick() {
+  A.alienT = 0;
+  if (!alienImgs().length) return;
+  if (!A.alienHover) {
+    const seqs = [[['glitch', 70], ['base', 60], ['glitch', 110]], [['neg', 55], ['glitch', 90]],
+      [['glitch', 60], ['neg', 40], ['glitch', 80], ['base', 50], ['stare', 450]], [['stare', 900]]];
+    const seq = seqs[Math.floor(Math.random() * seqs.length)];
+    const play = i => { if (A.alienHover) return; if (i >= seq.length) { alienShow('base'); return; } alienShow(seq[i][0]); setTimeout(() => play(i + 1), seq[i][1]); };
+    play(0);
+  }
+  alienKick();
+}
+document.addEventListener('pointerover', e => { if (e.target.matches && e.target.matches('img[data-alien]')) { A.alienHover = true; alienShow('stare'); } });
+document.addEventListener('pointerout', e => { if (e.target.matches && e.target.matches('img[data-alien]')) { A.alienHover = false; alienShow('base'); } });
+const botCanned = ev => pick(...(D.BOT_CANNED[ev] || D.BOT_CANNED.move)[Math.floor(Math.random() * (D.BOT_CANNED[ev] || D.BOT_CANNED.move).length)]);
+function botLive() { const b = A.bot; return !!(b && !b.over && A.res === b.res); }
+const creditLink = () => `<button class="credit" data-credits="1">ⓘ ${esc(pick('Ліцензія фото', 'Photo license'))}</button>`;
+
+function botResultText() {
+  const b = A.bot, name = botName(b.spec);
+  let text;
+  if (b.result === '1/2-1/2') {
+    const why = { stalemate: pick('пат', 'stalemate'), material: pick('недостатньо матеріалу', 'insufficient material'),
+      repetition: pick('триразове повторення позиції', 'threefold repetition'), fifty: pick('правило 50 ходів', 'the 50-move rule') }[b.reason] || '';
+    text = pick('Нічия', 'Draw') + (why ? ` (${why})` : '') + '.';
+  } else if (b.reason === 'resign') text = pick(`Ви здалися. Переміг бот «${name}».`, `You resigned. The ${name} bot wins.`);
+  else if ((b.result === '1-0') === (b.color === 'b')) text = pick(`Мат! Ви перемогли бота «${name}». 🏆`, `Checkmate! You beat the ${name} bot. 🏆`);
+  else text = pick(`Мат. Переміг бот «${name}».`, `Checkmate. The ${name} bot wins.`);
+  if (b.stars) text += '\n' + pick('Зірки: ', 'Stars: ') + starsText(b.stars) + (b.record ? pick('  — новий рекорд!', '  — a new record!') : '');
+  if (b.quote) text += `\n💬 ${name}: ${b.quote}`;
+  return text + '\n' + pick('Тепер можна гортати ходи: видно оцінку кожного ходу, підказки й тренера.',
+    "You can now browse the moves: every move's grade, hints and the coach are shown.");
+}
+
+function botRules(spec, real) {
+  return pick(`★  перемога на будь-якій силі\n★★  перемога на силі шахіста (${spec.elo})\n★★★  те саме — і жодного разу не повернути хід і не взяти підказку`,
+    `★  win at any strength\n★★  win at the player's strength (${spec.elo})\n★★★  the same — without a single takeback and without the hint`)
+    + (real ? '' : pick('\n\nНа цій силі можна заробити лише ★.', '\n\nAt this strength you can earn only ★.'));
+}
+
+function botsRenderBody() {
+  if (A.boxKind !== 'bots') return;
+  const [id, colorI, levelI] = cfg.bot, spec = botById(id), b = A.bot, stars = cfg.botStars || {};
+  const opt = (v, l, cur) => `<option value="${v}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`;
+  const done = b && b.over && A.res === b.res;
+  // 1.26.0: галерея карток за групами (сучасні зірки, легенди, стрімери) + панель вибраного шахіста
+  const alien = x => (x.id === ALIEN ? ' data-alien="1"' : '');
+  const card = x => `<div class="bc${x.id === spec.id ? ' cur' : ''}" data-id="${x.id}"><img src="${botPhoto(x.id)}" alt=""${alien(x)}>`
+    + `<b>${esc(botName(x))}</b><small>${x.elo}</small><span class="st">${starsText(stars[x.id] || 0)}</span></div>`;
+  const groups = [['modern', pick('СУЧАСНІ ЗІРКИ', "TODAY'S STARS")], ['legend', pick('ЛЕГЕНДИ', 'LEGENDS')], ['streamer', pick('СТРІМЕРИ', 'STREAMERS')]];
+  const cat = { modern: pick('сучасна зірка', "today's star"), legend: pick('легенда', 'legend'), streamer: pick('стрімер', 'streamer') }[spec.cat] || '';
+  $('boxBody').innerHTML = (done ? `<div class="botres" style="white-space:pre-line">${esc(botResultText())}</div>` : '')
+    + `<div class="botgal" id="btList">${groups.map(([c, t]) => `<div class="gh">${esc(t)}</div><div class="gg">`
+      + D.BOTS.filter(x => x.cat === c).map(card).join('') + '</div>').join('')}</div>`
+    + `<div class="botsel"><div class="bothead"><img src="${botPhoto(spec.id)}" alt=""${alien(spec)}><div><b>${esc(botName(spec))}</b><br>`
+    + `<small>${esc(spec.years)} · ${esc(pick('рейтинг', 'rating'))} ${spec.elo} · ${esc(cat)}</small>`
+    + `<div class="st">${starsText(stars[spec.id] || 0)} <small style="color:var(--muted);letter-spacing:0">${esc(pick('ваш рекорд', 'your record'))}</small></div></div></div>`
+    + `<div class="botdesc">${esc(pick(spec.d_uk, spec.d_en))}</div>`
+    + `<div class="botfact">💡 ${esc(pick(spec.fact_uk, spec.fact_en))}</div>`
+    + `<div class="botopen">♟ ${esc(pick(spec.open_uk, spec.open_en))}</div>`
+    + `<label class="f">${esc(pick('Ваш колір', 'Your colour'))}</label><div class="seg" id="btColor">`
+    + [pick('♔ Білими', '♔ White'), pick('♚ Чорними', '♚ Black'), pick('🎲 Навмання', '🎲 Random')]
+      .map((l, i) => `<button data-c="${i}"${i === colorI ? ' class="on"' : ''}>${esc(l)}</button>`).join('') + '</div>'
+    + `<label class="f">${esc(pick('Сила гри', 'Strength'))}</label><select id="btLevel">`
+    + [pick(`Як у шахіста (${spec.elo})`, `Like the player (${spec.elo})`), ...D.BOT_LEVELS].map((l, i) => opt(i, String(l), levelI)).join('') + '</select>'
+    + `<div class="botrules" id="btRules">${esc(botRules(spec, levelI === 0))}</div>`
+    + `<button id="btPlay" class="primary big">${esc(pick('⚔ Почати гру', '⚔ Start game'))}</button>`
+    + `<div class="hint">${esc(pick('Бот грає дебюти цього шахіста й наслідує його стиль, а силу гри дає Stockfish; репліки пише ШІ. Це імітація, '
+      + 'із самими гравцями вона не пов\'язана. Під час партії аналізу немає; після неї видно оцінку кожного ходу.',
+    'The bot plays this player\'s openings and imitates the style, while the strength comes from Stockfish; the lines are written by AI. '
+      + 'It is an imitation and is not affiliated with the players. No analysis during the game; afterwards you see the grade of every move.'))}</div>`
+    + creditLink() + '</div>';
+  $('btList').addEventListener('click', e => {
+    const it = e.target.closest('[data-id]');
+    if (!it) return;
+    const top = $('btList').scrollTop;
+    cfg.bot[0] = it.dataset.id; saveCfg(); botsRenderBody();
+    $('btList').scrollTop = top;
+  });
+  $('btColor').addEventListener('click', e => {
+    const bt = e.target.closest('[data-c]');
+    if (!bt) return;
+    cfg.bot[1] = +bt.dataset.c; saveCfg();
+    for (const x of $('btColor').children) x.classList.toggle('on', x === bt);
+  });
+  $('btLevel').addEventListener('change', e => { cfg.bot[2] = +e.target.value; saveCfg(); $('btRules').textContent = botRules(spec, cfg.bot[2] === 0); });
+  $('btPlay').addEventListener('click', botPlay);
+  const cur = $('btList').querySelector('.cur');
+  if (cur && !done) cur.scrollIntoView({ block: 'nearest' });
+  alienKick();
+  const box = $('box');
+  if (box.offsetTop + box.offsetHeight > window.innerHeight - 8)
+    box.style.top = Math.max(12, window.innerHeight - box.offsetHeight - 12) + 'px';
+}
+
+function creditsRenderBody() {
+  $('boxBody').innerHTML = `<div class="hint">${esc(pick('Фото шахістів — з Вікісховища (Wikimedia Commons), вільні ліцензії. Зображення обрізано й зменшено. '
+    + 'Ліцензії CC BY-SA дозволяють поширювати їх з указанням автора й ліцензії.',
+  'Player photos are from Wikimedia Commons under free licenses. The images were cropped and resized. '
+    + 'CC BY-SA licenses allow sharing with credit to the author and the license.'))}</div><div class="credits">`
+    + D.BOTS.filter(b => D.BOT_PHOTO_CREDITS[b.id]).map(b => { const [author, lic, url] = D.BOT_PHOTO_CREDITS[b.id];   // Witty Alien - значок, не фото
+      return `<div><b>${esc(botName(b))}</b> — ${esc(author)}, ${esc(lic)}<br><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a></div>`; }).join('')
+    + `<div class="hint">${esc(pick(...D.BOT_PHOTO_NOTE))}</div></div>`;
+}
+
+/** Екран гри або аналізатора - за тим, чи йде партія з ботом. */
+function botUiSync() {
+  const live = botLive();
+  if (live) renderBotCard();
+  if (live === !!A.botUi) return;
+  A.botUi = live;
+  $('botCard').hidden = !live;
+  $('botBar').hidden = !live;
+  for (const el of [document.querySelector('.graphCard'), $('summaryCard'), $('info')]) el.hidden = live;
+  $('bRun').disabled = live;
+  board.premoveColor = live ? (A.bot.color === 'w' ? 'b' : 'w') : null;   // 1.25.3: хід наперед
+  if (!live) board.premoves = [];
+  renderVar(); renderMoves(); layout();
+}
+
+function renderBotCard() {
+  const b = A.bot, spec = b.spec, real = b.elo === spec.elo, ok = '✓', no = '✗';
+  const side = b.color === 'w' ? pick('білими', 'White') : pick('чорними', 'Black');
+  $('botCard').innerHTML = `<img src="${botPhoto(spec.id)}" alt=""${spec.id === ALIEN ? ' data-alien="1"' : ''}><div class="bi">`
+    + `<div class="bn"><span>${esc(botName(spec))}</span>${creditLink()}</div>`
+    + `<div class="bm">${esc(spec.years)} · ${esc(pick('грає', 'plays'))} ${esc(side)} · ${esc(pick('сила', 'strength'))} ${b.elo}</div>`
+    + `<div class="st">${starsText((cfg.botStars || {})[spec.id] || 0)} <small style="color:var(--muted)">${esc(pick('ваш рекорд', 'your record'))}</small></div>`
+    + `<div class="goal">${esc(pick('Для ★★★: ', 'For ★★★: '))}${esc(pick('сила', 'strength'))} ${spec.elo} ${real ? ok : no} · `
+    + `${esc(pick('без повернень', 'no takebacks'))} ${b.undos ? no : ok} · ${esc(pick('без підказки', 'no hint'))} ${b.hints ? no : ok}</div></div>`;
+  $('bbUndo').textContent = pick('↶ Повернути хід', '↶ Take back');
+  $('bbHint').textContent = pick('💡 Підказка', '💡 Hint') + (b.hints ? ' (0)' : ' (1)');
+  $('bbHint').disabled = !!b.hints || !!b.hintWait;
+  $('bbResign').textContent = pick('🏳 Здатися', '🏳 Resign');
+  if (spec.id === ALIEN) alienKick();
+}
+
+function botPlay() {
+  const spec = botById(cfg.bot[0]);
+  const userWhite = [true, false, Math.random() < 0.5][cfg.bot[1]] ?? true;
+  const elo = cfg.bot[2] >= 1 && D.BOT_LEVELS[cfg.bot[2] - 1] ? D.BOT_LEVELS[cfg.bot[2] - 1] : spec.elo;
+  closeBox();
+  startFree();
+  if (board.flipped === userWhite) flipBoard();           // гравець завжди внизу дошки
+  A.bot = { spec, color: userWhite ? 'b' : 'w', elo, over: false, thinking: false, token: 0, res: A.res, result: '*', reason: '',
+    undos: 0, hints: 0, hint: null, hintWait: false, chat: [], saidAt: 0, botMoves: 0, stars: 0, record: false, quote: '' };
+  const s = A.res.summary;
+  [s.white, s.black] = userWhite ? ['You', spec.en + ' (bot)'] : [spec.en + ' (bot)', 'You'];
+  if (userWhite) setNames('Ви', '', spec.uk, String(elo)); else setNames(spec.uk, String(elo), 'Ви', '');
+  botUiSync();
+  botSay('start');
+  refreshView();                                            // якщо бот білими - він ходить першим
+  setStatus(() => pick(`Партія з ботом «${botName(spec)}» (${elo}).`, `Game against the ${botName(spec)} bot (${elo}).`));
+}
+
+function botCoach() {
+  const b = A.bot;
+  const lines = b.chat.slice(-1);                           // 1.25.2: лише остання репліка
+  if (b.thinking) lines.push('⏳ ' + pick('Думає над ходом…', 'Thinking about the move…'));
+  else if (!lines.length) lines.push(pick('Ваш хід.', 'Your move.'));
+  return [`💬 ${botName(b.spec)}`, lines];
+}
+
+/** Репліка бота: ШІ (у характері шахіста, без підказок) або запасна фраза. */
+async function botSay(event, ucis = null) {
+  const b = A.bot;
+  if (!b) return;
+  let text = null;
+  if (!['undo', 'hint'].includes(event) && cfg.ai && !A.aiOff) {
+    try {
+      const facts = botChatFacts(event, A.res.fens[0], ucis || botMoves(), b.color, b.result);
+      text = await fetchAiCoach(facts, S.lang, null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en) });
+    } catch (_) { text = null; }
+  }
+  if (A.bot !== b) return;
+  text = text || botCanned(event);
+  b.chat.push(text);
+  if (event === 'end') { b.quote = text; if (A.boxKind === 'bots') botsRenderBody(); if (A.boxKind === 'botend') botendRenderBody(); }
+  else if (botLive()) showCoach(A.coachLines);
+}
+
+/** Ходи від початку партії до кінця поточної лінії. */
+function botMoves() {
+  const res = A.res, v = A.v;
+  return [...res.moves.slice(0, v ? v.base : A.index).map(m => m.uci), ...(v ? v.rows.map(r => r.uci) : [])];
+}
+
+function botTick() { botUiSync(); if (A.bot) botKick(); }
+
+/** На дошці кінець лінії: партія закінчилась - підсумок; хід бота - бот думає. */
+function botKick() {
+  const b = A.bot;
+  if (!botLive() || b.thinking) return;
+  const v = A.v;
+  if (v && v.index !== v.rows.length) return;               // гравець переглядає попередні ходи
+  const ucis = botMoves(), st = botState(A.res.fens[0], ucis);
+  if (!st) return;
+  if (st.over) botFinish(st.over[0], st.over[1]);
+  else if (st.turn === b.color) botThink(ucis, st.fen);
+}
+
+async function botThink(ucis, fen) {
+  const b = A.bot, token = ++b.token, t0 = performance.now();
+  b.thinking = true;
+  showCoach(A.coachLines);                                  // «Думає над ходом…»
+  let uci = null, err = null;
+  try {
+    uci = botBookMove(b.spec, ucis, b.color === 'w');
+    if (!uci) {
+      await ensureEngine();
+      const r = await engine.botMove(A.res.fens[0], ucis, b.elo, 800);
+      uci = botChoose(new Pos(fen), r.best, r.cands, b.spec);
+      if (b.elo < 1320 && r.cands.length > 1 && Math.random() < (1320 - b.elo) / 1320 * 0.8) uci = r.cands[r.cands.length - 1].uci;
+    }
+  } catch (e) { err = (e && e.message) || String(e); }
+  const wait = 700 - (performance.now() - t0);              // миттєва відповідь виглядає неприродно
+  if (wait > 0) await new Promise(r => setTimeout(r, wait));
+  if (A.bot !== b || token !== b.token) return;             // хід скасовано (нова партія, «Повернути хід»)
+  b.thinking = false;
+  if (!botLive()) return;
+  if (err || !uci) { showCoach(A.coachLines); msg(pick('Бот не зміг зробити хід: ', 'The bot could not move: ') + (err || '?')); return; }
+  const v = A.v;
+  if (v && v.index !== v.rows.length) gotoVar(v.rows.length, false);
+  if (botMoves().join(' ') !== ucis.join(' ')) { showCoach(A.coachLines); setTimeout(botKick, 30); return; }   // інша лінія
+  A.botInject = true;
+  // 1.25.10: є ходи наперед або фігура в руці - хід бота без анімації (як на chess.com)
+  const quick = board.premoves.length > 0 || !!board.drag;
+  try { await onUserMove(uci, quick); } finally { A.botInject = false; }
+  if (board.premoves.length) setTimeout(botPremove, 15);           // хід наперед - одразу після ходу бота
+  b.botMoves++;
+  const all = botMoves(), st = botState(A.res.fens[0], all);
+  if (st && !st.over) {
+    const c = new Chess(A.res.fens[0]);
+    for (const u of all) c.move({ from: u.slice(0, 2), to: u.slice(2, 4), promotion: u[4] });
+    const sharp = c.history({ verbose: true }).slice(-2).some(m => m.captured || /[+#]/.test(m.san));
+    const gap = b.botMoves - b.saidAt;
+    if ((sharp && gap >= 2) || gap >= 4) { b.saidAt = b.botMoves; botSay('move', all); }
+  }
+}
+
+/** «Підказка»: один раз за партію - стрілка найкращого ходу (Stockfish на повну силу). */
+async function botHint() {
+  const b = A.bot;
+  if (!botLive() || b.hints || b.thinking || b.hintWait) return;
+  const ucis = botMoves(), st = botState(A.res.fens[0], ucis);
+  if (!st || st.over || st.turn === b.color) return;
+  b.hintWait = true; renderBotCard();
+  try {
+    await ensureEngine();
+    const r = await engine.analyse(A.res.fens[0], ucis, Math.max(12, cfg.depth), 1);
+    const uci = r[0] && r[0].pv && r[0].pv[0];
+    if (uci && A.bot === b && botLive()) { b.hint = [st.fen, uci]; b.hints++; botSay('hint'); refreshView(); }
+  } catch (e) { msg(pick('Підказка не вийшла: ', 'The hint failed: ') + ((e && e.message) || e)); }
+  b.hintWait = false;
+  if (botLive()) renderBotCard();
+}
+
+function botHintArrow() {
+  const b = A.bot;
+  if (!b || !b.hint) return null;
+  const cur = A.v ? A.v.fens[A.v.index] : A.res.fens[A.index];
+  return b.hint[0] === cur ? b.hint[1] : null;
+}
+
+function botFinish(result, reason) {
+  const b = A.bot;
+  Object.assign(b, { over: true, thinking: false, result, reason });
+  board.premoves = [];
+  b.token++;
+  const won = reason !== 'resign' && result !== '1/2-1/2' && ((result === '1-0') === (b.color === 'b'));
+  b.stars = botStarsFor(won, b.elo === b.spec.elo, b.undos, b.hints);
+  cfg.botStars = cfg.botStars || {};
+  if (b.stars > (cfg.botStars[b.spec.id] || 0)) { cfg.botStars[b.spec.id] = b.stars; b.record = true; saveCfg(); }
+  A.res.summary.result = result;
+  botUiSync();
+  refreshView();
+  setStatus(() => botResultText().split('\n')[0]);
+  docChanged();
+  botSay('end', botMoves());
+  openBox('botend');
+}
+
+// 1.26.1: квадрат «Кінець партії» - результат, зірки, слово бота, підсумок, аналіз / реванш / інший бот
+function botendStats() {
+  const b = A.bot, rows = A.v ? A.v.rows : [];
+  const mine = rows.filter(r => (r.label || '').endsWith('.') === (b.color === 'b'));
+  const pending = mine.some(r => r.pending), done = mine.filter(r => !r.pending && r.quality);
+  const parts = [pick('Ходів: ', 'Moves: ') + Math.ceil(rows.length / 2)];
+  if (done.length) {
+    parts.push(pick('ваша точність ', 'your accuracy ') + gameAccuracy(done.map(r => r.acc)).toFixed(1) + '%');
+    for (const q of ['Геніальний', 'Чудовий', 'Найкращий', 'Помилка', 'Груба помилка']) {
+      const k = done.filter(r => r.quality === q).length;
+      if (k) parts.push(`${qname(q).toLowerCase()}: ${k}`);
+    }
+  }
+  if (pending) parts.push(pick('ще оцінюю ходи…', 'still grading moves…'));
+  const lines = [];
+  const best = ['Геніальний', 'Чудовий'].map(q => done.find(r => r.quality === q)).find(Boolean);
+  if (best) lines.push('⭐ ' + pick('Ваш найкращий хід: ', 'Your best move: ') + `${best.label}${best.san} (${qname(best.quality)})`);
+  const worst = done.reduce((w, r) => (!w || (r.drop || 0) > (w.drop || 0) ? r : w), null);
+  if (worst && (worst.drop || 0) >= 10) lines.push('⚠ ' + pick('Найдорожча помилка: ', 'Costliest mistake: ') + `${worst.label}${worst.san} (${qname(worst.quality)})`);
+  return { stats: parts.join(' · '), lines, pending };
+}
+
+function botendRenderBody() {
+  if (A.boxKind !== 'botend' || !A.bot || !A.bot.over) return;
+  const b = A.bot, spec = b.spec, name = botName(spec);
+  const won = b.reason !== 'resign' && b.result !== '1/2-1/2' && ((b.result === '1-0') === (b.color === 'b'));
+  const draw = b.result === '1/2-1/2';
+  const title = won ? pick('Перемога! 🏆', 'Victory! 🏆') : draw ? pick('Нічия', 'Draw') : pick('Поразка', 'Defeat');
+  const st = botendStats(), rec = (cfg.botStars || {})[spec.id] || 0;
+  const photo = spec.id === ALIEN && !won && !draw ? alienSrc('stare') : botPhoto(spec.id);
+  $('boxBody').innerHTML = `<div class="behead"><img src="${photo}" alt=""${spec.id === ALIEN ? ' data-alien="1"' : ''}><div>`
+    + `<div class="bet ${won ? 'win' : draw ? 'draw' : 'lose'}">${esc(title)}</div>`
+    + `<small>${esc(botResultText().split('\n')[0])}<br>${esc(pick('Суперник: ', 'Opponent: '))}${esc(name)} (${b.elo})</small>`
+    + `<div class="bes">${starsText(b.stars)}</div><small class="rec">${esc(b.record ? pick('Новий рекорд!', 'A new record!') : pick('Ваш рекорд: ', 'Your record: ') + starsText(rec))}</small></div></div>`
+    + `<div class="bequote"><small>💬 ${esc(name.toUpperCase())}</small><div>${esc(b.quote || pick('Пише…', 'Typing…'))}</div></div>`
+    + `<div class="bestats">${esc(st.stats)}</div>` + st.lines.map(l => `<div class="bemove">${esc(l)}</div>`).join('')
+    + `<button id="beAnalyze" class="primary big">${esc(pick('📊 Аналізувати партію', '📊 Analyze the game'))}</button>`
+    + `<div class="row berow"><button id="beRematch">${esc(pick('🔁 Реванш', '🔁 Rematch'))}</button>`
+    + `<button id="beChange">${esc(pick('🤖 Інший бот', '🤖 Another bot'))}</button></div>`;
+  $('beAnalyze').addEventListener('click', botendAnalyze);
+  $('beRematch').addEventListener('click', botendRematch);
+  $('beChange').addEventListener('click', () => { cfg.bot[0] = spec.id; saveCfg(); openBox('bots'); });
+  if (st.pending || !b.quote) setTimeout(botendRenderBody, 700);
+}
+
+/** Повний аналіз щойно зіграної партії - як звичайної (графік, точність, оцінки). */
+function botendAnalyze() {
+  const b = A.bot, userWhite = b.color === 'b', me = pick('Ви', 'You'), bot = botName(b.spec);
+  const p = new Pos(START_FEN), sans = [];
+  for (const u of botMoves()) { sans.push(p.san(u)); p.push(u); }
+  const [w, bl] = userWhite ? [me, bot] : [bot, me];
+  const text = `[Event "${pick('Партія з ботом', 'Game against a bot')}"]\n[White "${w}"]\n[Black "${bl}"]\n`
+    + `[${userWhite ? 'BlackElo' : 'WhiteElo'} "${b.elo}"]\n[Result "${b.result}"]\n\n`
+    + sans.map((s, i) => (i % 2 === 0 ? `${i / 2 + 1}. ` : '') + s).join(' ') + ' ' + b.result;
+  closeBox();
+  if (loadPgn(text) && board.flipped !== !userWhite) flipBoard();   // свої фігури - знизу
+}
+
+/** Реванш: той самий шахіст і сила, кольори міняються. */
+function botendRematch() {
+  const b = A.bot, li = b.elo === b.spec.elo ? 0 : D.BOT_LEVELS.indexOf(b.elo) + 1;
+  cfg.bot = [b.spec.id, b.color === 'b' ? 1 : 0, li > 0 ? li : 0];
+  saveCfg();
+  closeBox();
+  botPlay();
+}
+
+/** Зіграти перший хід наперед з черги, якщо після ходу бота він можливий; інакше скасувати всю чергу. */
+function botPremove() {
+  if (!board.premoves.length) return;
+  const uci = board.premoves.shift();
+  const st = botLive() ? botState(A.res.fens[0], botMoves()) : null;
+  if (st && !st.over && st.turn !== A.bot.color && new Pos(st.fen).isLegal(uci)) onUserMove(uci, true);   // без анімації; решта - після ходу бота
+  else { board.premoves = []; board.render(); }
+}
+
+function botResign() { const b = A.bot; if (botLive()) botFinish(b.color === 'b' ? '0-1' : '1-0', 'resign'); }
+
+/** «Повернути хід» у партії з ботом: назад до свого ходу (хід бота і свій перед ним). */
+function botUndo() {
+  const b = A.bot;
+  b.token++; b.thinking = false;
+  if (!A.v || !A.v.rows.length) return;
+  b.undos++;
+  board.premoves = [];
+  undoVar(true);
+  const v = A.v;
+  if (v && v.rows.length && v.fens[v.fens.length - 1].split(' ')[1] === b.color) undoVar(true);
+  botSay('undo');
+  renderBotCard();
+  setTimeout(botKick, 60);
+}
+
+function ccRenderBody() {
+  if (A.boxKind !== 'chesscom') return;
+  const body = $('boxBody');
+  const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? ' selected' : ''}>${esc(l)}</option>`;
+  const names = Object.fromEntries(CC_CLASSES.map(([k, uk, en]) => [k, pick(uk, en)]));
+  const res = { win: pick('Перемога', 'Win'), loss: pick('Поразка', 'Loss'), draw: pick('Нічия', 'Draw') };
+  const z = x => String(x).padStart(2, '0');
+  const view = ccView();
+  const typeOpts = [['all', pick('Усі', 'All')], ...CC_CLASSES.map(([k, uk, en]) => [k, pick(uk, en)])];
+  body.innerHTML = `<label class="f">${esc(pick('Нік на chess.com', 'chess.com username'))}</label>`
+    + `<div class="row ccrow"><input type="text" id="ccUser" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(CC.user)}">`
+    + `<button id="ccFind" class="primary">${esc(pick('🔍 Знайти', '🔍 Find'))}</button></div>`
+    + (CC.months.length ? `<div class="row ccrow"><select id="ccMonth">${CC.months.map(([y, m], i) => opt(i, `${pick(...CC_MONTHS[m - 1])} ${y}`, CC.month)).join('')}</select>`
+      + `<select id="ccType">${typeOpts.map(([k, l]) => opt(k, l, CC.type)).join('')}</select></div>` : '')
+    + `<div class="hint" id="ccStatus"></div>`
+    + (view.length ? `<div class="list cclist" id="ccList">${view.map((r, i) => {
+      const d = new Date(r.end * 1000);
+      const when = r.end ? `${z(d.getDate())}.${z(d.getMonth() + 1)} ${z(d.getHours())}:${z(d.getMinutes())}` : '';
+      const tc = [names[r.cls] || r.cls, ccTime(r.tc)].filter(Boolean).join(' · ');
+      return `<div class="it cc-${r.result}" data-i="${i}"><span class="ccres">${esc(res[r.result])}</span> ${r.white ? '●' : '○'} ${esc(r.opp)}${r.oppRating ? ` (${r.oppRating})` : ''}`
+        + `<small>${esc(when)} · ${esc(tc)}${r.opening ? ' · ' + esc(r.opening) : ''}</small></div>`;
+    }).join('')}</div>` : '');
+  ccSetStatus(CC.status || (() => pick('Введіть свій нік на chess.com і натисніть «Знайти».', 'Enter your chess.com username and press «Find».')));
+  $('ccFind').addEventListener('click', ccSearch);
+  $('ccUser').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ccSearch(); } });
+  if ($('ccMonth')) $('ccMonth').addEventListener('change', e => { CC.month = +e.target.value; ccLoadMonth(); });
+  if ($('ccType')) $('ccType').addEventListener('change', e => { CC.type = e.target.value; CC.status = ccCount(); ccRenderBody(); });
+  if ($('ccList')) $('ccList').addEventListener('click', e => { const it = e.target.closest('[data-i]'); if (it) ccAnalyze(view[+it.dataset.i]); });
+  const box = $('box');                                    // квадрат виріс - не вилазити за низ екрана
+  if (box.offsetTop + box.offsetHeight > window.innerHeight - 8)
+    box.style.top = Math.max(12, window.innerHeight - box.offsetHeight - 12) + 'px';
+}
+
+async function ccSearch() {
+  const user = ($('ccUser') ? $('ccUser').value : CC.user).trim();
+  if (!/^[A-Za-z0-9_-]{2,30}$/.test(user)) { ccSetStatus(() => pick('Введіть свій нік на chess.com (латиницею).', 'Enter your chess.com username.')); return; }
+  if (user !== CC.user) { CC.user = user; store.set('ca.ccUser', user); }
+  const seq = ++CC.seq;
+  CC.months = []; CC.rows = []; CC.cache = {}; CC.month = 0;
+  CC.status = () => pick('Шукаю партії на chess.com…', 'Looking for games on chess.com…');
+  ccRenderBody();
+  try {
+    const data = await ccGet(CC_API + user.toLowerCase() + '/games/archives');
+    if (seq !== CC.seq) return;
+    CC.months = (data.archives || []).map(u => /\/(\d{4})\/(\d{2})$/.exec(u)).filter(Boolean)
+      .map(m => [+m[1], +m[2], m.input]).sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+    if (!CC.months.length) { CC.status = () => pick(`У гравця «${user}» ще немає партій.`, `Player «${user}» has no games yet.`); ccRenderBody(); return; }
+    ccLoadMonth();
+  } catch (e) {
+    if (seq !== CC.seq) return;
+    CC.status = ccErr(e, user); ccRenderBody();
+  }
+}
+async function ccLoadMonth() {
+  const mo = CC.months[CC.month];
+  if (!mo) return;
+  const url = mo[2], user = CC.user;
+  if (CC.cache[url]) { CC.rows = CC.cache[url]; CC.status = ccCount(); ccRenderBody(); return; }
+  const seq = ++CC.seq;
+  CC.rows = []; CC.status = () => pick('Завантажую партії…', 'Loading games…');
+  ccRenderBody();
+  try {
+    const rows = ccGames(await ccGet(url), user);
+    if (seq !== CC.seq) return;
+    CC.cache[url] = CC.rows = rows;
+    CC.status = ccCount(); ccRenderBody();
+  } catch (e) {
+    if (seq !== CC.seq) return;
+    CC.status = ccErr(e, user); ccRenderBody();
+  }
+}
+function ccAnalyze(r) {
+  if (!r) return;
+  closeBox();
+  if (loadPgn(r.pgn) && board.flipped !== !r.white) flipBoard();   // свої фігури - знизу
+}
+function openChesscom() {
+  if (A.boxKind === 'chesscom') { closeBox(); return; }
+  openBox('chesscom');
+  if (!CC.months.length && CC.user && CC.seq === 0) ccSearch();
+}
+
+// ------------------------------------------------------------ статистика (з 1.23.0) ---
+// stats.json у репозиторії: перегляди сторінки GitHub і канал Telegram; файл оновлює автор під час релізу.
+const STATS_URL = 'https://raw.githubusercontent.com/volod4ik4-code/chess-analyzer/main/stats.json';
+function statsText() {
+  const s = A.stats;
+  if (s === undefined) return pick('Завантажую…', 'Loading…');
+  if (s === null) return pick('Не вдалося отримати статистику. Перевірте інтернет.', 'Could not get the statistics. Check your internet connection.');
+  const g = s.github || {}, tg = s.telegram || {}, V = [['перегляд', 'перегляди', 'переглядів'], ['view', 'views']];
+  const nV = plural(g.views || 0, ...V), nP = plural(g.visitors || 0, ['відвідувач', 'відвідувачі', 'відвідувачів'], ['visitor', 'visitors']);
+  const nS = plural(tg.subscribers || 0, ['підписник', 'підписники', 'підписників'], ['subscriber', 'subscribers']), nT = plural(tg.views || 0, ...V);
+  return pick(`🐙 GitHub: ${nV} сторінки, ${nP}\n✈ Telegram (t.me/chessanalyser): ${nS}, ${nT} дописів\n(оновлено ${s.updated || ''})`,
+    `🐙 GitHub: ${nV} of the page, ${nP}\n✈ Telegram (t.me/chessanalyser): ${nS}, ${nT} of posts\n(updated ${s.updated || ''})`);
+}
+async function loadStats() {
+  const show = () => { const el = $('sStats'); if (el) el.textContent = statsText(); };
+  show();
+  if (A.statsBusy || (A.stats && Date.now() - (A.statsTime || 0) < 600000)) return;
+  A.statsBusy = true;
+  try {
+    const r = await fetch(`${STATS_URL}?t=${Date.now()}`, { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    A.stats = await r.json(); A.statsTime = Date.now();
+  } catch (_) { if (!A.stats) A.stats = null; }
+  A.statsBusy = false;
+  show();
+}
+
+// ------------------------------------------------------------ квадрати (налаштування тощо) ---
+function openBox(kind) {
+  A.boxKind = kind;
+  const body = $('boxBody');
+  const sel = (id, opts, val) => `<select id="${id}">${opts.map(([v, l]) => `<option value="${esc(v)}"${String(v) === String(val) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  const chk = (id, label, on) => `<label class="check"><input type="checkbox" id="${id}"${on ? ' checked' : ''}>${esc(label)}</label>`;
+  if (kind === 'settings') {
+    $('boxTitle').textContent = tr('⚙  Налаштування');
+    body.innerHTML = `<label class="f">${esc(tr('Мова'))}</label>${sel('sLang', [['uk', 'Українська'], ['en', 'English']], cfg.lang)}`
+      + `<label class="f">${esc(tr('Дошка'))}</label>${sel('sBoard', Object.keys(D.BOARD_THEMES).map(k => [k, k]), cfg.board)}`
+      + `<label class="f">${esc(tr('Глибина'))}</label>${sel('sDepth', DEPTHS.map(d => [d, d]), cfg.depth)}`
+      + `<label class="f">${esc(pick('Рушій', 'Engine'))}</label>${sel('sEngine', [
+        ...(DEF.engine === 'native' ? [['native', pick('Stockfish 19 — швидкий (для Android)', 'Stockfish 19 — fast (for Android)')]] : []),
+        ['lite', pick('Stockfish 19 lite — швидший, слабший', 'Stockfish 19 lite — faster, weaker')]], cfg.engine)}`
+      + (A.engDl ? `<div class="hint">${esc(pick('Рушій «усі ядра» завантажується…', 'The "all cores" engine is downloading…'))}</div>` : '')
+      + `<label class="f">${esc(tr('Стрілка'))}</label>${sel('sArrow', D.ARROW_MODES.map(m => [m, pick(...ARROW_LABELS[m])]), cfg.arrow)}`
+      + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
+      + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
+      + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
+      + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label><div class="hint" id="sStats" style="white-space:pre-line"></div>`
+      + `<div class="hint">${esc(pick('Версія', 'Version'))} ${esc(D.APP_VERSION)}</div>`
+      + `<div class="row"><button id="sReset">${esc(tr('Скинути налаштування'))}</button><button id="sDone" class="primary">${esc(tr('Готово'))}</button></div>`;
+    const on = (id, ev, fn) => $(id).addEventListener(ev, fn);
+    on('sLang', 'change', e => { cfg.lang = e.target.value; saveCfg(); applyLang(); });
+    on('sBoard', 'change', e => { cfg.board = e.target.value; board.theme = cfg.board; board.render(); saveCfg(); });
+    on('sDepth', 'change', e => { cfg.depth = +e.target.value; saveCfg(); });
+    on('sEngine', 'change', e => { if (!A.engDl) pickEngine(e.target.value); else openBox('settings'); });
+    on('sArrow', 'change', e => { cfg.arrow = e.target.value; saveCfg(); refreshView(); });
+    on('sAnim', 'change', e => { cfg.anim = e.target.checked; saveCfg(); });
+    on('sCoach', 'change', e => { cfg.coach = e.target.checked; saveCfg(); refreshView(); if (!A.res) showCoach(null); });
+    on('sAi', 'change', e => { cfg.ai = e.target.checked; saveCfg(); refreshView(); });
+    on('sEval', 'change', e => { cfg.evalbar = e.target.checked; saveCfg(); layout(); });
+    on('sReset', 'click', () => {
+      Object.assign(cfg, DEF, { lang: cfg.lang });
+      saveCfg(); board.theme = cfg.board; layout(); refreshView(); board.render(); openBox('settings');
+    });
+    on('sDone', 'click', closeBox);
+    on('sUpd', 'click', () => checkUpdate(true));
+    on('sBench', 'click', benchEngine);
+    loadStats();  } else if (kind === 'donate') {
+    $('boxTitle').textContent = tr('☕  Підтримати кавою');
+    body.innerHTML = `<div>${esc(pick('Програма безкоштовна. Якщо вона вам подобається, можна пригостити автора кавою — переказ на картку:',
+      'The app is free. If you like it, you can treat the author to a coffee — a transfer to the card:'))}</div>`
+      + `<div style="font-size:22px;font-weight:700;text-align:center;margin:14px 0 2px;user-select:all">${esc(D.DONATE_CARD)}</div>`
+      + `<div class="hint" id="dBank" style="text-align:center">${esc(pick('monobank, Україна', 'monobank, Ukraine'))}</div>`
+      + `<div class="row"><button id="dCopy" class="primary">${esc(pick('📋 Копіювати номер', '📋 Copy number'))}</button>`
+      + `<button id="dClose">${esc(tr('Закрити'))}</button></div>`;
+    $('dCopy').addEventListener('click', copyCard);
+    $('dClose').addEventListener('click', closeBox);
+  } else if (kind === 'news') {
+    $('boxTitle').textContent = tr('✨  Що нового');
+    body.innerHTML = `<div class="news">${D.CHANGELOG.map(([ver, date, items]) => `<h4>${esc(ver)} <small>${esc(String(date).replace(/^(\d{4})-(\d\d)-(\d\d)/, '$1-$3-$2'))}</small></h4>`
+      + `<ul>${items.map(([uk, en]) => `<li>${esc(pick(uk, en))}</li>`).join('')}</ul>`).join('')}</div>`;
+  } else if (kind === 'pgn') {
+    $('boxTitle').textContent = pick('📋 PGN партії', '📋 Game PGN');
+    body.innerHTML = `<div class="hint">${esc(pick('Вставте PGN партії (наприклад, скопійований з chess.com або lichess).', 'Paste the game PGN (for example, copied from chess.com or lichess).'))}</div>`
+      + `<textarea id="pgnText" rows="9" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>`
+      + `<div class="row"><button id="pgnPaste">${esc(pick('📋 Вставити', '📋 Paste'))}</button><button id="pgnLoad" class="primary">${esc(pick('▶ Аналізувати', '▶ Analyze'))}</button></div>`;
+    const paste = async () => {
+      let t = '';
+      try { t = bridge && bridge.readClipboard ? bridge.readClipboard() : await navigator.clipboard.readText(); } catch (_) { /* */ }
+      if (t) $('pgnText').value = t;
+      return t;
+    };
+    $('pgnPaste').addEventListener('click', async () => { if (!await paste()) $('pgnText').focus(); });
+    $('pgnLoad').addEventListener('click', () => { if (loadPgn($('pgnText').value)) closeBox(); });
+    if (bridge && bridge.readClipboard) { const t = bridge.readClipboard(); if (t && /\d\.\s*\S|\[\w+\s+"/.test(t)) $('pgnText').value = t; }
+  } else if (kind === 'bots') {
+    $('boxTitle').textContent = pick('🤖  Грати з ботом', '🤖  Play a bot');
+    $('overlay').hidden = false;
+    botsRenderBody();
+  } else if (kind === 'botend') {
+    $('boxTitle').textContent = pick('🏁  Кінець партії', '🏁  Game over');
+    $('overlay').hidden = false;
+    botendRenderBody();
+  } else if (kind === 'credits') {
+    $('boxTitle').textContent = pick('ⓘ  Ліцензія фото', 'ⓘ  Photo license');
+    creditsRenderBody();
+  } else if (kind === 'chesscom') {
+    $('boxTitle').textContent = pick('♞  Партії з chess.com', '♞  Games from chess.com');
+    $('overlay').hidden = false;
+    ccRenderBody();
+  } else if (kind === 'studies') {
+    $('boxTitle').textContent = tr('📚  Дослідження');
+    const items = listStudies();
+    body.innerHTML = `<label class="f">${esc(tr('Збережені дослідження'))}</label>`
+      + (items.length ? `<div class="list" id="sdList">${items.map(({ id, s }) => `<div class="it${id === A.studyId ? ' cur' : ''}" data-id="${esc(id)}">`
+        + `${esc(s.name)}<small>${esc(plural((s.chapters || []).length, ['розділ', 'розділи', 'розділів'], ['chapter', 'chapters']))} · ${esc(s.updated || '')}</small></div>`).join('')}</div>`
+        + `<div class="row"><button id="sdOpen" class="primary" disabled>${esc(tr('Відкрити'))}</button><button id="sdDel" disabled>${esc(tr('Видалити'))}</button></div>`
+        : `<div class="hint">${esc(pick('Досліджень ще немає.', 'No studies yet.'))}</div>`)
+      + `<label class="f">${esc(tr('Нове дослідження'))}</label><input type="text" id="sdName" maxlength="80">`
+      + `<div class="row"><button id="sdCreate" class="primary">${esc(tr('Створити'))}</button></div>`
+      + `<div class="hint">${esc(tr('Перший розділ — партія, яка зараз на дошці.'))}</div>`;
+    let chosen = null;
+    const list = $('sdList');
+    if (list) list.addEventListener('click', e => {
+      const it = e.target.closest('.it');
+      if (!it) return;
+      if (chosen === it.dataset.id) { openStudy(chosen); return; }
+      chosen = it.dataset.id;
+      for (const x of list.children) x.classList.toggle('cur', x === it);
+      $('sdOpen').disabled = $('sdDel').disabled = false;
+    });
+    if ($('sdOpen')) $('sdOpen').addEventListener('click', () => chosen && openStudy(chosen));
+    if ($('sdDel')) $('sdDel').addEventListener('click', () => chosen && deleteStudy(chosen));
+    $('sdCreate').addEventListener('click', () => createStudy($('sdName').value));
+  }
+  $('overlay').hidden = false;
+  placeBox();
+}
+function reopenBox() { if (A.boxKind) { const k = A.boxKind; const b = $('box'), l = b.style.left, t = b.style.top; openBox(k); b.style.left = l; b.style.top = t; clampBox(); } }
+function closeBox() { A.boxKind = null; $('overlay').hidden = true; $('boxBody').innerHTML = ''; }
+function toggleBox(kind) { if (A.boxKind === kind) closeBox(); else openBox(kind); }
+function placeBox() {
+  const b = $('box');
+  b.style.left = Math.round((window.innerWidth - b.offsetWidth) / 2) + 'px';
+  b.style.top = Math.round(Math.max(12, (window.innerHeight - b.offsetHeight) / 2)) + 'px';
+}
+function clampBox() {
+  const b = $('box');
+  const x = Math.min(Math.max(0, b.offsetLeft), Math.max(0, window.innerWidth - b.offsetWidth));
+  const y = Math.min(Math.max(0, b.offsetTop), Math.max(0, window.innerHeight - 48));
+  b.style.left = x + 'px'; b.style.top = y + 'px';
+}
+(function dragBox() {
+  const head = $('boxHead');
+  let d = null;
+  head.addEventListener('pointerdown', e => {
+    if (e.target.closest('button')) return;
+    d = { x: e.clientX - $('box').offsetLeft, y: e.clientY - $('box').offsetTop };
+    head.setPointerCapture(e.pointerId);
+  });
+  head.addEventListener('pointermove', e => {
+    if (!d) return;
+    $('box').style.left = (e.clientX - d.x) + 'px'; $('box').style.top = (e.clientY - d.y) + 'px';
+    clampBox();
+  });
+  const end = () => { d = null; };
+  head.addEventListener('pointerup', end); head.addEventListener('pointercancel', end);
+})();
+
+// ------------------------------------------------------------ оновлення ---
+// Нові версії - релізи GitHub (тег «v1.7.0», у релізі файл .apk). Програма сама завантажує APK
+// і відкриває установник Android; користувачу лишається підтвердити.
+const UPDATE_REPO = 'volod4ik4-code/chess-analyzer';
+// 1.26.0: версії з 4 чисел - багфікс X.Y.Z.N (у звичайної версії четверте число 0)
+const verNum = s => { const m = String(s || '').match(/(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?/); return m ? m.slice(1).map(x => +(x || 0)) : []; };
+const verStr = v => (v[3] ? v : v.slice(0, 3)).join('.');
+function isNewer(a, b) { for (let i = 0; i < 4; i++) if ((a[i] || 0) !== (b[i] || 0)) return (a[i] || 0) > (b[i] || 0); return false; }
+const mb = n => (n / 1048576 < 10 ? (n / 1048576).toFixed(1) : (n / 1048576).toFixed(0));
+function localTime(iso) {
+  const d = new Date(iso), z = x => String(x).padStart(2, '0');
+  return isNaN(d) ? '' : `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;
+}
+
+async function checkUpdate(manual = false) {
+  A.lastUpdCheck = Date.now();
+  try {
+    // найновіший реліз, у якому є файл для телефона; релізи лише для комп'ютера пропускаємо
+    const r = await fetch(`https://api.github.com/repos/${UPDATE_REPO}/releases?per_page=20`,
+      { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+    if (!r.ok && r.status !== 404) throw new Error('HTTP ' + r.status);
+    const rels = (r.ok ? await r.json() : []).filter(x => !x.draft && !x.prerelease
+      && verNum(x.tag_name || x.name).length === 4
+      && (x.assets || []).some(a => /\.apk$/i.test(a.name) || /-web-n\d+\.zip$/i.test(a.name)));
+    // версія - з назви файлу телефона («ChessAnalyzer-1.18.8-Android.apk»), а не з номера релізу: у релізі лише
+    // для ПК лежить той самий старий APK, і телефон його не пропонує (з 1.18.8)
+    const relVer = x => { const a = (x.assets || []).find(a => /\.apk$/i.test(a.name)) || (x.assets || []).find(a => /-web-n\d+\.zip$/i.test(a.name));
+      const v = verNum(a && a.name); return v.length === 4 ? v : verNum(x.tag_name || x.name); };
+    const j = rels.reduce((b, x) => (!b || isNewer(relVer(x), relVer(b)) ? x : b), null) || {};
+    const v = j.assets ? relVer(j) : [];
+    const apk = (j.assets || []).find(a => /\.apk$/i.test(a.name));
+    // маленьке оновлення лише сторінки (без рушія): «…-web-nN.zip», де N - потрібний рівень Java-частини
+    const web = (j.assets || []).find(a => /-web-n\d+\.zip$/i.test(a.name));
+    const level = bridge && bridge.nativeLevel ? bridge.nativeLevel() : 0;
+    const useWeb = web && level >= +web.name.match(/-web-n(\d+)\.zip$/i)[1];
+    const asset = useWeb ? web : apk;
+    if (v.length === 4 && asset && isNewer(v, verNum(D.APP_VERSION))) {
+      if (!A.upd || A.upd.version !== v.join('.')) {
+        // що нового в усіх версіях, новіших за встановлену (пропущені оновлення теж видно), з 1.22.4
+        const cur = verNum(D.APP_VERSION);
+        const changes = rels.filter(x => isNewer(relVer(x), cur)).sort((a, b) => (isNewer(relVer(a), relVer(b)) ? -1 : 1))
+          .map(x => [verStr(relVer(x)), x.body || '']);
+        A.upd = { version: v.join('.'), date: localTime(j.published_at), notes: j.body || '', changes, url: asset.browser_download_url,
+          apiUrl: asset.url || '', size: asset.size, state: 'available', kind: useWeb ? 'web' : 'apk' };
+      }
+      A.upd.hidden = false;
+      renderUpdate();
+      if (manual) { closeBox(); $('panel').scrollTop = 0; }
+      // 1.23.8: маленьке оновлення (без нового APK) ставиться саме, без питань
+      if (A.upd.kind === 'web' && A.upd.state === 'available' && !A.upd.auto && bridge && bridge.installWebUpdate) {
+        A.upd.auto = true;
+        downloadUpdate();
+      }
+    } else if (manual) msg(pick(`У вас найновіша версія (${D.APP_VERSION}).`, `You have the latest version (${D.APP_VERSION}).`));
+  } catch (e) {
+    if (manual) msg(pick('Не вдалося перевірити оновлення. Перевірте інтернет.', 'Could not check for updates. Check your internet connection.'));
+  }
+}
+
+/** Опис релізу двома мовами: українська, потім рядок «— English —» і англійська. */
+function notesFor(body) {
+  body = body || '';
+  const i = body.indexOf('— English —');
+  if (i >= 0) body = S.lang === 'en' ? body.slice(i + '— English —'.length) : body.slice(0, i);
+  // список файлів релізу не показуємо (1.22.4); з 1.25.1 українська частина - в HTML-коментарі
+  return body.split(/^\s*(?:Файли|Files)\s*:/m)[0].replace(/<!--|-->/g, '').trim();
+}
+/** Що нового для картки оновлення: кожна нова версія окремо, новіші зверху. */
+function changesText(u) {
+  const parts = (u.changes || []).map(([v, b]) => [v, notesFor(b)]).filter(([, n]) => n);
+  if (!parts.length) return notesFor(u.notes);
+  if (parts.length === 1) return parts[0][1];
+  return parts.map(([v, n]) => `${v}\n${n}`).join('\n\n');
+}
+
+function renderUpdate() {
+  const u = A.upd, el = $('updCard');
+  el.hidden = !u || u.hidden;
+  if (el.hidden) return;
+  let html = `<div class="t">⬆ ${esc(pick(`Доступна нова версія ${u.version}`, `New version ${u.version} is available`))}</div>`
+    + (u.date ? `<div class="d">${esc(pick('Вийшла', 'Released'))} ${esc(u.date)}</div>` : '')
+    + (u.notes || (u.changes || []).length ? `<div class="notes">${esc(changesText(u))}</div>` : '');
+  if (u.state === 'downloading') {
+    const pct = u.total > 0 ? Math.min(100, 100 * u.done / u.total) : 0;
+    html += `<div class="bar"><div style="width:${pct.toFixed(1)}%"></div></div><div class="d">${esc(pick('Завантаження…', 'Downloading…'))} `
+      + `${mb(u.done || 0)} / ${mb(u.total > 0 ? u.total : u.size)} ${esc(pick('МБ', 'MB'))}</div>`;
+  } else if (u.state === 'ready') {
+    html += `<div class="row"><button id="uInstall" class="primary">${esc(pick('📲 Встановити', '📲 Install'))}</button></div>`;
+  } else if (u.state === 'web-ready') {
+    html += `<div class="d">${esc(u.later ? pick('Оновлення встановлено — запрацює після перезапуску.', 'The update is installed — it will apply after a restart.')
+      : pick('Оновлення встановлено, програма перезапускається…', 'The update is installed, restarting…'))}</div>`
+      + `<div class="row"><button id="uReload" class="primary">${esc(pick('🔄 Перезапустити', '🔄 Restart'))}</button></div>`;
+  } else {
+    if (u.state === 'error') html += `<div class="d">${esc(pick('Помилка завантаження:', 'Download error:'))} ${esc(u.err || '')}</div>`;
+    html += `<div class="row"><button id="uGet" class="primary">${esc(pick(`⬇ Завантажити (${mb(u.size)} МБ)`, `⬇ Download (${mb(u.size)} MB)`))}</button>`
+      + `<button id="uLater">${esc(pick('Пізніше', 'Later'))}</button></div>`;
+  }
+  el.innerHTML = html;
+  if ($('uGet')) $('uGet').onclick = downloadUpdate;
+  if ($('uLater')) $('uLater').onclick = () => { u.hidden = true; renderUpdate(); };
+  if ($('uInstall')) $('uInstall').onclick = installUpdate;
+  if ($('uReload')) $('uReload').onclick = () => { flushSave(); location.reload(); };
+}
+
+function downloadUpdate() {
+  const u = A.upd;
+  if (!u) return;
+  if (!bridge || !bridge.downloadUpdate) { window.open(u.url, '_blank'); return; }
+  u.state = 'downloading'; u.done = 0; u.total = u.size; u.tries = 0;
+  renderUpdate();
+  startDownload(u);
+}
+// GitHub інколи відповідає 504 на звичайне посилання: новіша Java-частина вміє качати через API (інший шлях),
+// а при помилці пробуємо ще (до 4 разів, по черзі API і звичайне посилання)
+function startDownload(u) {
+  const api = u.apiUrl && bridge.apiDownloads && u.tries % 2 === 0;
+  const url = api ? u.apiUrl : u.url;
+  if (u.kind === 'web' && bridge.installWebUpdate) bridge.installWebUpdate(url);
+  else bridge.downloadUpdate(url);
+}
+// маленьке оновлення встановлено - програма перезапускається сама (за секунду, щоб було видно повідомлення)
+window.onWebUpdateReady = () => {
+  // 1.23.8: якщо на дошці вже партія чи йде аналіз - не перериваємо, оновлення запрацює при наступному запуску
+  // одразу після запуску (перші 20 с) перезапуск нічого не зіпсує, хіба що вже йде аналіз
+  const busy = !!((A.res && A.res.partial) || ((A.res || A.v) && performance.now() > 20000));
+  if (A.upd) { A.upd.state = 'web-ready'; A.upd.later = busy; renderUpdate(); }
+  flushSave();
+  if (!busy) setTimeout(() => location.reload(), 1200);
+};
+window.onUpdateProgress = (done, total) => { if (A.upd) { A.upd.done = done; A.upd.total = total; renderUpdate(); } };
+window.onUpdateReady = () => { if (A.upd) { A.upd.state = 'ready'; renderUpdate(); installUpdate(); } };
+window.onUpdateError = err => {
+  const u = A.upd;
+  if (!u) return;
+  if (u.state === 'downloading' && (u.tries || 0) < 3 && !/HTTP 404/.test(err || '')) {
+    u.tries = (u.tries || 0) + 1;
+    setTimeout(() => startDownload(u), 2000 * u.tries);
+    return;
+  }
+  u.state = 'error'; u.err = err; renderUpdate();
+};
+
+function installUpdate() {
+  flushSave();
+  const r = bridge && bridge.installUpdate ? bridge.installUpdate() : 'missing';
+  if (r === 'permission') {
+    msg(pick('Дозвольте цій програмі встановлювати оновлення (перемикач на екрані, що відкрився), '
+      + 'поверніться сюди і натисніть «📲 Встановити» ще раз.',
+    'Allow this app to install updates (the switch on the screen that opened), then come back and tap "📲 Install" again.'));
+  } else if (r === 'missing') { A.upd.state = 'available'; renderUpdate(); }
+}
+
+// ------------------------------------------------------------ рушій «усі ядра» ---
+// Багатопотоковий Stockfish 19 (у ~3 рази швидший). Потрібні cross-origin isolation і потоки в потоці;
+// файли (~90 МБ) завантажуються один раз. Якщо він не запуститься - повертаємось до звичайного.
+const ENGINE_URL = 'https://github.com/volod4ik4-code/chess-analyzer/releases/download/engine-sf19-mt/ChessAnalyzer-engine-mt.zip';
+
+async function probeMT() {
+  if (!self.crossOriginIsolated || !bridge || !bridge.downloadEngine) return false;
+  try {
+    const src = `const w = new Worker(${JSON.stringify(new URL('probe.js', location.href).href)});
+      w.onmessage = e => postMessage(e.data); w.onerror = () => postMessage('fail');`;
+    const outer = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    const ok = await new Promise(res => {
+      const t = setTimeout(() => res(false), 4000);
+      outer.onmessage = e => { clearTimeout(t); res(e.data === 'ok'); };
+      outer.onerror = () => { clearTimeout(t); res(false); };
+    });
+    outer.terminate();
+    return ok;
+  } catch (_) { return false; }
+}
+
+/** Перевірка швидкості: одна позиція середини гри до глибини 16 тим рушієм, що вибрано. */
+async function benchEngine() {
+  if (A.analysing || A.varBusy) { msg(tr('Зачекайте, поки закінчиться аналіз партії.')); return; }
+  closeBox();
+  setStatus(() => pick('Перевіряю швидкість рушія…', 'Testing the engine speed…'));
+  try {
+    const t0 = performance.now();
+    await ensureEngine();
+    const tStart = performance.now() - t0;
+    engine.nps = 0;
+    const keepMax = engine.maxMs;
+    engine.maxMs = 0;                                    // перевірка - без межі часу
+    const t1 = performance.now();
+    try {
+      await engine.analyse('r1bq1rk1/pp2bppp/2n1pn2/3p4/2PP4/2N2N2/PP2BPPP/R2QKB1R w KQ - 0 9', [], 16, 1);
+    } finally { engine.maxMs = keepMax; }
+    const sec = (performance.now() - t1) / 1000;
+    const name = cfg.engine === 'native' ? (engine.idName || 'Stockfish (Android)') : 'Stockfish 19 lite (WebAssembly)';
+    const text = pick(
+      `Рушій: ${name}\nПотоків: ${cfg.engine === 'native' ? engine.threads : 1} (ядер у телефоні: ${navigator.hardwareConcurrency || '?'})\n`
+      + `Запуск: ${(tStart / 1000).toFixed(1)} с\nГлибина 16: ${sec.toFixed(1)} с\nШвидкість: ${Math.round((engine.nps || 0) / 1000)} тис. позицій/с\n\n`
+      + 'Для порівняння: комп\'ютер рахує це приблизно за 0,5–1 с (близько 1000 тис. позицій/с на ядро).',
+      `Engine: ${name}\nThreads: ${cfg.engine === 'native' ? engine.threads : 1} (phone cores: ${navigator.hardwareConcurrency || '?'})\n`
+      + `Start: ${(tStart / 1000).toFixed(1)} s\nDepth 16: ${sec.toFixed(1)} s\nSpeed: ${Math.round((engine.nps || 0) / 1000)}k positions/s\n\n`
+      + 'For comparison: a computer does this in about 0.5–1 s (around 1000k positions/s per core).');
+    setStatus(() => pick('Перевірку швидкості завершено.', 'Speed test finished.'));
+    msg(text);
+  } catch (e) {
+    setStatus(() => pick('Перевірка швидкості не вдалася.', 'The speed test failed.'));
+    msg(`${pick('Помилка рушія', 'Engine error')}: ${e.message || e}`);
+  }
+}
+
+async function ensureEngine() {
+  try {
+    await engine.ensure(cfg.engine);
+  } catch (e) {
+    if (cfg.engine === 'lite') throw e;
+    cfg.engine = 'lite'; saveCfg();
+    msg(pick('Швидкий Stockfish 19 не запустився на цьому телефоні, тож працює Stockfish 19 lite.',
+      'The fast Stockfish 19 could not start on this phone, so Stockfish 19 lite is used.'));
+    await engine.ensure('lite');
+  }
+}
+
+function pickEngine(value) {
+  if (value !== 'mt') { cfg.engine = value; saveCfg(); return; }
+  if (bridge.hasEngine()) { cfg.engine = 'mt'; saveCfg(); return; }
+  ask(pick('Для рушія «усі ядра» треба один раз завантажити ~90 МБ. Завантажити?',
+    'The "all cores" engine needs a one-time ~90 MB download. Download it?')).then(yes => {
+    if (!yes) { openBox('settings'); return; }
+    A.engDl = true;
+    setStatus(() => pick('Завантажую рушій «усі ядра»…', 'Downloading the "all cores" engine…'));
+    progress(0, 1);
+    bridge.downloadEngine(ENGINE_URL);
+  });
+  openBox('settings');
+}
+window.onEngineProgress = (d, t) => {
+  progress(d, t || 1);
+  setStatus(() => `${pick('Завантажую рушій «усі ядра»…', 'Downloading the "all cores" engine…')} ${mb(d)} / ${mb(t)} ${pick('МБ', 'MB')}`);
+};
+window.onEngineReady = () => {
+  A.engDl = false; progress(0, 0);
+  cfg.engine = 'mt'; saveCfg();
+  setStatus(() => pick('Рушій «усі ядра» готовий.', 'The "all cores" engine is ready.'));
+  if (A.boxKind === 'settings') openBox('settings');
+};
+window.onEngineError = err => {
+  A.engDl = false; progress(0, 0);
+  setStatus(() => pick('Не вдалося завантажити рушій: ', 'Could not download the engine: ') + err);
+  if (A.boxKind === 'settings') openBox('settings');
+};
+
+function openDonate() {
+  if (D.DONATE_URL) {
+    if (bridge && bridge.openUrl) bridge.openUrl(D.DONATE_URL); else window.open(D.DONATE_URL, '_blank');
+  } else toggleBox('donate');
+}
+
+async function copyCard() {
+  const num = D.DONATE_CARD.replace(/\s/g, '');
+  let ok = false;
+  try { await navigator.clipboard.writeText(num); ok = true; } catch (_) {
+    const ta = document.createElement('textarea');
+    ta.value = num; document.body.appendChild(ta); ta.select();
+    try { ok = document.execCommand('copy'); } catch (_) { /* */ }
+    ta.remove();
+  }
+  const el = $('dBank');
+  if (el) el.textContent = ok ? pick('Номер скопійовано ✓', 'Number copied ✓') : pick('Скопіюйте номер вручну', 'Copy the number manually');
+}
+
+function toggleDraw() {
+  board.drawMode = !board.drawMode;
+  $('nDraw').classList.toggle('on', board.drawMode);
+  $('drawBar').hidden = !board.drawMode;
+  board.selected = null; board.render();
+  layout();
+}
+
+// ------------------------------------------------------------ події ---
+function wire() {
+  const click = (id, fn) => $(id).addEventListener('click', fn);
+  click('bSettings', () => toggleBox('settings'));
+  click('bNews', () => toggleBox('news'));
+  click('bDonate', openDonate);
+  click('bCc', openChesscom); click('bBots', () => toggleBox('bots'));
+  click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
+  document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
+  click('bPgn', () => toggleBox('pgn'));
+  click('bFile', () => $('fileInput').click());
+  click('bNew', () => startFree());
+  click('bStudies', () => toggleBox('studies'));
+  click('bRun', startAnalysis);
+  click('nStart', goStart); click('nPrev', () => { stopPlay(); step(-1); }); click('nNext', () => { stopPlay(); step(1); });
+  click('nEnd', goEnd); click('nPlay', togglePlay); click('nFlip', flipBoard); click('nDraw', toggleDraw);
+  click('drawClear', () => { board.shapes = []; board.render(); onShapes([]); });
+  click('vBack', exitVar); click('vUndo', undoVar); click('vDel', deleteVar);
+  click('askBtn', askSend); click('askClear', askClear);
+  $('askIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); askSend(); } });
+  click('stClose', closeStudy); click('stAll', () => openBox('studies')); click('stAdd', addChapter);
+  click('stDel', deleteChapter); click('stExport', exportStudy);
+  $('stName').addEventListener('input', e => { if (A.study) { A.study.name = e.target.value.trim() || pick('Без назви', 'Untitled'); autosave(700); } });
+  $('stChName').addEventListener('input', e => {
+    if (!A.chapter) return;
+    A.chapter.name = e.target.value.trim() || '?';
+    const it = $('stChapters').querySelector('.it.cur');
+    if (it && it.firstChild) it.firstChild.textContent = A.chapter.name;
+    autosave(700);
+  });
+  $('stNote').addEventListener('input', onNoteEdit);
+  $('stChapters').addEventListener('click', e => {
+    const it = e.target.closest('[data-ch]');
+    if (it && A.study && A.study.chapters[+it.dataset.ch] !== A.chapter) openChapter(+it.dataset.ch);
+  });
+  $('moves').addEventListener('click', e => {
+    const ln = e.target.closest('[data-line]');
+    if (ln) { const line = lineById(ln.dataset.line); if (line && line !== A.v) openLine(line, 1); return; }
+    const mv = e.target.closest('[data-k]');
+    if (mv) { stopPlay(); const k = +mv.dataset.k; if (A.v || k !== A.index) jump(k); }
+  });
+  $('varMoves').addEventListener('click', e => {
+    const c = e.target.closest('[data-j]');
+    if (c && A.v && !A.varBusy && +c.dataset.j !== A.v.index) gotoVar(+c.dataset.j);
+  });
+  const gr = $('graph');
+  let gDown = false;
+  gr.addEventListener('pointerdown', e => { gDown = true; graphPick(e); });
+  gr.addEventListener('pointermove', e => { if (gDown) graphPick(e); });
+  window.addEventListener('pointerup', () => { gDown = false; });
+  $('fileInput').addEventListener('change', e => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => loadPgn(String(r.result || ''));
+    r.onerror = () => msg(tr('Не вдалося прочитати PGN або в ньому немає ходів.'));
+    r.readAsText(f);
+  });
+  $('boxX').addEventListener('click', closeBox);
+  $('overlay').addEventListener('pointerdown', e => { if (e.target === $('overlay')) closeBox(); });
+  window.addEventListener('resize', () => { layout(); if (A.boxKind) clampBox(); });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { flushSave(); return; }
+    // повернулися в програму (напр. зі сповіщення) - перевірити оновлення, не частіше разу на 10 хв
+    if (Date.now() - (A.lastUpdCheck || 0) > 600000) checkUpdate(false);
+  });
+  window.addEventListener('pagehide', flushSave);
+  document.addEventListener('keydown', e => {
+    if (e.target.closest('input, textarea, select')) return;
+    if (e.key === 'ArrowLeft') step(-1); else if (e.key === 'ArrowRight') step(1);
+  });
+  // кнопка «Назад» на Android: спершу закриває вікна й варіант, потім виходить з програми
+  window.onAndroidBack = () => {
+    if (A.modalClose) { A.modalClose(); return true; }
+    if (A.boxKind) { closeBox(); return true; }
+    if (board.drawMode) { toggleDraw(); return true; }
+    if (A.v && !A.varBusy) { exitVar(); return true; }
+    flushSave();
+    return false;
+  };
+}
+
+wire();
+applyLang();
+layout();
+startFree();
+setStatus(() => pick('Вставте PGN партії (📋 PGN) або відкрийте файл. Можна й просто ходити на дошці.',
+  'Paste a game PGN (📋 PGN) or open a file. You can also just play on the board.'));
+setTimeout(() => checkUpdate(false), 2500);
+// старі налаштування (рушії «full» і «усі ядра» WebAssembly з версій до 1.11) -> справжній Stockfish
+if (!['native', 'lite'].includes(cfg.engine) || (cfg.engine === 'native' && DEF.engine !== 'native')) { cfg.engine = DEF.engine; saveCfg(); }
+window.__app = { A, cfg, engine, board, loadPgn, chapterPgn, parsePgn, checkUpdate, goto };
