@@ -1520,77 +1520,70 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) A.audio.suspend(); else if (A.alienBgSrc) A.audio.resume();
 });
 
-// 1.27.7: звуки ходів (свої, синтезовані: дерев'яний «тук», як на lichess / chess.com) - ті самі формули, що в ПК
-const MOVE_SR = 22050;
-function moveSoundSamples(kind, sr = MOVE_SR) {
-  const tau = 2 * Math.PI, dur = { move: 0.16, capture: 0.2, castle: 0.3, check: 0.42, promote: 0.5 }[kind];
-  const n = Math.floor(sr * dur), out = new Float32Array(n);
-  let seed = 5;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 1073741824 - 1; };
-  const tock = (t0, base, amp, bright) => {
-    const i0 = Math.floor(t0 * sr), modes = [[base, 1, 0.028], [base * 2.52, 0.5, 0.016], [base * 4.7, 0.25 * bright, 0.009]];
-    let lp = 0;
-    for (let i = i0; i < n; i++) {
-      const tt = (i - i0) / sr;
-      if (tt > 0.12) break;
-      let v = 0;
-      for (const [f, a, d] of modes) v += a * Math.sin(tau * f * tt) * Math.exp(-tt / d);
-      if (tt < 0.004) { lp += 0.5 * (rnd() - lp); v += 0.9 * bright * lp * (1 - tt / 0.004); }
-      out[i] += amp * v;
-    }
-  };
-  const bell = (t0, freqs, amp, decay, rise = 0) => {
-    for (let i = Math.floor(t0 * sr); i < n; i++) {
-      const tt = i / sr - t0;
-      let v = 0;
-      for (const f of freqs) v += Math.sin(tau * f * (1 + rise * tt) * tt);
-      out[i] += amp * v * Math.exp(-tt / decay) * Math.min(1, tt / 0.005);
-    }
-  };
-  if (kind === 'move') tock(0, 480, 1, 1);
-  else if (kind === 'capture') { tock(0, 640, 1.1, 1.7); tock(0.03, 430, 0.6, 0.8); }
-  else if (kind === 'castle') { tock(0, 480, 0.9, 1); tock(0.12, 450, 0.9, 1); }
-  else if (kind === 'check') { tock(0, 500, 0.9, 1); bell(0.05, [880, 1320], 0.22, 0.12); }
-  else { tock(0, 480, 0.9, 1); bell(0.06, [660, 990], 0.2, 0.18, 0.6); }
-  let peak = 1e-9;
-  for (const v of out) peak = Math.max(peak, Math.abs(v));
-  for (let i = 0; i < n; i++) out[i] = 0.75 * out[i] / peak * Math.min(1, (dur - i / sr) / 0.02);
-  return out;
-}
-const moveSoundKind = san => san.startsWith('O-O') ? 'castle' : san.includes('=') ? 'promote'
-  : /[+#]$/.test(san) ? 'check' : san.includes('x') ? 'capture' : 'move';
+// 1.27.8: звуки ходів - офіційний вільний набір lichess «sfx» (Enigmahack, AGPLv3+), MP3 з data.js
+const moveSoundKind = san => /[+#]$/.test(san) ? 'check' : san.includes('x') ? 'capture' : 'move';
 function moveSound(san) {
-  if (!san || cfg.sound === false) return;
+  if (!san || cfg.sound === false || !D.LICHESS_SFX) return;
   const ctx = alienAudioCtx();
   if (!ctx) return;
   A.moveBufs ||= {};
-  const kind = moveSoundKind(san);
-  if (!A.moveBufs[kind]) { const d = moveSoundSamples(kind), b = ctx.createBuffer(1, d.length, MOVE_SR); b.getChannelData(0).set(d); A.moveBufs[kind] = b; }
-  const src = ctx.createBufferSource(), g = ctx.createGain();
-  src.buffer = A.moveBufs[kind]; g.gain.value = 0.9;
-  src.connect(g).connect(ctx.destination); src.start();
+  const kind = moveSoundKind(san), play = buf => {
+    const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination); src.start();
+  };
+  if (A.moveBufs[kind]) { play(A.moveBufs[kind]); return; }
+  const bin = Uint8Array.from(atob(D.LICHESS_SFX[kind]), c => c.charCodeAt(0));
+  ctx.decodeAudioData(bin.buffer).then(buf => { A.moveBufs[kind] = buf; play(buf); }).catch(() => {});
 }
 
-// 1.27.7: другий лютий звук - на 1...c6 проти Witty Alien (як alien_rage2_samples у ПК)
+// 1.27.8: звук на 1...c6 проти Witty Alien - рик величезного печерного монстра (як alien_rage2_samples у ПК)
 function alienRage2Samples(sr = ALIEN_SR) {
-  const tau = 2 * Math.PI, dur = 2.4, n = Math.floor(sr * dur), voice = alienSfxSamples(2, sr), out = new Float32Array(n);
-  let seed = 23, ph = 0, lp = 0;
-  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 1073741824 - 1; };
+  const tau = 2 * Math.PI, dur = 2.8, n = Math.floor(sr * dur);
+  let seed = 29;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const vow = { A: [730, 1090, 2440], O: [570, 840, 2410], U: [300, 870, 2240] }, path = 'AAOU';
+  const qs = [4, 6, 8], gains = [1, 0.45, 0.15], st = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], co = [null, null, null];
+  let ph = 0, ph2 = 0, phs = 0, jit = 0, jitT = 0, rough = 0, breath = 0, lp = 0;
+  const kl = 1 - Math.exp(-tau * 800 / sr), tail = Math.floor(sr * 1.2), dry = new Float32Array(n + tail);
   for (let i = 0; i < n; i++) {
-    const t = i / sr, f = 95 + 55 * Math.sin(tau * 1.3 * t);
-    ph += f / sr;
-    let x = Math.sin(tau * ph) + 0.5 * Math.sin(tau * 2 * ph) + 0.3 * (2 * (ph % 1) - 1);
-    x = Math.tanh(3.5 * x);
-    x *= (t * 12) % 1 < 0.6 ? 1 : 0.25;
-    lp += 0.05 * (rnd() - lp);
-    x += 1.6 * lp * Math.sin(tau * 0.7 * t) ** 2;
-    const k = Math.floor(i * 0.7);
-    if (k < voice.length) x += 0.9 * voice[k];
-    out[i] = x * Math.min(1, t / 0.05) * Math.min(1, (dur - t) / 0.4);
+    const t = i / sr, x = t / dur;
+    if (t >= jitT) { jit = 0.06 * (rnd() - 0.5); rough = rnd(); jitT = t + 0.008; }
+    const f0 = (70 - 28 * x) * (1 + jit);
+    ph += f0 / sr; ph2 += f0 / (2 * sr);
+    let src = 0.7 * (2 * (ph % 1) - 1) + 0.8 * Math.sin(tau * ph2);
+    breath += 0.3 * ((rnd() * 2 - 1) - breath);
+    src = src * (0.55 + 0.45 * Math.abs(Math.sin(tau * 33 * t + 3 * rough))) + 0.5 * breath;
+    if (i % 32 === 0) {
+      const k = x * (path.length - 1), j0 = Math.min(Math.floor(k), path.length - 2), fr = k - j0;
+      const a = vow[path[j0]], b = vow[path[j0 + 1]];
+      for (let j = 0; j < 3; j++) {
+        const fc = 0.55 * (a[j] + (b[j] - a[j]) * fr), w0 = tau * fc / sr, al = Math.sin(w0) / (2 * qs[j]), a0 = 1 + al;
+        co[j] = [al / a0, -al / a0, -2 * Math.cos(w0) / a0, (1 - al) / a0];
+      }
+    }
+    let y = 0;
+    for (let j = 0; j < 3; j++) {
+      const [b0, b2, a1, a2] = co[j], s = st[j], v = b0 * src + b2 * s[1] - a1 * s[2] - a2 * s[3];
+      s[1] = s[0]; s[0] = src; s[3] = s[2]; s[2] = v; y += gains[j] * v;
+    }
+    y = Math.tanh(2.5 * y);
+    phs += (60 + 30 * Math.sin(tau * 0.9 * t)) / sr;
+    y += 0.35 * Math.tanh(3 * Math.sin(tau * phs));
+    lp += kl * (y - lp);
+    dry[i] = lp * Math.min(1, t / 0.25) * Math.min(1, (dur - t) / 0.8);
   }
+  const wet = new Float32Array(dry.length);
+  for (const [d, g] of [[797, 0.85], [863, 0.84], [929, 0.83], [1013, 0.82]]) {
+    const buf = new Float32Array(d); let k = 0;
+    for (let i = 0; i < dry.length; i++) { const o = buf[k]; buf[k] = dry[i] + o * g; wet[i] += o; k = (k + 1) % d; }
+  }
+  for (const [d, g] of [[233, 0.6], [79, 0.6]]) {
+    const buf = new Float32Array(d); let k = 0;
+    for (let i = 0; i < wet.length; i++) { const v = wet[i], o = buf[k]; buf[k] = v + o * g; wet[i] = o - g * v; k = (k + 1) % d; }
+  }
+  const out = new Float32Array(dry.length);
   let peak = 1e-9;
-  for (const v of out) peak = Math.max(peak, Math.abs(v));
-  for (let i = 0; i < n; i++) out[i] *= 0.8 / peak;
+  for (let i = 0; i < dry.length; i++) { out[i] = dry[i] + 0.45 * wet[i]; peak = Math.max(peak, Math.abs(out[i])); }
+  for (let i = 0; i < out.length; i++) out[i] *= 0.85 / peak;
   return out;
 }
 

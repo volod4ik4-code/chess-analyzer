@@ -98,6 +98,7 @@ Uses <a href="https://stockfishchess.org">Stockfish 19</a> (GPL-3.0, <a href="ht
 <a href="https://github.com/niklasf/python-chess">python-chess</a> (GPL-3.0),
 <a href="https://github.com/jhlywa/chess.js">chess.js</a> (BSD-2-Clause),
 <a href="https://github.com/lichess-org/chess-openings">lichess chess-openings</a> (CC0),
+move sounds: lichess <a href="https://github.com/lichess-org/lila/tree/master/public/sound/sfx">"sfx" set</a> by <a href="https://github.com/Enigmahack">Enigmahack</a> (AGPLv3+),
 AI coach: Gemma (Google) on Cloudflare Workers AI.
 Screenshots: Morphy – Duke Karl / Count Isouard, Paris 1858.
 </sub>
