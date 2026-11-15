@@ -642,21 +642,27 @@ function showResults(res, save = true) {
   board.interactive = true;
   const keep = A.partialSeen && A.index >= 0 && A.index < res.fens.length;
   A.partialSeen = false;
+  if (keep && A.v) { showVarState(A.v.index, false); return; }   // 1.26.7: гравець у своєму варіанті - лишаємо там
   goto(keep ? A.index : 0, false);        // гравець уже гортав готові ходи - лишаємо там
 }
 
 // Проміжний результат аналізу (1.22.0): готові ходи видно й можна гортати, поки рушій рахує далі.
 // Дошка в цей час лише для перегляду (без власних варіантів), розділ дослідження не зберігається.
+const analysing = () => !!(A.res && A.res.partial);
+
 function showPartial(res) {
   const first = !(A.res && A.res.partial);
-  if (A.v) clearVar();
-  A.res = res; A.partialSeen = true;
+  if (first && A.v) clearVar();
+  A.res = res; A.partialSeen = true;           // 1.26.7: варіант гравця не скидається - ходити можна під час аналізу
   const sc = [$('moves'), $('panel'), $('moves').parentElement].map(e => [e, e.scrollTop]);   // не смикати прокрутку
   renderPlayers(); renderSummary(); renderMoves();
   if (first) { goto(0, false); return; }
   for (const [e, y] of sc) e.scrollTop = y;
-  const cur = $('moves').querySelector(`[data-k="${A.index}"]`);
-  if (cur) cur.classList.add('cur');
+  if (A.v) markCurrent();
+  else {
+    const cur = $('moves').querySelector(`[data-k="${A.index}"]`);
+    if (cur) cur.classList.add('cur');
+  }
   drawGraph();
 }
 
@@ -699,7 +705,7 @@ function goto(k, animate = null) {
     const prevLast = k >= 2 ? res.moves[k - 2].uci : null;
     board.animate(res.fens[k - 1], prevLast, last, () => board.setPosition(fen, last, badge, arrow, shapes), badge);
   } else board.setPosition(fen, last, badge, arrow, shapes);
-  board.interactive = !res.partial;
+  board.interactive = true;                  // 1.26.7: і поки аналіз партії ще йде
   setEval(res.evals[k] || 0);
   const onPath = k < (res.book_path || []).length ? res.book_path[k] : true;
   setInfo(info, adv, theoryLine(fen, onPath), badge);
@@ -763,6 +769,12 @@ async function onUserMove(uci, dragged) {
   if (!A.v) {
     const k = A.index;
     if (k < res.moves.length && res.moves[k].uci === uci) { goto(k + 1, !dragged); return; }
+    // 1.26.7: аналіз ще йде, а це наступний хід партії, якого ще не оцінено - не робимо з нього варіант
+    if (res.partial && k === res.moves.length && A.game && A.game.moves[k] === uci) {
+      goto(k, false);
+      setStatus(() => pick('Цей хід партії ще аналізується — зачекай трохи.', 'This game move is still being analysed — wait a moment.'));
+      return;
+    }
     const same = findLine(k, [uci]);
     if (same) { openLine(same, 1, !dragged); return; }
     const prev = k >= 1 ? res.moves[k - 1] : null;
@@ -840,11 +852,12 @@ async function evalRow(v, row) {
     if (qd >= 8 && cfg.ai && cfg.coach && !A.aiOff && !botLive()) {
       try {
         const [rq, peq] = await evaluateMove(engine, qd, new Pos(v.fens[j - 1]), { root: v.fens[j - 1], moves: [] }, row.uci, pb,
-          prevDrop, prevCap, rating, bookHit);
+          prevDrop, prevCap, rating, bookHit, !analysing());
         if (row.pending) aiPrefetch([v.fens[j - 1], row.uci, rq.quality, rq.best_san || '', pb, peq]);
       } catch (_) { /* */ }
     }
-    const [r, peAfter] = await evaluateMove(engine, depth, b, hist, row.uci, pb, prevDrop, prevCap, rating, bookHit);
+    // 1.26.7: поки йде аналіз партії (той самий рушій) - без перевірки «Чудового»: вона очищає хеш і змінила б оцінки партії
+    const [r, peAfter] = await evaluateMove(engine, depth, b, hist, row.uci, pb, prevDrop, prevCap, rating, bookHit, !analysing());
     r.elapsed = (performance.now() - t0) / 1000;
     r.opening = bookHit ? openingStr : '';
     Object.assign(row, r);
@@ -987,7 +1000,7 @@ function exitVar() { if (!A.v) return; const base = A.v.base; clearVar(); goto(b
 function clearVar() {
   A.v = null; A.varToken++; A.varBusy = false;
   renderVar();
-  board.interactive = !!A.res && !A.res.partial;
+  board.interactive = !!A.res;
 }
 
 // ------------------------------------------------------------ дослідження ---
