@@ -1340,6 +1340,50 @@ function alienWanted() {
   const m = botMoves();
   return m[0] === 'e2e4' && m[1] === 'c7c6';
 }
+// 1.26.9: «лютий глюк» (~1,8 с), коли Witty Alien бере конем на f7: усе трясеться й розсипається, фото й назва збоять,
+// тріск зі звуку. Потім усе як було.
+function alienRage() {
+  if (A.rage) return;
+  A.rage = true;
+  document.body.classList.add('rage');
+  const titles = ['Ṅ̷̢x̸̨f̵̛7̶̕', 'C̸̡̛h̷̢e̵̕s̶̨s̸ ̷A̵̢n̶a̸̛l̷y̵z̶̕e̸r̷', '▓▒░ 👽 ░▒▓', 'E̷R̸R̵O̶R̷ ̸F̵7̶', 'Ẅ̵̡I̷̛T̸̨T̶Y̷'];
+  const fx = document.createElement('div');
+  fx.id = 'rageFx';
+  document.body.appendChild(fx);
+  const img = $('botCard') && $('botCard').querySelector('img');
+  let i = 0;
+  const tick = () => {
+    if (i++ >= 22) {
+      fx.remove(); document.body.classList.remove('rage'); A.rage = false;
+      $('title').textContent = A.alienMode ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
+      if (botLive()) renderBotCard();
+      setStatus(() => pick('👽 Кінь на f7. Він це зробив.', '👽 Knight on f7. He did it.'));
+      return;
+    }
+    $('title').textContent = titles[Math.floor(Math.random() * titles.length)];
+    if (img) img.src = alienSrc(['glitch', 'neg', 'stare', 'glitch'][Math.floor(Math.random() * 4)]);
+    fx.style.setProperty('--y', Math.floor(Math.random() * 90) + '%');
+    fx.style.setProperty('--h', (4 + Math.random() * 18) + '%');
+    fx.textContent = Math.random() < 0.3 ? ['N x f 7', 'ERROR', '👽', 'f7 f7 f7', 'SIGNAL LOST'][Math.floor(Math.random() * 5)] : '';
+    setTimeout(tick, 45 + Math.random() * 65);
+  };
+  tick();
+  try {                                       // тріск: шум і «пищання» Web Audio
+    const ctx = A.audio || (A.audio = new (window.AudioContext || window.webkitAudioContext)());
+    if (ctx.state === 'suspended') ctx.resume();
+    const t0 = ctx.currentTime, dur = 1.1;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate), d = buf.getChannelData(0);
+    for (let k = 0; k < d.length; k++) d[k] = (Math.random() * 2 - 1) * (Math.floor(k / 1800) % 3 ? 0.35 : 0.05);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.25, t0); g.gain.linearRampToValueAtTime(0, t0 + dur);
+    src.connect(g).connect(ctx.destination); src.start(t0);
+    const o = ctx.createOscillator(), og = ctx.createGain(); o.type = 'square';
+    for (let k = 0; k < 14; k++) o.frequency.setValueAtTime([90, 140, 220, 400, 900, 1700, 2600][Math.floor(Math.random() * 7)], t0 + k * 0.06);
+    og.gain.setValueAtTime(0.06, t0); og.gain.linearRampToValueAtTime(0, t0 + 0.9);
+    o.connect(og).connect(ctx.destination); o.start(t0); o.stop(t0 + 0.9);
+  } catch (_) { /* без звуку */ }
+}
+
 function alienCheck() { const on = alienWanted(); if (on !== !!A.alienMode) alienSet(on); }
 function alienSet(on) {
   A.alienMode = on;
@@ -1581,7 +1625,11 @@ async function botThink(ucis, fen) {
   A.botInject = true;
   // 1.25.10: є ходи наперед або фігура в руці - хід бота без анімації (як на chess.com)
   const quick = board.premoves.length > 0 || !!board.drag;
+  // 1.26.9 (користувач): Witty Alien жертвує коня на f7 (чорними - на f2) - «лютий глюк»
+  const pc = new Pos(fen).pieceAt(uci.slice(0, 2));
+  const rage = b.spec.id === ALIEN && pc && pc.type === 'n' && uci.slice(2, 4) === (b.color === 'w' ? 'f7' : 'f2');
   try { await onUserMove(uci, quick); } finally { A.botInject = false; }
+  if (rage) setTimeout(alienRage, quick ? 30 : 220);
   if (board.premoves.length) setTimeout(botPremove, 15);           // хід наперед - одразу після ходу бота
   b.botMoves++;
   const all = botMoves(), st = botState(A.res.fens[0], all);

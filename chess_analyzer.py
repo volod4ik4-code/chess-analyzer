@@ -573,7 +573,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.26.8"
+APP_VERSION = "1.26.9"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -585,6 +585,10 @@ APP_ICON = {
     64: "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAANTklEQVR4AexYe3CU1RX/3e/b3WxCEkMCEZBHIoJAhaGEWuTVQlvLiPQBkUHb6pSxtaWpFWfawYpDW52RKShO7TjqALHjn8WZtur4fqIWEOpYbAVrK4koIiIgBkKy3739nfs9srtsYHcTqUnd3HPPPfdx7jm/c+79vi8O/s9/nwFQTAKse2ZJ3W3PNF56++bLfnjb843XrX1+0fK1z5LOIJd9hdaKDbRFbCrGl7wzYO1TC0et3bz45tuea3xdu6m34OBBY3APaZ2Cuh1K3a7gBJztLLm3x2GwDlDroM09cPGg56TeEtvWbm68WWxFnr+8AFj73KJbjav2GM9bqY0Zp7XhviStYYiAyD7vkjkP+kyP0zbjmZViq9icDwanBGDNk4smrXlm4Xb6uCIfZZ+mOWLzmmcbt4sPp7KrWwB++2zjLOOaFwzQINHtm6QbNH0QX7oDIScAgprR+mEuqiCSZCxEgjVTXmpSH5FhQB/0w+ITrT6p5ATAU3ojI16hedbJeZZ53olEX5WNNhXi00nes+MkAFY/9e1b2d9A6m+lIfAtw68MAG55eOEoorVCok7OdDfoZ3yF+JiOQAYATkJfbY82Kxbw/EjpV1x87BYAGNMo0ZdneD/mjTkBuPWRb9Ux6uP8kKdNYWeaZLOhN2TeqZDjpVPGXrICuNX7Ce1ndUtlME58laZQdARSjneBGBFR8AToTVnzzdBLaYQ0bvAM/GxOMy6dcC28Dg3tafTmfpEuoi1gh7L4Ks4LRQAoYJhE3wbAVhwmZ7FRz+Yczdkfzsse1wR0/OBZuG7uffjmBcvhegnoTgcJN4kLhs3C7PO+S2AM5PiJHdnrQ70hL3Zc1ivx1SoAP2mChvZQJpsLSsJDCuVsXsi4R+c9RvfwxwehmQUTR3wZi6f+EpWJWrhOHDE3gQvrL4FkhM0Ozi9Ev8wtzD6UBW53ARB2pKNv+wQyafSIGxgPaH1/F9o7jkHxb/SQyRh/zjQC4Ip2lJVUYNLwOfA6OZcp+8nYwa3oB9UrtmyJjoAxnorOCSMgiPaKTF3aM5AMqB802aa87OwoByNrx0KRiyw0vHoszq3+PDTvCc11vbI/vc3WAy27+RQB4Iv2WNsmgeo5pxJNA+IowXe+uApXzr4JAytqrd5cVXnyLEwaIVmgIeskC6jCTu1tbpWyigDwmKKyqaBlOQ23nJGwvAjZM5oprTGtfiHGDJ0Cx/HTnfvmLJINk0bNwpzzr0Sq04PH+4Lf9xYMyUhrRw/sCdd74mxgQQRAIPtM4BbyJT8tCpWZZvQfKaZzRWIwYrzsNB1678O30frev7DvYCs0b95wi5DHeSHOHrcQc8d8j8fGMAm4MQsb4ZTi7BEdXRqiVgYAhugK0hH1QBZnPUZxztgrMGnUTLvhR8cO4eV/Po229qOorqztNiPisRJMH/sNTDlnns0g0WVt6oE96eutMUEVAcCABV09Z7KZx4tvxuhGzBq/CMmE/9SpKq/BgplXYXzdFJTEkzk3Mkybjs52lCbKMXfC5Ti3pgFyifIE5pzf084IAOYj5IwI2j43Rcken/epTo2G4fMwZ8ISOjKgIBvlHjhBAI6faEPVgMH4+sTv46ySoZD3A98u/4LUzIaiZR7F0KguAKQnPCc5OTtZZFp0HjNkAwaP0dIYzajN/dwVdL7cTi+0Ki+txNv730TK68TQgfWYPeYy6vUgF6LVlbEve6zMioUSurMv6reT/CoCQEAxzDMW+JwOUWAJZOqlwBLImeOyXjP61ckRmDdpqY2ev0XhtWRBzVlDLAjyvjBh+DScXzsdkl2yTzH2ddkNiI7QqgiAsCOb083srgxZxq1ypmRN6Qg0fuF6DKs+N2NOMYLcF/sP7bVvjuXJKkytvxiaX47ifLo+2T9dzm6fbrwLAMISnSk6owNZngw6TdbSnybbcUbeNQlcOvlHGFU7Hop/2YYUKrtuDFUVg9Dy3m4opTBy0DiMHtwAL8X3A16w1g4ib/dPs8f2p8m5xpH2KhgBYJ8C4RkKrc1Dpg08EsCo6okYWlWPVKoTT+/4E1589TF0pE6EmnLyFM/4iY72nGPSefbA4XjznZ3oTHWgorQKE4ZdBE3n7YYyIQ/7ZFpEwXzGMOqKAJAeSa9iSFA/0nbQOhyPJTB78nxMn3QxEnyei95sklv+33v/gfsfuQMftR3KHo7kAclKHOfH0wdH9jELHL5NTkZ16TCeYSY2kS/GVlkTbcBGBgCUgQAl25YqT7n1g934z77XGByDmBunwUpWRyROv7TzcVx7x3z8YM2X8Jv7l2Js3UQMqjo7mpPdEDBrKoegdf8bdqiyrAYjqydA0pr+277T2Xu68QgA/4Y1yLwHTi8b7iCoKmrasusxHDp6wDcsqD2+7r6481Gsar4KG574FdrdwyitjGPxV5bhwnFzCRQXBnOzmVIKg/g02LN/t82uZLwU8sWY4j2gee9oOetEQjOntbSF8pDF13CvrN3zDHe4ms5Lk3bCiSns3r8Nm164y77ni+NH2j7En1/YiI1P/BpHvHdRRsdLymJonLkMF0+5HBJhWX8qkg+ofYf2oJ0vRoooD6mqs/cA/eSy4uzlwqh0AcBbUJRKNAvlgILjKMRLXLzS+hRu/MMSLF0zHdfdNR+PvnofSisSSJS6cGIOLp/xc8yZeFlezoO/AckK7OcH1PGONkrAwPJaDCofDom4vHgVZ69VZSvH1qzoP2teARZUVizSIWCw15ZuZWWglEIs4aKkNIYBVXFUDCxBOSlZHkc86djxK2aswLTzL7F3BPL8uU4M+4+0IOWl7Ip4rASVyRqA6W4A5GWfZKpMDueHzlJ2SEHxoHmWBFFN5eFdkK9sZBOSG1cWiHiZi1hSQWTRt+SiX2Dq6K9C3uxQwE++IMV2ecrYZRREn0fPdbH2wrOqpEoDQMQekgIUj4LrKjiuA4dtYoKLzltgP4ldx0UxP6UUI03P0xdnielDhbQjAAim3UQinkHMhgyZyGfIucbFa5JkUQxJTBsz3/7TE0X8Pjz6PsAj5hAE2B9zjc6z9u3NtX+6jTnGxVerilUEANu2cC0PFpvchDXdYC1tIWkKD0lkkp0kfWyH6+0Fxbe2hrqvYUjVSI4UXuRJ8vHxw1D8qxzAcx+qkL2EKFsmlZDIwkMSmXSSfdIXUARA+FyV6ErkLAXo2TY904XIhDnFf4cNGzia//woDbYrjHXyVfqdg2+htmoEL86YXZzSKb4dtsHaVIg9afbzn41Wl1QRACJYEvRsI6iKlGWZZIFETykVKCuMfdR2GHsPvImzmUGliQF2sfy3qOXA68wJK/rZGjQtk41tI6hyyGkPAWQAINGPKEC3Z7LmOQ0MKYKVlpRh6bwbsXh2E+S7QFTIy5XwyC5G1rYLsFfWh5QBgD0rMhKi1gtcvuSMpILoLZAqyqowsnYMhtXUwXX9IyCPRUkoxRzg3ehrLNROf5WtIwA8nll7rohob3BDPWKXvMZ2dJ6wm/W0kkvx0Mfvwyjwi974xH0KtVd8DW2JAAg7IFaL0AtcOQpb3ngEdz+0Cr9/YCXu/ONK/C5Pkrl3bloJSw+stOvv/ssqvPj6Q3D4nkEMxEoUba+/Ou0O4M1go0ZE/c9Nw/MbUAHny+rgfNGvCG9KtWPn3s3Y0fIEdrQ+Tp5Gp5C3twTz9pDv4Vqu/1vrkzhwrBUOgZX42L2KsJdHR5aLiV0AMK3ore3rqqJpQVchMkOklIIbd+yHkHwTCJVWxPlxFBC/E04ly/wk5yfLY0hyrnxnxKhPEQCq7oo+gp8BgpbPTmcvZzFGrKUYc6zQs3S6+RZRReWSsvxcdnpAimtBPbz7mPXGfw9g9E9nQzfjx2iVLREA/Dx41/aEqPUil2gJDn7kFIriNE4pVmHpgX2Rr9QVAYATqdeis88zbM9XP+XiK323JQLg7h9v2cN7YFcIrB1l1e9kg13iK12zJQJAJEZ9EynjfPU7WZlN4mtIGQDwfy7recP4t2sYeuEhyaqwLbwPyql2rBezQ8oAYMPVL7Uw4qtJ/jtAeAfwtrV9fV9evaHppZbQeeEZAEjHvdf89QbeBTukLRQGWtq5qK+MM4A7xLdsH04CQCaYlF7Kb/+j8gw14TcCoy8y+/07IpD7yPhRo81S8S2bcgKwftnWv8Po+bwPjtoFYZgtZ8Vycj97bD8rFkr+XSKNDJkCi3RTv2WZnIMsdiAnZydL/uPqKLSeb32yizKrnADIlPXLtm2GMTN5/Hcwfdg0AdEvdnb1farlHTR6pvVFnMpB3QIgcwW1Dcu2TqW/q0UWCsGXttCnVRabxXbxQezsjk4JQLho40+23gDdUccPxluM1rvsPRDcDZSZYYakIXfE/1Smbfzfyy1iq7U5dOAUPC8AZP2Gpldampdtvam56eXxptOpB9QCGHWNgrNcQS1n+3r+h+J6yw18rgP+CcnKcF+YawAsMJ1uvdjW3LT1pg20lX15lbwBSNd23/Ite5qbtj3Eze7d2LT1DqHmn25bd6bJ7tu0/d5m2iI2pduYb7soAPJVfibm9XSP/wIAAP//yrPYHgAAAAZJREFUAwA3w3utLNv8BwAAAABJRU5ErkJggg==",
 }
 CHANGELOG = [
+    ("1.26.9", "2026-11-15 20:28", [
+        ("Witty Alien не любить, коли його кінь іде на f7 непомітно… 👽",
+         "Witty Alien does not like his knight landing on f7 quietly… 👽"),
+    ]),
     ("1.26.8", "2026-11-15 20:18", [
         ("Witty Alien знову зі звичайним фото. Але спробуй зіграти проти нього чорними Каро-Канн… 👽",
          "Witty Alien has his normal photo again. But try playing the Caro-Kann against him with Black… 👽"),
@@ -9049,6 +9053,73 @@ class App(tk.Tk):
                 except tk.TclError:
                     pass
 
+    _RAGE_TITLES = ("Ṅ̷̢x̸̨f̵̛7̶̕", "C̸̡̛h̷̢e̵̕s̶̨s̸ ̷A̵̢n̶a̸̛l̷y̵z̶̕e̸r̷", "▓▒░ 👽 ░▒▓", "E̷R̸R̵O̶R̷ ̸F̵7̶", "Ẅ̵̡I̷̛T̸̨T̶Y̷")
+
+    def _alien_rage(self):
+        """1.26.9: «лютий глюк» (~1,8 с), коли Witty Alien жертвує коня на f7: дошка трясеться й розсипається
+        смугами, фото й назва збоять, фон блимає, тріск зі звуку. Потім усе як було."""
+        if getattr(self, "_rage_on", False):
+            return
+        self._rage_on = True
+        bv, rng = self.board, self._bot_rng
+        S8 = bv.SQ * 8
+        title0, fg0 = self.title_lbl.cget("text"), str(ttk.Style(self).lookup("Title.TLabel", "foreground"))
+        bg0 = str(self.cget("bg"))
+        shift = [0, 0]
+        card = self._bot_live() and self.bot["spec"]["id"] == "wittyalien"
+
+        def noise():                                  # тріск: короткі випадкові «біпи» системного звуку
+            try:
+                import ctypes
+                for _ in range(14):
+                    ctypes.windll.kernel32.Beep(rng.choice((90, 140, 220, 400, 900, 1700, 2600)), rng.randint(18, 45))
+            except Exception:  # noqa: BLE001
+                pass
+        threading.Thread(target=noise, daemon=True).start()
+
+        def frame(i):
+            bv.move("all", -shift[0], -shift[1])
+            bv.delete("rage")
+            if i >= 22:
+                shift[0] = shift[1] = 0
+                self._rage_end(title0, fg0, bg0)
+                return
+            k = 1.0 if i < 14 else 0.5               # під кінець - тихіше
+            shift[0], shift[1] = int(rng.randint(-14, 14) * k), int(rng.randint(-9, 9) * k)
+            bv.move("all", shift[0], shift[1])
+            for _ in range(rng.randint(6, 14)):
+                y = rng.randint(0, S8 - 4)
+                h = rng.randint(2, max(3, bv.SQ // 2))
+                x = rng.randint(-S8 // 3, S8 // 3)
+                bv.create_rectangle(x, y, x + rng.randint(S8 // 3, S8 + S8 // 3), y + h, width=0, tags="rage",
+                                    fill=rng.choice(("#39ff14", "#ff1744", "#b388ff", "#00e5ff", "#ffffff", "#000000")),
+                                    stipple=rng.choice(("gray75", "gray50", "gray25", "")))
+            if rng.random() < 0.35:                   # спалах на всю дошку
+                bv.create_rectangle(0, 0, S8, S8, width=0, tags="rage", stipple="gray50",
+                                    fill=rng.choice(("#ff0033", "#39ff14", "#ffffff")))
+            if rng.random() < 0.3:                    # «помилка» посеред дошки
+                bv.create_text(S8 // 2 + rng.randint(-40, 40), S8 // 2 + rng.randint(-60, 60), tags="rage",
+                               text=rng.choice(("N x f 7", "ERROR", "👽", "f7 f7 f7", "SIGNAL LOST")),
+                               fill=rng.choice(("#ff1744", "#39ff14")), font=("Consolas", max(14, bv.SQ // 2), "bold"))
+            self.title_lbl.configure(text=rng.choice(self._RAGE_TITLES))
+            ttk.Style(self).configure("Title.TLabel", foreground=rng.choice(("#ff1744", "#39ff14", "#ffffff")))
+            self.configure(bg=rng.choice(("#2a0006", "#02200a", ALIEN_BG, "#000000")))
+            if card:
+                self.botc_pic.configure(image=self._alien_frame(rng.choice(("glitch", "neg", "stare", "glitch"))))
+            self.status_var.set(rng.choice(("▓▒░ N̷x̸f̵7̶ ░▒▓", "░ SIGNAL LOST ░", "▒▒ f7 ▒▒ f7 ▒▒", "👽👽👽")))
+            self.after(rng.randint(45, 110), frame, i + 1)
+        frame(0)
+
+    def _rage_end(self, title0, fg0, bg0):
+        self._rage_on = False
+        self.title_lbl.configure(text=title0)
+        ttk.Style(self).configure("Title.TLabel", foreground=fg0)
+        self.configure(bg=bg0)
+        self.board.draw()
+        if self.bot and self._bot_live():
+            self._bot_card_render()
+        self.status_var.set(pick("👽 Кінь на f7. Він це зробив.", "👽 Knight on f7. He did it."))
+
     def _alien_frame(self, kind):
         key = ("fx", kind)
         if key not in self._bot_photo_cache:
@@ -9317,11 +9388,17 @@ class App(tk.Tk):
                 return
             # 1.25.10: є ходи наперед або фігура в руці - хід бота без анімації (як на chess.com)
             quick = bool(self.board.premoves) or self.board._drag is not None
+            mv = chess.Move.from_uci(uci)
+            # 1.26.9 (користувач): Witty Alien жертвує коня на f7 (чорними - на f2) - «лютий глюк»
+            rage = (b["spec"]["id"] == "wittyalien" and board.piece_type_at(mv.from_square) == chess.KNIGHT
+                    and mv.to_square == (chess.F7 if b["color"] == chess.WHITE else chess.F2))
             self._bot_inject = True
             try:
                 self._on_user_move(uci, quick)
             finally:
                 self._bot_inject = False
+            if rage:
+                self.after(30 if quick else 220, self._alien_rage)
             b["bot_moves"] += 1
             if self.board.premoves:                                  # хід наперед - одразу після ходу бота
                 self.after(15, self._bot_premove)
