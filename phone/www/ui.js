@@ -19,7 +19,7 @@ const store = {
 
 // ------------------------------------------------------------ налаштування ---
 const DEF = { lang: 'en', board: D.DEFAULTS.board, depth: D.DEFAULTS.depth, arrow: D.DEFAULTS.arrow,
-  anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach, sound: true,
+  anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach,
   engine: window.AndroidBridge && window.AndroidBridge.engineStart ? 'native' : 'lite',
   bot: [D.BOTS[0].id, 0, 0], botStars: {} };      // останній вибір у «Ботах»: хто, колір (0 білі / 1 чорні / 2 випадково), сила
 const saved = store.get('ca.settings', null);
@@ -691,7 +691,6 @@ function goto(k, animate = null) {
   const prev = A.index;
   A.index = k;
   if (animate === null) animate = k === prev + 1;
-  if (k === prev + 1 && k >= 1) moveSound(res.moves[k - 1].san);       // 1.27.7
   let last = null, badge = null, info = esc(tr('Початкова позиція'));
   const rec = recommend(res.fens[k], res.pos_info[k]);
   if (k >= 1) {
@@ -806,7 +805,6 @@ async function onUserMove(uci, dragged) {
     fen: after.fen(), pending: true, quality: null, ...(A.botInject && A.fakeBril ? { fake_bril: true } : {}) };
   // 1.27.7: Каро-Канн проти Witty Alien - «??» лише поки йде гра
   if (!A.botInject && uci === 'c7c6' && b.fullmove === 1 && botLive() && A.bot.spec.id === 'wittyalien' && A.bot.color === 'w') row.fake_blunder = true;
-  moveSound(row.san);
   v.rows.push(row); v.fens.push(row.fen); v.pes.push(null);
   v.index = v.rows.length;
   if (!A.lines.includes(v)) { v.id = nextLineId(); A.lines.push(v); }
@@ -898,7 +896,6 @@ function gotoVar(j, animate = null) {
   const prev = v.index;
   v.index = j;
   if (animate === null) animate = j === prev + 1;
-  if (j === prev + 1 && j >= 1) moveSound(v.rows[j - 1].san);         // 1.27.7
   showVarState(j, animate);
 }
 
@@ -1519,21 +1516,6 @@ document.addEventListener('visibilitychange', () => {
   if (!A.audio) return;
   if (document.hidden) A.audio.suspend(); else if (A.alienBgSrc) A.audio.resume();
 });
-
-// 1.27.8: звуки ходів - офіційний вільний набір lichess «sfx» (Enigmahack, AGPLv3+), MP3 з data.js
-const moveSoundKind = san => /[+#]$/.test(san) ? 'check' : san.includes('x') ? 'capture' : 'move';
-function moveSound(san) {
-  if (!san || cfg.sound === false || !D.LICHESS_SFX) return;
-  const ctx = alienAudioCtx();
-  if (!ctx) return;
-  A.moveBufs ||= {};
-  const kind = moveSoundKind(san), play = buf => {
-    const src = ctx.createBufferSource(); src.buffer = buf; src.connect(ctx.destination); src.start();
-  };
-  if (A.moveBufs[kind]) { play(A.moveBufs[kind]); return; }
-  const bin = Uint8Array.from(atob(D.LICHESS_SFX[kind]), c => c.charCodeAt(0));
-  ctx.decodeAudioData(bin.buffer).then(buf => { A.moveBufs[kind] = buf; play(buf); }).catch(() => {});
-}
 
 // 1.27.8: звук на 1...c6 проти Witty Alien - рик величезного печерного монстра (як alien_rage2_samples у ПК)
 function alienRage2Samples(sr = ALIEN_SR) {
@@ -2157,7 +2139,7 @@ function openBox(kind) {
         ['lite', pick('Stockfish 19 lite — швидший, слабший', 'Stockfish 19 lite — faster, weaker')]], cfg.engine)}`
       + (A.engDl ? `<div class="hint">${esc(pick('Рушій «усі ядра» завантажується…', 'The "all cores" engine is downloading…'))}</div>` : '')
       + `<label class="f">${esc(tr('Стрілка'))}</label>${sel('sArrow', D.ARROW_MODES.map(m => [m, pick(...ARROW_LABELS[m])]), cfg.arrow)}`
-      + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar) + chk('sSound', tr('Звуки ходів'), cfg.sound !== false)
+      + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
       + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label><div class="hint" id="sStats" style="white-space:pre-line"></div>`
@@ -2176,7 +2158,6 @@ function openBox(kind) {
     on('sCoach', 'change', e => { cfg.coach = e.target.checked; saveCfg(); refreshView(); if (!A.res) showCoach(null); });
     on('sAi', 'change', e => { cfg.ai = e.target.checked; saveCfg(); refreshView(); });
     on('sEval', 'change', e => { cfg.evalbar = e.target.checked; saveCfg(); layout(); });
-    on('sSound', 'change', e => { cfg.sound = e.target.checked; saveCfg(); if (cfg.sound) moveSound('e4'); });
     on('sReset', 'click', () => {
       Object.assign(cfg, DEF, { lang: cfg.lang });
       saveCfg(); board.theme = cfg.board; layout(); refreshView(); board.render(); openBox('settings');

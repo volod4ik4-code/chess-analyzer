@@ -39,7 +39,7 @@ data = {
                   open_uk=OPEN[b["id"]][0], open_en=OPEN[b["id"]][1],
                   w=ca.bot_lines(b, True), b=ca.bot_lines(b, False)) for b in ca.BOTS],
     "BOT_PHOTO_FX": ca.BOT_PHOTO_FX, "BOT_PHOTO_NOTE": ca.BOT_PHOTO_NOTE,
-    "LICHESS_SFX": ca.LICHESS_SFX, "ALIEN_PIECES": ca.ALIEN_PIECES, "ALIEN_THEME": ca.ALIEN_THEME, "WITTY_BOOK": ca.WITTY_BOOK,
+    "ALIEN_PIECES": ca.ALIEN_PIECES, "ALIEN_THEME": ca.ALIEN_THEME, "WITTY_BOOK": ca.WITTY_BOOK,
     "BADGE_GLYPHS": ca.BADGE_GLYPHS,
     "PIECES": ca.PIECE_DATA[max(ca.PIECE_DATA)],
 }
