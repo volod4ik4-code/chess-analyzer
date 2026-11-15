@@ -371,7 +371,8 @@ export function grade(drop, isBest, winB, winA, sacrifice, secondW, prevDrop, re
   // в ендшпілі - лише якщо це єдиний добрий хід
   if (soundLoss == null) soundLoss = drop;
   const onlyGood = isBest && secondW != null && winB - secondW >= 10;
-  if (sacrifice >= minSac && drop <= 5 && soundLoss <= 2 && winA >= 45 && baseline < competitiveLimit(rating) && (onlyGood || !endgame)) return 'Геніальний';
+  // 1.27.5 (користувач): «Геніальний» і в уже виграній позиції - умову «без цього ходу ще не виграно» прибрано
+  if (sacrifice >= minSac && drop <= 5 && soundLoss <= 2 && winA >= 45 && (onlyGood || !endgame)) return 'Геніальний';
   // 1.25.6: «Чудовий» - найкращий хід, який дуже важко помітити (рушій на малій глибині його не бачить)
   if (greatCandidate(isBest, recapture, winB, secondW) && hard) return 'Чудовий';
   if (isBest) return 'Найкращий';
