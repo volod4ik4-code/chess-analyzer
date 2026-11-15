@@ -214,15 +214,18 @@ function lineText(line, budget = 34) {
   const parts = [];
   for (let i = 0; i < line.rows.length; i++) {
     const r = line.rows[i];
-    const part = i === 0 || r.label.endsWith('.') ? r.label + r.san : r.san;
+    const part = (i === 0 || r.label.endsWith('.') ? r.label + r.san : r.san) + (r.fake_bril && botLive() ? '!!' : '');
     if (parts.length && [...parts, part].join(' ').length > budget) { parts.push('…'); break; }
     parts.push(part);
   }
   return parts.join(' ');
 }
 
-function qBadge(q) {
-  if (botLive()) return '';                  // у партії з ботом - без оцінок
+function qBadge(q, r = null) {
+  if (botLive()) {                           // у партії з ботом - без оцінок (1.26.10: крім «!!» за Nxf7 Witty Alien)
+    if (!r || !r.fake_bril) return '';
+    q = 'Геніальний';
+  }
   if (!QUALITY[q]) return '<span class="dot pend">…</span>';     // хід ще оцінюється
   const [c, s] = QUALITY[q];
   return badgeSvg(s, c);
@@ -799,7 +802,7 @@ async function onUserMove(uci, dragged) {
   // хід з'являється одразу (позначка «…»), а Stockfish оцінює його у фоні - можна ходити далі
   const after = b.copy(); after.push(uci);
   const row = { label: b.turn === 'w' ? `${b.fullmove}.` : `${b.fullmove}…`, san: b.san(uci), uci,
-    fen: after.fen(), pending: true, quality: null };
+    fen: after.fen(), pending: true, quality: null, ...(A.botInject && A.fakeBril ? { fake_bril: true } : {}) };
   v.rows.push(row); v.fens.push(row.fen); v.pes.push(null);
   v.index = v.rows.length;
   if (!A.lines.includes(v)) { v.id = nextLineId(); A.lines.push(v); }
@@ -904,7 +907,8 @@ function showVarState(j, animate = false) {
   else {
     const row = v.rows[j - 1];
     last = row.uci;
-    if (row.pending) info = esc(`⏳ ${row.label} ${row.san} — ${pick('Stockfish оцінює цей хід…', 'Stockfish is evaluating this move…')}`);
+    if (row.fake_bril && botLive()) { badge = [QUALITY['Геніальний'][0], QUALITY['Геніальний'][1]]; info = esc(`${row.label} ${row.san} — ${qname('Геніальний')}.`); }
+    else if (row.pending) info = esc(`⏳ ${row.label} ${row.san} — ${pick('Stockfish оцінює цей хід…', 'Stockfish is evaluating this move…')}`);
     else { badge = botLive() ? null : [QUALITY[row.quality][0], QUALITY[row.quality][1]]; info = moveInfo(row); }
   }
   let adv = '';
@@ -943,7 +947,7 @@ function renderVar() {
   card.hidden = !v || botLive();             // у партії з ботом кнопки - під дошкою
   if (!v) return;
   $('varMoves').innerHTML = v.rows.map((r, i) => `<span class="mchip${v.index === i + 1 ? ' cur' : ''}" data-j="${i + 1}">`
-    + `${qBadge(r.quality)}${esc(r.label + r.san)}</span>`).join('');
+    + `${qBadge(r.quality, r)}${esc(r.label + r.san)}</span>`).join('');
   $('vUndo').disabled = !v.rows.length;
   $('vDel').disabled = false;
 }
@@ -1628,7 +1632,8 @@ async function botThink(ucis, fen) {
   // 1.26.9 (користувач): Witty Alien жертвує коня на f7 (чорними - на f2) - «лютий глюк»
   const pc = new Pos(fen).pieceAt(uci.slice(0, 2));
   const rage = b.spec.id === ALIEN && pc && pc.type === 'n' && uci.slice(2, 4) === (b.color === 'w' ? 'f7' : 'f2');
-  try { await onUserMove(uci, quick); } finally { A.botInject = false; }
+  A.fakeBril = rage;
+  try { await onUserMove(uci, quick); } finally { A.botInject = false; A.fakeBril = false; }
   if (rage) setTimeout(alienRage, quick ? 30 : 220);
   if (board.premoves.length) setTimeout(botPremove, 15);           // хід наперед - одразу після ходу бота
   b.botMoves++;
