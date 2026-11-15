@@ -809,7 +809,6 @@ async function onUserMove(uci, dragged) {
   renderMoves();
   showVarState(v.index, !dragged);
   queueEval(v, row);
-  if (A.alienMode) alienSfx();                // 1.26.11: «голос прибульця» на кожен хід
 }
 
 // ---- черга оцінок ходів гравця: по одному, по порядку (кожна оцінка спирається на попередню)
@@ -1393,18 +1392,61 @@ function alienRage() {
 // що й у ПК (alien_sfx_samples / alien_bg_samples), звуки згенеровані, не взяті з відео.
 const ALIEN_SR = 16000, ALIEN_BG_T = 24;
 function alienSfxSamples(kind, sr = ALIEN_SR) {
-  const n = Math.floor(sr * 0.7), out = new Float32Array(n), tau = 2 * Math.PI;
-  let ph = 0;
+  const tau = 2 * Math.PI, dur = [1.3, 1.05, 1.45][kind], n = Math.floor(sr * dur);
+  let seed = 11 + kind;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  const contour = [[[0, 95], [0.35, 72], [1, 50]], [[0, 68], [0.5, 80], [1, 56]], [[0, 62], [0.25, 90], [0.6, 66], [1, 48]]][kind];
+  const vow = { U: [300, 870, 2240], A: [730, 1090, 2440], O: [570, 840, 2410], M: [260, 1000, 2200] };
+  const path = ['UAO', 'MUM', 'OAUO'][kind];
+  const interp = (pts, x) => { for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1]; if (x <= x1) return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } return pts[pts.length - 1][1]; };
+  const formants = x => {
+    const k = x * (path.length - 1), i = Math.min(Math.floor(k), path.length - 2), f = k - i;
+    const a = vow[path[i]], b = vow[path[i + 1]];
+    return [0, 1, 2].map(j => 0.62 * (a[j] + (b[j] - a[j]) * f));
+  };
+  const st = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]], co = [null, null, null];
+  const gains = [1.0, 0.35, 0.1], qs = [6, 9, 12];
+  let ph = 0, ph2 = 0, jit = 0, jitT = 0, chest = 0, lp = 0;
+  const kc = 1 - Math.exp(-tau * 250 / sr), kl = 1 - Math.exp(-tau * 1800 / sr), flut = 26 + 5 * rnd();
+  const tail = Math.floor(sr * 0.6), dry = new Float32Array(n + tail);
   for (let i = 0; i < n; i++) {
-    const t = i / sr, u = t / 0.7;
-    const f = kind === 0 ? 300 + 1100 * u ** 1.5 + 70 * Math.sin(tau * 18 * t)
-      : kind === 1 ? 1500 - 1200 * u + 90 * Math.sin(tau * 12 * t)
-        : 900 + 300 * Math.sin(tau * 3 * t) + (Math.floor(t / 0.06) % 3 === 1 ? 250 : 0);
-    ph += tau * f / sr;
-    let x = Math.sin(ph) + 0.3 * Math.sin(2 * ph);
-    x *= kind === 2 ? 0.5 + 0.5 * Math.sin(tau * 22 * t) : 0.6 + 0.4 * Math.sin(tau * 33 * t);
-    out[i] = 0.55 * x * Math.min(1, t / 0.02) * Math.exp(-3.2 * u) * Math.min(1, (0.7 - t) / 0.05);
+    const t = i / sr, x = t / dur;
+    if (t >= jitT) { jit = 0.03 * (rnd() - 0.5); jitT = t + 0.02; }
+    const f0 = interp(contour, x) * (1 + jit);
+    ph += f0 / sr; ph2 += f0 / (2 * sr);
+    let src = 0.75 * (2 * (ph % 1) - 1) + 0.45 * Math.sin(tau * ph2);
+    src *= 0.62 + 0.38 * Math.sin(tau * flut * t);                       // гарчання
+    if (kind === 2 && t < 0.32 && (t % 0.045) < 0.006) src += 1.6 * (rnd() * 2 - 1);   // клацання
+    if (i % 32 === 0) formants(x).forEach((fc, j) => {
+      const w0 = tau * fc / sr, al = Math.sin(w0) / (2 * qs[j]), a0 = 1 + al;
+      co[j] = [al / a0, -al / a0, -2 * Math.cos(w0) / a0, (1 - al) / a0];
+    });
+    let y = 0;
+    for (let j = 0; j < 3; j++) {
+      const [b0, b2, a1, a2] = co[j], s = st[j];
+      const v = b0 * src + b2 * s[1] - a1 * s[2] - a2 * s[3];
+      s[1] = s[0]; s[0] = src; s[3] = s[2]; s[2] = v;
+      y += gains[j] * v;
+    }
+    chest += kc * (src - chest);
+    y += 0.6 * chest;
+    lp += kl * (y - lp);
+    y = lp * (0.78 + 0.22 * Math.sin(tau * 38 * t));
+    dry[i] = y * Math.min(1, t / 0.06) * Math.min(1, (dur - t) / 0.3);
   }
+  const wet = new Float32Array(dry.length);
+  for (const [d, g] of [[403, 0.8], [431, 0.79], [463, 0.78], [491, 0.77]]) {
+    const buf = new Float32Array(d); let k = 0;
+    for (let i = 0; i < dry.length; i++) { const o = buf[k]; buf[k] = dry[i] + o * g; wet[i] += o; k = (k + 1) % d; }
+  }
+  for (const [d, g] of [[151, 0.5], [53, 0.5]]) {
+    const buf = new Float32Array(d); let k = 0;
+    for (let i = 0; i < wet.length; i++) { const v = wet[i], o = buf[k]; buf[k] = v + o * g; wet[i] = o - g * v; k = (k + 1) % d; }
+  }
+  const out = new Float32Array(dry.length);
+  let peak = 1e-9;
+  for (let i = 0; i < dry.length; i++) { out[i] = dry[i] + 0.22 * wet[i]; peak = Math.max(peak, Math.abs(out[i])); }
+  for (let i = 0; i < out.length; i++) out[i] *= 0.7 / peak;
   return out;
 }
 function alienBgSamples(sr = ALIEN_SR, T = ALIEN_BG_T) {
@@ -1444,7 +1486,7 @@ function alienSfx() {
   A.alienSfxBufs ||= [0, 1, 2].map(k => alienBuf(ctx, alienSfxSamples(k)));
   const src = ctx.createBufferSource(), g = ctx.createGain();
   src.buffer = A.alienSfxBufs[Math.floor(Math.random() * 3)];
-  g.gain.value = 0.8;
+  g.gain.value = 1.0;
   src.connect(g).connect(ctx.destination); src.start();
 }
 function alienBg(on) {
@@ -1479,7 +1521,7 @@ function alienSet(on) {
   board.alien = on; if (A.bot) board.alienSide = A.bot.color; board.render();
   $('title').textContent = on ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
   alienBg(on);
-  if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); alienSfx(); }
+  if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); alienSfx(); if (botLive()) botSay('alien'); }
   else { clearTimeout(A.alienT); A.alienT = 0; A.alienHover = false; }
   if (botLive()) renderBotCard();
 }
@@ -1500,7 +1542,8 @@ function alienTick() {
 }
 document.addEventListener('pointerover', e => { if (e.target.matches && e.target.matches('img[data-alien]')) { A.alienHover = true; alienShow('stare'); } });
 document.addEventListener('pointerout', e => { if (e.target.matches && e.target.matches('img[data-alien]')) { A.alienHover = false; alienShow('base'); } });
-const botCanned = ev => pick(...(D.BOT_CANNED[ev] || D.BOT_CANNED.move)[Math.floor(Math.random() * (D.BOT_CANNED[ev] || D.BOT_CANNED.move).length)]);
+const botCanned = ev => { const C = A.alienMode && D.ALIEN_CANNED ? D.ALIEN_CANNED : D.BOT_CANNED, l = C[ev] || C.move;   // 1.27.6
+  return pick(...l[Math.floor(Math.random() * l.length)]); };
 function botLive() { const b = A.bot; return !!(b && !b.over && A.res === b.res); }
 const creditLink = () => `<button class="credit" data-credits="1">ⓘ ${esc(pick('Ліцензія фото', 'Photo license'))}</button>`;
 
@@ -1658,7 +1701,7 @@ async function botSay(event, ucis = null) {
   if (!['undo', 'hint'].includes(event) && cfg.ai && !A.aiOff) {
     try {
       const facts = botChatFacts(event, A.res.fens[0], ucis || botMoves(), b.color, b.result);
-      text = await fetchAiCoach(facts, S.lang, null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en) });
+      text = await fetchAiCoach(facts, S.lang, null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en), ...(A.alienMode ? { mood: 'alien' } : {}) });
     } catch (_) { text = null; }
   }
   if (A.bot !== b) return;
@@ -1720,6 +1763,7 @@ async function botThink(ucis, fen) {
   A.fakeBril = rage;
   try { await onUserMove(uci, quick); } finally { A.botInject = false; A.fakeBril = false; }
   if (rage) setTimeout(alienRage, quick ? 30 : 220);
+  if (A.alienMode) alienSfx();                 // 1.27.6: глибокий «голос прибульця» - на кожен хід Witty Alien
   if (board.premoves.length) setTimeout(botPremove, 15);           // хід наперед - одразу після ходу бота
   b.botMoves++;
   const all = botMoves(), st = botState(A.res.fens[0], all);

@@ -33,7 +33,7 @@ data = {
     "AI_COACH_URL": ca.AI_COACH_URL,
     # боти (1.24.0): дебютні варіанти вже як ходи UCI
     "BOT_LEVELS": list(ca.BOT_LEVELS),
-    "BOT_PHOTOS": ca.BOT_PHOTOS, "BOT_PHOTO_CREDITS": ca.BOT_PHOTO_CREDITS, "BOT_CANNED": ca.BOT_CANNED,
+    "BOT_PHOTOS": ca.BOT_PHOTOS, "BOT_PHOTO_CREDITS": ca.BOT_PHOTO_CREDITS, "BOT_CANNED": ca.BOT_CANNED, "ALIEN_CANNED": ca.ALIEN_CANNED,
     "BOTS": [dict({k: b[k] for k in ("id", "uk", "en", "years", "elo", "aggr", "risk", "d_uk", "d_en", "cat",
                                      "fact_uk", "fact_en")},
                   open_uk=OPEN[b["id"]][0], open_en=OPEN[b["id"]][1],

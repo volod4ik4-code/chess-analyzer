@@ -863,6 +863,7 @@ export function botChatFacts(event, root, ucis, botColor, result = null) {
   const me = botColor === 'w' ? pick('білими', 'White') : pick('чорними', 'Black');
   const out = [pick(`Ти граєш ${me}. Суперник - людина.`, `You play ${me}. Your opponent is a human.`)];
   if (event === 'start') { out.push(pick('Подія: партія тільки починається, привітайся.', 'Event: the game is just starting, greet the opponent.')); return out.join('\n'); }
+  if (event === 'alien') { out.push(pick('Подія: людина щойно відповіла 1...c6 - Каро-Канн. Ти чекав саме цього. Привітай її по-своєму.', 'Event: the human just answered 1...c6 - the Caro-Kann. You were waiting for exactly this. Greet them in your own way.')); return out.join('\n'); }
   if (event === 'end') {
     const won = result && result !== '1/2-1/2' && ((result === '1-0') === (botColor === 'w'));
     const what = result === '1/2-1/2' ? pick('нічия', 'a draw') : won ? pick('ти переміг', 'you won') : pick('людина перемогла тебе', 'the human beat you');
