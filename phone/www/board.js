@@ -5,6 +5,9 @@ import { Pos, START_FEN, fileOf, rankOf } from './logic.js';
 
 const PIECE_URL = {};
 for (const [k, v] of Object.entries(D.PIECES)) PIECE_URL[k] = 'data:image/png;base64,' + v;
+// 1.26.8: фігури-прибульці («режим прибульця»: чорними проти Witty Alien у Каро-Канн)
+const ALIEN_URL = {};
+for (const [k, v] of Object.entries(D.ALIEN_PIECES || {})) ALIEN_URL[k] = 'data:image/png;base64,' + v;
 
 export function mix(c1, c2, t) {
   const p = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
@@ -129,7 +132,7 @@ export class BoardView {
     const [x1, y1] = this.xy(from), [x2, y2] = this.xy(to);
     this.render(from);
     const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    img.setAttribute('href', PIECE_URL[p.color + p.type.toUpperCase()]);
+    img.setAttribute('href', (this.alien ? ALIEN_URL : PIECE_URL)[p.color + p.type.toUpperCase()]);
     img.setAttribute('width', 1); img.setAttribute('height', 1);
     this.svg.appendChild(img);
     const t0 = performance.now(), dur = 130;   // 1.25.6: трохи швидше (було 170)
@@ -153,7 +156,7 @@ export class BoardView {
   }
 
   render(hideSq = null) {
-    const th = D.BOARD_THEMES[this.theme] || D.BOARD_THEMES.Mint;
+    const th = this.alien ? D.ALIEN_THEME : (D.BOARD_THEMES[this.theme] || D.BOARD_THEMES.Mint);
     const pos = new Pos(this.fen);
     const grid = this.premoves.length ? this._grid() : null;      // фігури - уже на місцях після ходів наперед
     const lastFrom = this.last ? this.last.slice(0, 2) : null, lastTo = this.last ? this.last.slice(2, 4) : null;
@@ -191,7 +194,7 @@ export class BoardView {
     for (const [sq, p] of grid ? Object.entries(grid) : pos.pieceMapDesc()) {
       if (sq === hideSq || (this.drag && this.drag.mode === 'piece' && this.drag.moved && sq === this.drag.from)) continue;
       const [x, y] = this.xy(sq);
-      out.push(`<image href="${PIECE_URL[p.color + p.type.toUpperCase()]}" x="${x}" y="${y}" width="1" height="1"/>`);
+      out.push(`<image href="${(this.alien ? ALIEN_URL : PIECE_URL)[p.color + p.type.toUpperCase()]}" x="${x}" y="${y}" width="1" height="1"/>`);
     }
     if (this.arrow) {
       const [x1, y1] = this.xy(this.arrow.slice(0, 2)), [x2, y2] = this.xy(this.arrow.slice(2, 4));
@@ -206,7 +209,7 @@ export class BoardView {
     }
     if (this.drag && this.drag.mode === 'piece' && this.drag.moved) {
       const p = grid ? grid[this.drag.from] : this._premoving() ? this._grid()[this.drag.from] : pos.pieceAt(this.drag.from);
-      if (p) out.push(`<image href="${PIECE_URL[p.color + p.type.toUpperCase()]}" x="${this.drag.x - 0.5}" y="${this.drag.y - 0.5}" width="1" height="1"/>`);
+      if (p) out.push(`<image href="${(this.alien ? ALIEN_URL : PIECE_URL)[p.color + p.type.toUpperCase()]}" x="${this.drag.x - 0.5}" y="${this.drag.y - 0.5}" width="1" height="1"/>`);
     }
     this.svg.innerHTML = out.join('');
   }

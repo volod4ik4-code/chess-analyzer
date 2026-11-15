@@ -117,6 +117,7 @@ function applyLang() {
   document.title = tr('Аналізатор шахових партій');
   const T = (id, uk, en) => { $(id).textContent = pick(uk, en); };
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
+  if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
   T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPgn', '📋 PGN', '📋 PGN'); T('bNew', '♟ Нова', '♟ New');
   setRunLabel();
@@ -1008,6 +1009,7 @@ function newDoc() {
   flushSave();
   A.bot = null;                              // партія з ботом (якщо була) на цьому закінчується
   if (A.botUi) setTimeout(botUiSync, 0);
+  if (A.alienMode) alienSet(false);          // 1.26.8
   A.docId++;
   A.lines = []; A.notes = {}; A.shapes = {}; A.chapter = null;
   if (A.analysing) engine.stop();
@@ -1329,7 +1331,25 @@ const botPhoto = id => 'data:image/png;base64,' + D.BOT_PHOTOS[id];
 // 1.26.0: «тривожний» Witty Alien (задум автора програми) - поки його видно, фото інколи «збоїть»;
 // наведення або дотик - він «дивиться» (очі горять). Картинки з data-alien - картка партії, меню ботів.
 const ALIEN = 'wittyalien';
-const alienSrc = k => (k === 'base' ? botPhoto(ALIEN) : 'data:image/png;base64,' + D.BOT_PHOTO_FX[ALIEN][k]);
+const alienSrc = k => 'data:image/png;base64,' + D.BOT_PHOTO_FX[ALIEN][k];
+// 1.26.8: «режим прибульця» (користувач) - чорними проти Witty Alien у Каро-Канн (1.e4 c6): страшне фото, дошка,
+// фігури-прибульці, темний фон, «збої». Поза ним - звичайне фото без ефектів.
+function alienWanted() {
+  const b = A.bot;
+  if (!b || b.spec.id !== ALIEN || b.color !== 'w' || !A.res || A.res !== b.res) return false;
+  const m = botMoves();
+  return m[0] === 'e2e4' && m[1] === 'c7c6';
+}
+function alienCheck() { const on = alienWanted(); if (on !== !!A.alienMode) alienSet(on); }
+function alienSet(on) {
+  A.alienMode = on;
+  document.body.classList.toggle('alien', on);
+  board.alien = on; board.render();
+  $('title').textContent = on ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
+  if (on) setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.'));
+  else { clearTimeout(A.alienT); A.alienT = 0; A.alienHover = false; }
+  if (botLive()) renderBotCard();
+}
 const alienImgs = () => [...document.querySelectorAll('img[data-alien]')].filter(i => i.offsetParent);
 function alienShow(k) { const s = alienSrc(k); for (const i of alienImgs()) i.src = s; }
 function alienKick() { if (!A.alienT && alienImgs().length) A.alienT = setTimeout(alienTick, 2500 + Math.random() * 4000); }
@@ -1379,7 +1399,7 @@ function botsRenderBody() {
   const opt = (v, l, cur) => `<option value="${v}"${v === cur ? ' selected' : ''}>${esc(l)}</option>`;
   const done = b && b.over && A.res === b.res;
   // 1.26.0: галерея карток за групами (сучасні зірки, легенди, стрімери) + панель вибраного шахіста
-  const alien = x => (x.id === ALIEN ? ' data-alien="1"' : '');
+  const alien = () => '';            // 1.26.8: у меню - звичайне фото (страшне лише в «режимі прибульця»)
   const card = x => `<div class="bc${x.id === spec.id ? ' cur' : ''}" data-id="${x.id}"><img src="${botPhoto(x.id)}" alt=""${alien(x)}>`
     + `<b>${esc(botName(x))}</b><small>${x.elo}</small><span class="st">${starsText(stars[x.id] || 0)}</span></div>`;
   const groups = [['modern', pick('СУЧАСНІ ЗІРКИ', "TODAY'S STARS")], ['legend', pick('ЛЕГЕНДИ', 'LEGENDS')], ['streamer', pick('СТРІМЕРИ', 'STREAMERS')]];
@@ -1440,6 +1460,7 @@ function creditsRenderBody() {
 
 /** Екран гри або аналізатора - за тим, чи йде партія з ботом. */
 function botUiSync() {
+  alienCheck();
   const live = botLive();
   if (live) renderBotCard();
   if (live === !!A.botUi) return;
@@ -1456,7 +1477,8 @@ function botUiSync() {
 function renderBotCard() {
   const b = A.bot, spec = b.spec, real = b.elo === spec.elo, ok = '✓', no = '✗';
   const side = b.color === 'w' ? pick('білими', 'White') : pick('чорними', 'Black');
-  $('botCard').innerHTML = `<img src="${botPhoto(spec.id)}" alt=""${spec.id === ALIEN ? ' data-alien="1"' : ''}><div class="bi">`
+  const al = spec.id === ALIEN && A.alienMode;
+  $('botCard').innerHTML = `<img src="${al ? alienSrc(A.alienHover ? 'stare' : 'base') : botPhoto(spec.id)}" alt=""${al ? ' data-alien="1"' : ''}><div class="bi">`
     + `<div class="bn"><span>${esc(botName(spec))}</span>${creditLink()}</div>`
     + `<div class="bm">${esc(spec.years)} · ${esc(pick('грає', 'plays'))} ${esc(side)} · ${esc(pick('сила', 'strength'))} ${b.elo}</div>`
     + `<div class="st">${starsText((cfg.botStars || {})[spec.id] || 0)} <small style="color:var(--muted)">${esc(pick('ваш рекорд', 'your record'))}</small></div>`
@@ -1466,7 +1488,7 @@ function renderBotCard() {
   $('bbHint').textContent = pick('💡 Підказка', '💡 Hint') + (b.hints ? ' (0)' : ' (1)');
   $('bbHint').disabled = !!b.hints || !!b.hintWait;
   $('bbResign').textContent = pick('🏳 Здатися', '🏳 Resign');
-  if (spec.id === ALIEN) alienKick();
+  if (al) alienKick();
 }
 
 function botPlay() {
@@ -1643,8 +1665,9 @@ function botendRenderBody() {
   const draw = b.result === '1/2-1/2';
   const title = won ? pick('Перемога! 🏆', 'Victory! 🏆') : draw ? pick('Нічия', 'Draw') : pick('Поразка', 'Defeat');
   const st = botendStats(), rec = (cfg.botStars || {})[spec.id] || 0;
-  const photo = spec.id === ALIEN && !won && !draw ? alienSrc('stare') : botPhoto(spec.id);
-  $('boxBody').innerHTML = `<div class="behead"><img src="${photo}" alt=""${spec.id === ALIEN ? ' data-alien="1"' : ''}><div>`
+  const al = spec.id === ALIEN && A.alienMode;
+  const photo = al && !won && !draw ? alienSrc('stare') : (al ? alienSrc('base') : botPhoto(spec.id));
+  $('boxBody').innerHTML = `<div class="behead"><img src="${photo}" alt=""${al ? ' data-alien="1"' : ''}><div>`
     + `<div class="bet ${won ? 'win' : draw ? 'draw' : 'lose'}">${esc(title)}</div>`
     + `<small>${esc(botResultText().split('\n')[0])}<br>${esc(pick('Суперник: ', 'Opponent: '))}${esc(name)} (${b.elo})</small>`
     + `<div class="bes">${starsText(b.stars)}</div><small class="rec">${esc(b.record ? pick('Новий рекорд!', 'A new record!') : pick('Ваш рекорд: ', 'Your record: ') + starsText(rec))}</small></div></div>`
