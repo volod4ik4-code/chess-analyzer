@@ -289,7 +289,31 @@ function renderSummary() {
     rows.push(`<tr><td>${qBadge(q)} <span style="color:${QUALITY[q][0]}">${esc(qname(q))}</span></td>`
       + `<td class="n">${(s.white_counts || {})[q] || 0}</td><td class="n">${(s.black_counts || {})[q] || 0}</td></tr>`);
   }
+  // 1.26.6 (користувач): пропущені «Геніальні» - торкання числа показує їх по черзі
+  const mb = w => { const n = missedList(w).length; return `<td class="n">${n ? `<button class="missedBtn" data-missed="${w ? 'w' : 'b'}">${n}</button>` : 0}</td>`; };
+  rows.push(`<tr class="missed"><td>💎 <span style="color:${QUALITY['Геніальний'][0]}">${esc(pick('Пропущені геніальні', 'Missed brilliants'))}</span></td>${mb(true)}${mb(false)}</tr>`);
   el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`;
+}
+
+function missedList(white) {
+  const r = A.res;
+  if (!r || r.free) return [];
+  return r.moves.map((m, i) => (m.missed_bril && r.fens[i].includes(' w ') === white ? i : -1)).filter(i => i >= 0);
+}
+
+/** Торкання числа пропущених «Геніальних»: наступна така позиція (по колу) зі стрілкою геніального ходу. */
+function gotoMissed(white) {
+  const idx = missedList(white);
+  if (!idx.length) return;
+  const k = idx.find(i => i > A.index || (i === A.index && !A.missedShown)) ?? idx[0];
+  goto(k, false);
+  const m = A.res.moves[k], n = idx.indexOf(k) + 1;
+  board.arrow = m.best_uci; board.render();
+  setInfo(esc(pick(`💎 Пропущений геніальний хід ${n} з ${idx.length}: ${m.label} ${m.best_san} (зіграно ${m.san}).`,
+    `💎 Missed brilliant move ${n} of ${idx.length}: ${m.label} ${m.best_san} (${m.san} was played).`)),
+    esc(pick('Торкнись числа ще раз — наступний.', 'Tap the number again for the next one.')));
+  A.missedShown = true;
+  $('boardArea').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 // ------------------------------------------------------------ підказки ---
@@ -653,6 +677,7 @@ function goto(k, animate = null) {
   if (A.v) clearVar();
   const res = A.res, n = res.fens.length - 1;
   k = Math.max(0, Math.min(n, k));
+  A.missedShown = false;                    // 1.26.6: показ пропущеного «Геніального» - лише після gotoMissed
   const prev = A.index;
   A.index = k;
   if (animate === null) animate = k === prev + 1;
@@ -2205,6 +2230,7 @@ function wire() {
   click('bCc', openChesscom); click('bBots', () => toggleBox('bots'));
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
+  document.addEventListener('click', e => { const b = e.target.closest('[data-missed]'); if (b) gotoMissed(b.dataset.missed === 'w'); });
   document.addEventListener('click', e => {     // TikTok / Telegram / GitHub під верхніми кнопками (1.26.2)
     const b = e.target.closest('[data-link]'), u = b && D[b.dataset.link];
     if (u) { if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank'); }

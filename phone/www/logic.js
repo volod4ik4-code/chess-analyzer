@@ -572,7 +572,22 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
     label, san: playedSan, uci, best_uci: best, best_san: bestSan, loss: Math.trunc(loss), quality,
     book: bookHit || bookBad, book_bad: bookBad, opening: '', fen: after.fen(), acc,
     drop: bookHit ? 0 : drop, cap_sq: isCap ? uci.slice(2, 4) : null, ...(great && !checkHard && quality === 'Найкращий' ? { _great: true } : {}),
+    // 1.26.6: тут був «Геніальний» хід (best_san), але зіграно інший
+    ...(quality !== 'Геніальний' && quality !== 'Теорія' && !isBest && missedBrilliant(board, peBefore, rating) ? { missed_bril: true } : {}),
   }, peAfter];
+}
+
+/** 1.26.6: чи був найкращий хід рушія «Геніальним» (як missed_brilliant у ПК: drop 0, позиція після = до). */
+export function missedBrilliant(board, peBefore, rating = null) {
+  const best = peBefore && peBefore.best;
+  if (!best || !board.find(best)) return false;
+  const sign = board.turn === 'w' ? 1 : -1;
+  const winB = expectedPoints(sign * peBefore.cp, rating);
+  const secondW = peBefore.second != null ? expectedPoints(sign * peBefore.second, rating) : null;
+  const after = board.copy(); after.push(best);
+  if (after.isGameOver()) return false;
+  return grade(0, true, winB, winB, sacrificeAmount(board, best, after), secondW, 0, false, rating, false, 0,
+    isEndgame(board), false) === 'Геніальний';
 }
 
 const elo = v => { const n = parseInt(v, 10); return Number.isFinite(n) && String(n) === String(v).trim() ? n : null; };
