@@ -809,6 +809,7 @@ async function onUserMove(uci, dragged) {
   renderMoves();
   showVarState(v.index, !dragged);
   queueEval(v, row);
+  if (A.alienMode) alienSfx();                // 1.26.11: «голос прибульця» на кожен хід
 }
 
 // ---- черга оцінок ходів гравця: по одному, по порядку (кожна оцінка спирається на попередню)
@@ -1388,13 +1389,97 @@ function alienRage() {
   } catch (_) { /* без звуку */ }
 }
 
+// 1.26.11: звуки «режиму прибульця» - «голос прибульця» на кожен хід і жуткий саундтрек фоном. Ті самі формули,
+// що й у ПК (alien_sfx_samples / alien_bg_samples), звуки згенеровані, не взяті з відео.
+const ALIEN_SR = 16000, ALIEN_BG_T = 24;
+function alienSfxSamples(kind, sr = ALIEN_SR) {
+  const n = Math.floor(sr * 0.7), out = new Float32Array(n), tau = 2 * Math.PI;
+  let ph = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / sr, u = t / 0.7;
+    const f = kind === 0 ? 300 + 1100 * u ** 1.5 + 70 * Math.sin(tau * 18 * t)
+      : kind === 1 ? 1500 - 1200 * u + 90 * Math.sin(tau * 12 * t)
+        : 900 + 300 * Math.sin(tau * 3 * t) + (Math.floor(t / 0.06) % 3 === 1 ? 250 : 0);
+    ph += tau * f / sr;
+    let x = Math.sin(ph) + 0.3 * Math.sin(2 * ph);
+    x *= kind === 2 ? 0.5 + 0.5 * Math.sin(tau * 22 * t) : 0.6 + 0.4 * Math.sin(tau * 33 * t);
+    out[i] = 0.55 * x * Math.min(1, t / 0.02) * Math.exp(-3.2 * u) * Math.min(1, (0.7 - t) / 0.05);
+  }
+  return out;
+}
+function alienBgSamples(sr = ALIEN_SR, T = ALIEN_BG_T) {
+  const n = sr * T, out = new Float32Array(n), tau = 2 * Math.PI;
+  let lp = 0, tp = 0, seed = 7;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 1073741824 - 1; };
+  for (let i = 0; i < n; i++) {
+    const t = i / sr;
+    let x = 0.22 * Math.sin(tau * 55 * t) + 0.18 * Math.sin(tau * 55.75 * t)
+      + 0.10 * Math.sin(tau * 82.5 * t) * (0.6 + 0.4 * Math.sin(tau * t / 8))
+      + 0.08 * Math.sin(tau * 77.75 * t) * (0.5 + 0.5 * Math.sin(tau * t / 12 + 1));
+    lp += 0.02 * (rnd() - lp);
+    x += 2.2 * lp * Math.sin(Math.PI * t / T) ** 2 * (0.6 + 0.4 * Math.sin(tau * t / 6));
+    const tb = t % 1.6;
+    if (tb < 0.2) x += 0.5 * Math.sin(tau * 48 * tb) * Math.exp(-tb * 25);
+    else if (tb >= 0.28 && tb < 0.48) x += 0.35 * Math.sin(tau * 44 * (tb - 0.28)) * Math.exp(-(tb - 0.28) * 25);
+    for (const t0 of [3, 11, 19]) if (t >= t0 && t < t0 + 3) {
+      const v = (t - t0) / 3;
+      tp += tau * (700 + 400 * Math.sin(Math.PI * v) + 25 * Math.sin(tau * 6 * (t - t0))) / sr;
+      x += 0.12 * Math.sin(Math.PI * v) ** 2 * Math.sin(tp);
+    }
+    out[i] = 0.9 * x / (1 + Math.abs(x));
+  }
+  return out;
+}
+function alienAudioCtx() {
+  try {
+    const ctx = A.audio || (A.audio = new (window.AudioContext || window.webkitAudioContext)());
+    if (ctx.state === 'suspended') ctx.resume();
+    return ctx;
+  } catch (_) { return null; }
+}
+function alienBuf(ctx, data) { const b = ctx.createBuffer(1, data.length, ALIEN_SR); b.getChannelData(0).set(data); return b; }
+function alienSfx() {
+  const ctx = alienAudioCtx();
+  if (!ctx) return;
+  A.alienSfxBufs ||= [0, 1, 2].map(k => alienBuf(ctx, alienSfxSamples(k)));
+  const src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = A.alienSfxBufs[Math.floor(Math.random() * 3)];
+  g.gain.value = 0.8;
+  src.connect(g).connect(ctx.destination); src.start();
+}
+function alienBg(on) {
+  const ctx = alienAudioCtx();
+  if (!ctx) return;
+  if (!on) {
+    if (A.alienBgSrc) {
+      const { src, g } = A.alienBgSrc; A.alienBgSrc = null;
+      g.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
+      setTimeout(() => { try { src.stop(); } catch (_) { /* */ } }, 1500);
+    }
+    return;
+  }
+  if (A.alienBgSrc) return;
+  A.alienBgBuf ||= alienBuf(ctx, alienBgSamples());
+  const src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = A.alienBgBuf; src.loop = true;
+  g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(0.45, ctx.currentTime + 2);
+  src.connect(g).connect(ctx.destination); src.start();
+  A.alienBgSrc = { src, g };
+}
+// програма згорнута - звук на паузі (інакше Android грав би саундтрек у фоні)
+document.addEventListener('visibilitychange', () => {
+  if (!A.audio) return;
+  if (document.hidden) A.audio.suspend(); else if (A.alienBgSrc) A.audio.resume();
+});
+
 function alienCheck() { const on = alienWanted(); if (on !== !!A.alienMode) alienSet(on); }
 function alienSet(on) {
   A.alienMode = on;
   document.body.classList.toggle('alien', on);
   board.alien = on; board.render();
   $('title').textContent = on ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
-  if (on) setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.'));
+  alienBg(on);
+  if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); alienSfx(); }
   else { clearTimeout(A.alienT); A.alienT = 0; A.alienHover = false; }
   if (botLive()) renderBotCard();
 }
