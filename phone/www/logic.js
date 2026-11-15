@@ -795,6 +795,15 @@ const sqDist = (a, b) => Math.max(Math.abs(a.charCodeAt(0) - b.charCodeAt(0)), M
 /** Наступний хід з репертуару бота, якщо партія досі йде одним з його варіантів (інакше null). */
 export function botBookMove(bot, ucis, white) {
   const n = ucis.length, key = ucis.join(' ');
+  if (bot.id === 'wittyalien' && D.WITTY_BOOK) {      // 1.27.4: його ходи з тією ж частотою, що в його партіях
+    const raw = D.WITTY_BOOK[white ? 'w' : 'b'][key];
+    if (raw) {
+      const opts = raw.split(',').map(x => x.split(':')).map(([u, c]) => [u, +c]);
+      let r = Math.random() * opts.reduce((s, o) => s + o[1], 0);
+      for (const [u, c] of opts) { r -= c; if (r < 0) return u; }
+      return opts[opts.length - 1][0];
+    }
+  }
   const nxt = (white ? bot.w : bot.b).filter(ln => ln.length > n && ln.slice(0, n).join(' ') === key).map(ln => ln[n]);
   return nxt.length ? nxt[Math.floor(Math.random() * nxt.length)] : null;
 }

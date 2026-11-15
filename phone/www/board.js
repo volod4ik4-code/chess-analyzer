@@ -132,7 +132,7 @@ export class BoardView {
     const [x1, y1] = this.xy(from), [x2, y2] = this.xy(to);
     this.render(from);
     const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    img.setAttribute('href', (this.alien ? ALIEN_URL : PIECE_URL)[p.color + p.type.toUpperCase()]);
+    img.setAttribute('href', this._pieceUrl(p));
     img.setAttribute('width', 1); img.setAttribute('height', 1);
     this.svg.appendChild(img);
     const t0 = performance.now(), dur = 130;   // 1.25.6: трохи швидше (було 170)
@@ -154,6 +154,9 @@ export class BoardView {
     };
     this.anim = { raf: requestAnimationFrame(step), timer: setTimeout(finish, dur + 80) };
   }
+
+  // 1.27.4: у «режимі прибульця» фіолетові прибульці - лише фігури Witty Alien (alienSide), у гравця - звичайні
+  _pieceUrl(p) { return this.alien && p.color === (this.alienSide || 'w') ? ALIEN_URL['b' + p.type.toUpperCase()] : PIECE_URL[p.color + p.type.toUpperCase()]; }
 
   render(hideSq = null) {
     const th = this.alien ? D.ALIEN_THEME : (D.BOARD_THEMES[this.theme] || D.BOARD_THEMES.Mint);
@@ -194,7 +197,7 @@ export class BoardView {
     for (const [sq, p] of grid ? Object.entries(grid) : pos.pieceMapDesc()) {
       if (sq === hideSq || (this.drag && this.drag.mode === 'piece' && this.drag.moved && sq === this.drag.from)) continue;
       const [x, y] = this.xy(sq);
-      out.push(`<image href="${(this.alien ? ALIEN_URL : PIECE_URL)[p.color + p.type.toUpperCase()]}" x="${x}" y="${y}" width="1" height="1"/>`);
+      out.push(`<image href="${this._pieceUrl(p)}" x="${x}" y="${y}" width="1" height="1"/>`);
     }
     if (this.arrow) {
       const [x1, y1] = this.xy(this.arrow.slice(0, 2)), [x2, y2] = this.xy(this.arrow.slice(2, 4));
@@ -209,7 +212,7 @@ export class BoardView {
     }
     if (this.drag && this.drag.mode === 'piece' && this.drag.moved) {
       const p = grid ? grid[this.drag.from] : this._premoving() ? this._grid()[this.drag.from] : pos.pieceAt(this.drag.from);
-      if (p) out.push(`<image href="${(this.alien ? ALIEN_URL : PIECE_URL)[p.color + p.type.toUpperCase()]}" x="${this.drag.x - 0.5}" y="${this.drag.y - 0.5}" width="1" height="1"/>`);
+      if (p) out.push(`<image href="${this._pieceUrl(p)}" x="${this.drag.x - 0.5}" y="${this.drag.y - 0.5}" width="1" height="1"/>`);
     }
     this.svg.innerHTML = out.join('');
   }

@@ -1476,7 +1476,7 @@ function alienCheck() { const on = alienWanted(); if (on !== !!A.alienMode) alie
 function alienSet(on) {
   A.alienMode = on;
   document.body.classList.toggle('alien', on);
-  board.alien = on; board.render();
+  board.alien = on; if (A.bot) board.alienSide = A.bot.color; board.render();
   $('title').textContent = on ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
   alienBg(on);
   if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); alienSfx(); }
