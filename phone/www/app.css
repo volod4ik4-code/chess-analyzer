@@ -17,6 +17,17 @@ body.alien .card { box-shadow: inset 0 0 0 1px #3d1f5c, 0 0 14px rgba(57, 255, 2
   96% { filter: brightness(.55) contrast(1.8); }
   97% { filter: none; }
 }
+/* 1.27.7: другий «лютий глюк» - 1...c6 проти Witty Alien */
+body.rage2 #app { animation: rage2App .27s infinite steps(1); }
+#rage2Fx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 9999; pointer-events: none;
+  image-rendering: pixelated; mix-blend-mode: screen; opacity: .75; }
+body.rage2 #board svg image { transition: none; }
+@keyframes rage2App {
+  0% { filter: invert(1) contrast(1.6); transform: translateY(6px); }
+  30% { filter: grayscale(1) contrast(2.2) brightness(.6); transform: translateY(-8px) scaleY(1.03); }
+  60% { filter: hue-rotate(160deg) saturate(3) blur(1px); transform: translateX(5px) skewY(-1deg); }
+  85% { filter: brightness(1.8) contrast(1.4); transform: none; }
+}
 /* 1.26.9: «лютий глюк» - Witty Alien бере конем на f7 */
 body.rage #app { animation: rageApp .23s infinite steps(1); }
 body.rage #board { animation: rageBoard .17s infinite steps(1); }

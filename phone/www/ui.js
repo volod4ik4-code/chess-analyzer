@@ -19,7 +19,7 @@ const store = {
 
 // ------------------------------------------------------------ налаштування ---
 const DEF = { lang: 'en', board: D.DEFAULTS.board, depth: D.DEFAULTS.depth, arrow: D.DEFAULTS.arrow,
-  anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach,
+  anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach, sound: true,
   engine: window.AndroidBridge && window.AndroidBridge.engineStart ? 'native' : 'lite',
   bot: [D.BOTS[0].id, 0, 0], botStars: {} };      // останній вибір у «Ботах»: хто, колір (0 білі / 1 чорні / 2 випадково), сила
 const saved = store.get('ca.settings', null);
@@ -214,7 +214,7 @@ function lineText(line, budget = 34) {
   const parts = [];
   for (let i = 0; i < line.rows.length; i++) {
     const r = line.rows[i];
-    const part = (i === 0 || r.label.endsWith('.') ? r.label + r.san : r.san) + (r.fake_bril && botLive() ? '!!' : '');
+    const part = (i === 0 || r.label.endsWith('.') ? r.label + r.san : r.san) + (botLive() ? (r.fake_bril ? '!!' : r.fake_blunder ? '??' : '') : '');
     if (parts.length && [...parts, part].join(' ').length > budget) { parts.push('…'); break; }
     parts.push(part);
   }
@@ -223,8 +223,8 @@ function lineText(line, budget = 34) {
 
 function qBadge(q, r = null) {
   if (botLive()) {                           // у партії з ботом - без оцінок (1.26.10: крім «!!» за Nxf7 Witty Alien)
-    if (!r || !r.fake_bril) return '';
-    q = 'Геніальний';
+    if (!r || !(r.fake_bril || r.fake_blunder)) return '';
+    q = r.fake_bril ? 'Геніальний' : 'Груба помилка';
   }
   if (!QUALITY[q]) return '<span class="dot pend">…</span>';     // хід ще оцінюється
   const [c, s] = QUALITY[q];
@@ -691,6 +691,7 @@ function goto(k, animate = null) {
   const prev = A.index;
   A.index = k;
   if (animate === null) animate = k === prev + 1;
+  if (k === prev + 1 && k >= 1) moveSound(res.moves[k - 1].san);       // 1.27.7
   let last = null, badge = null, info = esc(tr('Початкова позиція'));
   const rec = recommend(res.fens[k], res.pos_info[k]);
   if (k >= 1) {
@@ -803,6 +804,9 @@ async function onUserMove(uci, dragged) {
   const after = b.copy(); after.push(uci);
   const row = { label: b.turn === 'w' ? `${b.fullmove}.` : `${b.fullmove}…`, san: b.san(uci), uci,
     fen: after.fen(), pending: true, quality: null, ...(A.botInject && A.fakeBril ? { fake_bril: true } : {}) };
+  // 1.27.7: Каро-Канн проти Witty Alien - «??» лише поки йде гра
+  if (!A.botInject && uci === 'c7c6' && b.fullmove === 1 && botLive() && A.bot.spec.id === 'wittyalien' && A.bot.color === 'w') row.fake_blunder = true;
+  moveSound(row.san);
   v.rows.push(row); v.fens.push(row.fen); v.pes.push(null);
   v.index = v.rows.length;
   if (!A.lines.includes(v)) { v.id = nextLineId(); A.lines.push(v); }
@@ -894,6 +898,7 @@ function gotoVar(j, animate = null) {
   const prev = v.index;
   v.index = j;
   if (animate === null) animate = j === prev + 1;
+  if (j === prev + 1 && j >= 1) moveSound(v.rows[j - 1].san);         // 1.27.7
   showVarState(j, animate);
 }
 
@@ -907,7 +912,8 @@ function showVarState(j, animate = false) {
   else {
     const row = v.rows[j - 1];
     last = row.uci;
-    if (row.fake_bril && botLive()) { badge = [QUALITY['Геніальний'][0], QUALITY['Геніальний'][1]]; info = esc(`${row.label} ${row.san} — ${qname('Геніальний')}.`); }
+    const fake = row.fake_bril ? 'Геніальний' : row.fake_blunder ? 'Груба помилка' : null;
+    if (fake && botLive()) { badge = [QUALITY[fake][0], QUALITY[fake][1]]; info = esc(`${row.label} ${row.san} — ${qname(fake)}.`); }
     else if (row.pending) info = esc(`⏳ ${row.label} ${row.san} — ${pick('Stockfish оцінює цей хід…', 'Stockfish is evaluating this move…')}`);
     else { badge = botLive() ? null : [QUALITY[row.quality][0], QUALITY[row.quality][1]]; info = moveInfo(row); }
   }
@@ -1514,6 +1520,127 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) A.audio.suspend(); else if (A.alienBgSrc) A.audio.resume();
 });
 
+// 1.27.7: звуки ходів (свої, синтезовані: дерев'яний «тук», як на lichess / chess.com) - ті самі формули, що в ПК
+const MOVE_SR = 22050;
+function moveSoundSamples(kind, sr = MOVE_SR) {
+  const tau = 2 * Math.PI, dur = { move: 0.16, capture: 0.2, castle: 0.3, check: 0.42, promote: 0.5 }[kind];
+  const n = Math.floor(sr * dur), out = new Float32Array(n);
+  let seed = 5;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 1073741824 - 1; };
+  const tock = (t0, base, amp, bright) => {
+    const i0 = Math.floor(t0 * sr), modes = [[base, 1, 0.028], [base * 2.52, 0.5, 0.016], [base * 4.7, 0.25 * bright, 0.009]];
+    let lp = 0;
+    for (let i = i0; i < n; i++) {
+      const tt = (i - i0) / sr;
+      if (tt > 0.12) break;
+      let v = 0;
+      for (const [f, a, d] of modes) v += a * Math.sin(tau * f * tt) * Math.exp(-tt / d);
+      if (tt < 0.004) { lp += 0.5 * (rnd() - lp); v += 0.9 * bright * lp * (1 - tt / 0.004); }
+      out[i] += amp * v;
+    }
+  };
+  const bell = (t0, freqs, amp, decay, rise = 0) => {
+    for (let i = Math.floor(t0 * sr); i < n; i++) {
+      const tt = i / sr - t0;
+      let v = 0;
+      for (const f of freqs) v += Math.sin(tau * f * (1 + rise * tt) * tt);
+      out[i] += amp * v * Math.exp(-tt / decay) * Math.min(1, tt / 0.005);
+    }
+  };
+  if (kind === 'move') tock(0, 480, 1, 1);
+  else if (kind === 'capture') { tock(0, 640, 1.1, 1.7); tock(0.03, 430, 0.6, 0.8); }
+  else if (kind === 'castle') { tock(0, 480, 0.9, 1); tock(0.12, 450, 0.9, 1); }
+  else if (kind === 'check') { tock(0, 500, 0.9, 1); bell(0.05, [880, 1320], 0.22, 0.12); }
+  else { tock(0, 480, 0.9, 1); bell(0.06, [660, 990], 0.2, 0.18, 0.6); }
+  let peak = 1e-9;
+  for (const v of out) peak = Math.max(peak, Math.abs(v));
+  for (let i = 0; i < n; i++) out[i] = 0.75 * out[i] / peak * Math.min(1, (dur - i / sr) / 0.02);
+  return out;
+}
+const moveSoundKind = san => san.startsWith('O-O') ? 'castle' : san.includes('=') ? 'promote'
+  : /[+#]$/.test(san) ? 'check' : san.includes('x') ? 'capture' : 'move';
+function moveSound(san) {
+  if (!san || cfg.sound === false) return;
+  const ctx = alienAudioCtx();
+  if (!ctx) return;
+  A.moveBufs ||= {};
+  const kind = moveSoundKind(san);
+  if (!A.moveBufs[kind]) { const d = moveSoundSamples(kind), b = ctx.createBuffer(1, d.length, MOVE_SR); b.getChannelData(0).set(d); A.moveBufs[kind] = b; }
+  const src = ctx.createBufferSource(), g = ctx.createGain();
+  src.buffer = A.moveBufs[kind]; g.gain.value = 0.9;
+  src.connect(g).connect(ctx.destination); src.start();
+}
+
+// 1.27.7: другий лютий звук - на 1...c6 проти Witty Alien (як alien_rage2_samples у ПК)
+function alienRage2Samples(sr = ALIEN_SR) {
+  const tau = 2 * Math.PI, dur = 2.4, n = Math.floor(sr * dur), voice = alienSfxSamples(2, sr), out = new Float32Array(n);
+  let seed = 23, ph = 0, lp = 0;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 1073741824 - 1; };
+  for (let i = 0; i < n; i++) {
+    const t = i / sr, f = 95 + 55 * Math.sin(tau * 1.3 * t);
+    ph += f / sr;
+    let x = Math.sin(tau * ph) + 0.5 * Math.sin(tau * 2 * ph) + 0.3 * (2 * (ph % 1) - 1);
+    x = Math.tanh(3.5 * x);
+    x *= (t * 12) % 1 < 0.6 ? 1 : 0.25;
+    lp += 0.05 * (rnd() - lp);
+    x += 1.6 * lp * Math.sin(tau * 0.7 * t) ** 2;
+    const k = Math.floor(i * 0.7);
+    if (k < voice.length) x += 0.9 * voice[k];
+    out[i] = x * Math.min(1, t / 0.05) * Math.min(1, (dur - t) / 0.4);
+  }
+  let peak = 1e-9;
+  for (const v of out) peak = Math.max(peak, Math.abs(v));
+  for (let i = 0; i < n; i++) out[i] *= 0.8 / peak;
+  return out;
+}
+
+// 1.27.7: другий «лютий глюк» (~2,4 с) - на 1...c6 проти Witty Alien: телевізійний шум, фігури тремтять,
+// чорна смуга котиться вниз, як на старій касеті, спалахи негативу, «c6??»; свій звук
+function alienRage2() {
+  if (A.rage) return;
+  A.rage = true;
+  document.body.classList.add('rage2');
+  const fx = document.createElement('canvas');
+  fx.id = 'rage2Fx';
+  const W = fx.width = 120, H = fx.height = 200;
+  document.body.appendChild(fx);
+  const g2 = fx.getContext('2d');
+  const img = $('botCard') && $('botCard').querySelector('img');
+  const titles = ['c̷6̸?̵?̶', '▓▓ C6 ▓▓', 'Ẅ̵̡I̷̛T̸̨T̶Y̷ ̸S̷E̸E̵S̶', '░ ?? ░'];
+  try {
+    const ctx = alienAudioCtx();
+    if (ctx) {
+      A.rage2Buf ||= alienBuf(ctx, alienRage2Samples());
+      const src = ctx.createBufferSource(); src.buffer = A.rage2Buf; src.connect(ctx.destination); src.start();
+    }
+  } catch (_) { /* без звуку */ }
+  let i = 0;
+  const tick = () => {
+    if (i++ >= 30) {
+      fx.remove(); document.body.classList.remove('rage2'); A.rage = false;
+      $('title').textContent = A.alienMode ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
+      board.render();
+      if (botLive()) renderBotCard();
+      setStatus(() => pick("👽 c6?? Він це запам'ятав.", '👽 c6?? He will remember that.'));
+      return;
+    }
+    const im = g2.createImageData(W, H), d = im.data;              // телевізійний шум
+    for (let k = 0; k < d.length; k += 4) { const v = Math.random() * 255; d[k] = v * 0.6; d[k + 1] = v; d[k + 2] = v * 0.6; d[k + 3] = Math.random() < 0.45 ? 150 : 0; }
+    g2.putImageData(im, 0, 0);
+    const yb = (i * H / 10) % H;                                    // смуга, що котиться
+    g2.fillStyle = '#000'; g2.fillRect(0, yb, W, H / 16);
+    if (i % 5 === 1 || i % 5 === 2) { g2.fillStyle = Math.random() < 0.5 ? 'rgba(255,255,255,.55)' : 'rgba(255,0,51,.5)'; g2.fillRect(0, 0, W, H); }
+    g2.fillStyle = Math.random() < 0.5 ? '#ff1744' : '#fff';
+    g2.font = 'bold 26px Consolas, monospace'; g2.textAlign = 'center';
+    g2.fillText(Math.random() < 0.6 ? 'c6??' : pick('ПОМИЛКА', 'ERROR'), W / 2 + (Math.random() - 0.5) * 30, H / 2 + (Math.random() - 0.5) * 60);
+    $('title').textContent = titles[Math.floor(Math.random() * titles.length)];
+    if (img) img.src = alienSrc(['neg', 'stare', 'glitch', 'stare'][Math.floor(Math.random() * 4)]);
+    for (const p of document.querySelectorAll('#board svg image')) p.style.transform = `translate(${(Math.random() - 0.5) * 0.7}px, ${(Math.random() - 0.5) * 0.7}px)`;
+    setTimeout(tick, 60 + Math.random() * 40);
+  };
+  tick();
+}
+
 function alienCheck() { const on = alienWanted(); if (on !== !!A.alienMode) alienSet(on); }
 function alienSet(on) {
   A.alienMode = on;
@@ -1521,7 +1648,7 @@ function alienSet(on) {
   board.alien = on; if (A.bot) board.alienSide = A.bot.color; board.render();
   $('title').textContent = on ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
   alienBg(on);
-  if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); alienSfx(); if (botLive()) botSay('alien'); }
+  if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); if (botMoves().slice(-1)[0] === 'c7c6') setTimeout(alienRage2, 250); else alienSfx(); if (botLive()) botSay('alien'); }
   else { clearTimeout(A.alienT); A.alienT = 0; A.alienHover = false; }
   if (botLive()) renderBotCard();
 }
@@ -2037,7 +2164,7 @@ function openBox(kind) {
         ['lite', pick('Stockfish 19 lite — швидший, слабший', 'Stockfish 19 lite — faster, weaker')]], cfg.engine)}`
       + (A.engDl ? `<div class="hint">${esc(pick('Рушій «усі ядра» завантажується…', 'The "all cores" engine is downloading…'))}</div>` : '')
       + `<label class="f">${esc(tr('Стрілка'))}</label>${sel('sArrow', D.ARROW_MODES.map(m => [m, pick(...ARROW_LABELS[m])]), cfg.arrow)}`
-      + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
+      + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar) + chk('sSound', tr('Звуки ходів'), cfg.sound !== false)
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
       + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label><div class="hint" id="sStats" style="white-space:pre-line"></div>`
@@ -2056,6 +2183,7 @@ function openBox(kind) {
     on('sCoach', 'change', e => { cfg.coach = e.target.checked; saveCfg(); refreshView(); if (!A.res) showCoach(null); });
     on('sAi', 'change', e => { cfg.ai = e.target.checked; saveCfg(); refreshView(); });
     on('sEval', 'change', e => { cfg.evalbar = e.target.checked; saveCfg(); layout(); });
+    on('sSound', 'change', e => { cfg.sound = e.target.checked; saveCfg(); if (cfg.sound) moveSound('e4'); });
     on('sReset', 'click', () => {
       Object.assign(cfg, DEF, { lang: cfg.lang });
       saveCfg(); board.theme = cfg.board; layout(); refreshView(); board.render(); openBox('settings');

@@ -660,6 +660,106 @@ def alien_bg_samples(sr=ALIEN_SR, T=ALIEN_BG_T):
     return out
 
 
+MOVE_SR = 22050          # 1.27.7: звуки ходів (свої, синтезовані: дерев'яний «тук», як на lichess / chess.com)
+
+
+def move_sound_samples(kind, sr=MOVE_SR):
+    """Звук ходу (значення -1..1): move - «тук» фігури по дошці, capture - різкіше «клац» і другий удар,
+    castle - два «тук», check - «тук» і тихий дзвіночок, promote - «тук» і дзвіночок угору.
+    Модальний синтез: кілька загасаючих синусоїд (резонанси дерева) і короткий шумовий удар.
+    Ті самі формули - у телефоні (ui.js moveSoundSamples)."""
+    tau = 2 * math.pi
+    dur = {"move": 0.16, "capture": 0.2, "castle": 0.3, "check": 0.42, "promote": 0.5}[kind]
+    n = int(sr * dur)
+    out = [0.0] * n
+    seed = [5]
+
+    def rnd():
+        seed[0] = (seed[0] * 1103515245 + 12345) % 2147483648
+        return seed[0] / 1073741824 - 1
+
+    def tock(t0, base, amp, bright):
+        i0 = int(t0 * sr)
+        modes = ((base, 1.0, 0.028), (base * 2.52, 0.5, 0.016), (base * 4.7, 0.25 * bright, 0.009))
+        lp = 0.0
+        for i in range(i0, n):
+            tt = (i - i0) / sr
+            if tt > 0.12:
+                break
+            v = sum(a * math.sin(tau * f * tt) * math.exp(-tt / d) for f, a, d in modes)
+            if tt < 0.004:                                  # удар: короткий приглушений шум
+                lp += 0.5 * (rnd() - lp)
+                v += 0.9 * bright * lp * (1 - tt / 0.004)
+            out[i] += amp * v
+
+    def bell(t0, freqs, amp, decay, rise=0.0):
+        i0 = int(t0 * sr)
+        for i in range(i0, n):
+            tt = (i - i0) / sr
+            out[i] += amp * sum(math.sin(tau * f * (1 + rise * tt) * tt) for f in freqs) * math.exp(-tt / decay) \
+                * min(1.0, tt / 0.005)
+
+    if kind == "move":
+        tock(0, 480, 1.0, 1.0)
+    elif kind == "capture":
+        tock(0, 640, 1.1, 1.7)
+        tock(0.03, 430, 0.6, 0.8)
+    elif kind == "castle":
+        tock(0, 480, 0.9, 1.0)
+        tock(0.12, 450, 0.9, 1.0)
+    elif kind == "check":
+        tock(0, 500, 0.9, 1.0)
+        bell(0.05, (880, 1320), 0.22, 0.12)
+    else:
+        tock(0, 480, 0.9, 1.0)
+        bell(0.06, (660, 990), 0.2, 0.18, rise=0.6)
+    peak = max(1e-9, max(abs(v) for v in out))
+    return [0.75 * v / peak * min(1.0, (dur - i / sr) / 0.02) for i, v in enumerate(out)]
+
+
+def move_sound_kind(san):
+    if san.startswith("O-O"):
+        return "castle"
+    if "=" in san:
+        return "promote"
+    if san.endswith(("+", "#")):
+        return "check"
+    return "capture" if "x" in san else "move"
+
+
+def alien_rage2_samples(sr=ALIEN_SR):
+    """1.27.7: другий лютий звук - на 1...c6 проти Witty Alien: низька виюча сирена (95+-55 Гц) з перевантаженням,
+    уривчаста (12 разів на секунду), з гулом шуму й клацанням голосу прибульця, сповільненим у 0,7 раза.
+    Ті самі формули - у телефоні (ui.js alienRage2Samples)."""
+    tau = 2 * math.pi
+    dur = 2.4
+    n = int(sr * dur)
+    voice = alien_sfx_samples(2, sr)
+    seed = [23]
+
+    def rnd():
+        seed[0] = (seed[0] * 1103515245 + 12345) % 2147483648
+        return seed[0] / 1073741824 - 1
+
+    out = [0.0] * n
+    ph = lp = 0.0
+    for i in range(n):
+        t = i / sr
+        f = 95 + 55 * math.sin(tau * 1.3 * t)
+        ph += f / sr
+        x = math.sin(tau * ph) + 0.5 * math.sin(tau * 2 * ph) + 0.3 * (2 * (ph % 1.0) - 1)
+        x = math.tanh(3.5 * x)
+        x *= 1.0 if (t * 12) % 1.0 < 0.6 else 0.25
+        lp += 0.05 * (rnd() - lp)
+        x += 1.6 * lp * math.sin(tau * 0.7 * t) ** 2
+        k = int(i * 0.7)
+        if k < len(voice):
+            x += 0.9 * voice[k]
+        out[i] = x * min(1.0, t / 0.05) * min(1.0, (dur - t) / 0.4)
+    peak = max(1e-9, max(abs(v) for v in out))
+    return [0.8 * v / peak for v in out]
+
+
 def wav_bytes(samples, sr=ALIEN_SR):
     """WAV 16 біт моно без модуля wave (його немає в запускачі)."""
     import struct
@@ -704,13 +804,13 @@ STATE = {"lang": "en"}   # англійська за замовчуванням;
 # Стандартні налаштування: так програма виглядає при першому запуску і після «Скинути».
 # Файл рушія за замовчуванням - знайдений автоматично (bundled_engine).
 DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
-            "anim": True, "coach": True, "evalbar": True, "ai_coach": True}
+            "anim": True, "coach": True, "evalbar": True, "ai_coach": True, "sound": True}
 
 # ---------------------------------------------------------------- версії ---
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.27.6"
+APP_VERSION = "1.27.7"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -722,6 +822,14 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.27.7", "2026-11-15 22:21", [
+        ("Звуки ходів: хід, взяття, шах, рокіровка й перетворення пішака — у грі, у своїх варіантах і під час перегляду "
+         "партії. Вимкнути можна в ⚙ «Звуки ходів».",
+         "Move sounds: move, capture, check, castling and promotion — in games, in your own lines and while stepping "
+         "through a game. Turn them off in ⚙ \"Move sounds\"."),
+        ("Witty Alien дуже не любить, коли йому відповідають 1…c6… 👽",
+         "Witty Alien really does not like it when you answer 1…c6… 👽"),
+    ]),
     ("1.27.6", "2026-11-15 22:07", [
         ("Каро-Канн проти Witty Alien: його ходи супроводжує глибокий низький голос прибульця, а сам він говорить моторошно… 👽",
          "Caro-Kann against Witty Alien: his moves come with a deep, low alien voice, and he talks in a creepy way… 👽"),
@@ -1342,7 +1450,7 @@ TR_EN = {
     "☕  Підтримати кавою": "☕  Buy me a coffee",
     "Файл рушія": "Engine file", "Скинути налаштування": "Reset settings",
     "Стрілка": "Arrow", "Тренер": "Coach", "Шкала оцінки": "Eval bar",
-    "ШІ-тренер (потрібен інтернет)": "AI coach (needs internet)",
+    "ШІ-тренер (потрібен інтернет)": "AI coach (needs internet)", "Звуки ходів": "Move sounds",
     "📋  PGN з буфера": "📋  PGN from clipboard", "📂  Відкрити файл": "📂  Open file",
     "♟  Нова партія": "♟  New game", "▶  Аналізувати": "▶  Analyze",
     "Розмір": "Size", "Дошка": "Board", "Мова": "Language",
@@ -5523,7 +5631,8 @@ class MoveList(tk.Canvas):
                 j += 1
                 pe = main["line"]["pes"][main["j"]] if main["j"] < len(main["line"]["pes"]) else None
                 col.append({"label": main["row"]["label"], "san": main["row"]["san"],
-                            "q": (("Геніальний" if main["row"].get("fake_bril") else None) if self.plain
+                            "q": (("Геніальний" if main["row"].get("fake_bril") else
+                                   "Груба помилка" if main["row"].get("fake_blunder") else None) if self.plain
                                   else main["row"].get("quality")),
                             "spent": None, "cp": pe["cp"] if pe and not self.plain else None, "hit": ("node", (main["line"], main["j"])),
                             "sel": main["key"] == self.cur_node})
@@ -5641,7 +5750,8 @@ class MoveList(tk.Canvas):
             white = r["label"].endswith(".")
             san = figurine(r["san"], white)
             text = (r["label"] + san) if (white or numbered) else san
-            q = ("Геніальний" if r.get("fake_bril") else None) if self.plain else r.get("quality")
+            q = (("Геніальний" if r.get("fake_bril") else "Груба помилка" if r.get("fake_blunder") else None)
+                 if self.plain else r.get("quality"))
             color = (QUALITY[q][0] if q in BAD or q in ("Геніальний", "Чудовий") else
                      ("#d9d6d1" if depth == 0 else "#a9a59f"))
             put(text, f_main if depth == 0 else f_sub, color, node)
@@ -6093,6 +6203,7 @@ class App(tk.Tk):
         self.arrow_var = tk.StringVar(value=DEFAULTS["arrow"])      # стрілка найкращого ходу: ARROW_MODES
         self.coach_var = tk.BooleanVar(value=DEFAULTS["coach"])     # показувати панель тренера
         self.ai_var = tk.BooleanVar(value=DEFAULTS["ai_coach"])     # ШІ-тренер (1.23.2)
+        self.sound_var = tk.BooleanVar(value=DEFAULTS["sound"])     # звуки ходів (1.27.7)
         self._ai_cache, self._ai_failed, self._ai_busy = {}, {}, set()
         self._ai_cur = self._ai_after = self._ai_polling = None
         self._ai_err, self._ai_off = None, False
@@ -6324,6 +6435,8 @@ class App(tk.Tk):
         self._build_bots_box()
         self._build_bot_ui()
         self.after(3000, lambda: self.check_update(False))
+        self.sound_var.trace_add("write", lambda *a: self._save_config())
+        self.after(1500, self._sounds_prepare)
 
     def _build_settings_box(self):
         """Налаштування - квадрат поверх програми (OverlayBox), кнопка ⚙ показує його по центру.
@@ -6359,6 +6472,8 @@ class App(tk.Tk):
         Switch(sf, "ШІ-тренер (потрібен інтернет)", self.ai_var).grid(row=r, column=0, columnspan=3, sticky="w", pady=2)
         r += 1
         Switch(sf, "Шкала оцінки", self.evalbar_var).grid(row=r, column=0, columnspan=3, sticky="w", pady=2)
+        r += 1
+        Switch(sf, "Звуки ходів", self.sound_var).grid(row=r, column=0, columnspan=3, sticky="w", pady=2)
         r += 1
         section("АНАЛІЗ", 16)
         ttk.Label(sf, text="Файл рушія", style="Panel.TLabel").grid(row=r, column=0, sticky="w",
@@ -6520,7 +6635,7 @@ class App(tk.Tk):
             if isinstance(bc, list) and len(bc) == 3 and all(isinstance(x, int) for x in bc[1:]):
                 self._bot_sel, self._bot_color_i, self._bot_level_i = str(bc[0]), bc[1], bc[2]
             for key, var in (("anim", self.anim_var), ("coach", self.coach_var),
-                             ("evalbar", self.evalbar_var), ("ai_coach", self.ai_var)):
+                             ("evalbar", self.evalbar_var), ("ai_coach", self.ai_var), ("sound", self.sound_var)):
                 if isinstance(cfg.get(key), bool):
                     var.set(cfg[key])
         except Exception:
@@ -6539,7 +6654,7 @@ class App(tk.Tk):
                            "size": self.size_var.get(), "size_v": 2, "lang": STATE["lang"],
                            "arrow": self.arrow_var.get(), "anim": bool(self.anim_var.get()),
                            "coach": bool(self.coach_var.get()),
-                           "ai_coach": bool(self.ai_var.get()),
+                           "ai_coach": bool(self.ai_var.get()), "sound": bool(self.sound_var.get()),
                            "evalbar": bool(self.evalbar_var.get()),
                            "shape_color": self.shape_color_var.get(),
                            "chesscom_user": self._cc_user,
@@ -6877,6 +6992,8 @@ class App(tk.Tk):
         self.index = k
         if animate is None:
             animate = (k == prev_index + 1)
+        if k == prev_index + 1 and k >= 1:
+            self._move_sound(res["moves"][k - 1]["san"])       # 1.27.7
 
         last = badge = arrow = None
         info = tr("Початкова позиція")
@@ -7467,6 +7584,10 @@ class App(tk.Tk):
                "san": board.san(move), "uci": uci, "fen": after.fen(), "pending": True, "quality": None}
         if self._bot_inject and getattr(self, "_bot_fake_bril", False):
             row["fake_bril"] = True       # 1.26.10: Nxf7 Witty Alien - «!!» лише поки йде гра (справжня оцінка - своя)
+        if (not self._bot_inject and uci == "c7c6" and board.fullmove_number == 1 and self.bot and self._bot_live()
+                and self.bot["spec"]["id"] == "wittyalien" and self.bot["color"] == chess.WHITE):
+            row["fake_blunder"] = True    # 1.27.7: Каро-Канн проти Witty Alien - «??» лише поки йде гра
+        self._move_sound(row["san"])      # 1.27.7
         v["rows"].append(row)
         v["fens"].append(row["fen"])
         v["pes"].append(None)
@@ -7611,6 +7732,8 @@ class App(tk.Tk):
         v["index"] = j
         if animate is None:
             animate = (j == prev + 1)
+        if j == prev + 1 and j >= 1:
+            self._move_sound(v["rows"][j - 1]["san"])          # 1.27.7
         self._show_var_state(j, animate)
 
     def _show_var_state(self, j, animate=False):
@@ -7625,9 +7748,10 @@ class App(tk.Tk):
         else:
             row = v["rows"][j - 1]
             last = row["uci"]
-            if row.get("fake_bril") and self._bot_live():     # 1.26.10: під час гри - «Геніальний»
-                badge = (QUALITY["Геніальний"][0], QUALITY["Геніальний"][1])
-                info = f"{row['label']} {row['san']} — {qname('Геніальний')}."
+            fake = ("Геніальний" if row.get("fake_bril") else "Груба помилка" if row.get("fake_blunder") else None)
+            if fake and self._bot_live():     # 1.26.10 / 1.27.7: під час гри - «Геніальний» / «Груба помилка»
+                badge = (QUALITY[fake][0], QUALITY[fake][1])
+                info = f"{row['label']} {row['san']} — {qname(fake)}."
             elif row.get("pending"):
                 info = f"⏳ {row['label']} {row['san']} — " + pick("Stockfish оцінює цей хід…",
                                                                    "Stockfish is evaluating this move…")
@@ -9239,7 +9363,11 @@ class App(tk.Tk):
             self.status_var.set(pick("👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.",
                                      "👽 Signal intercepted. The Caro-Kann… He was waiting for this."))
             self._alien_kick()
-            self._alien_sfx()
+            b = self._bot_board() if self.bot else None
+            if b is not None and b.move_stack and b.move_stack[-1].uci() == "c7c6":
+                self.after(250, self._alien_rage2)        # 1.27.7: щойно зіграно 1...c6 - другий лютий глюк
+            else:
+                self._alien_sfx()
             if self.bot and self._bot_live():
                 self._bot_say("alien")            # 1.27.6: моторошне «привітання»
         else:
@@ -9252,7 +9380,7 @@ class App(tk.Tk):
 
     # 1.26.11: звуки режиму - «голос прибульця» на кожен хід і жуткий саундтрек фоном (WAV у %TEMP%, грає Windows:
     # фон - MCI «play … repeat», хід - PlaySound; модулів winsound/wave у запускачі немає)
-    _ALIEN_AUDIO_V = 2               # 1.27.6: новий голос - нові файли
+    _ALIEN_AUDIO_V = 3               # 1.27.7: + rage2
     _alien_audio = None
     _alien_bg_on = False
 
@@ -9266,7 +9394,8 @@ class App(tk.Tk):
             try:
                 os.makedirs(d, exist_ok=True)
                 for name, fn in (("sfx0", lambda: alien_sfx_samples(0)), ("sfx1", lambda: alien_sfx_samples(1)),
-                                 ("sfx2", lambda: alien_sfx_samples(2)), ("bg", alien_bg_samples)):
+                                 ("sfx2", lambda: alien_sfx_samples(2)), ("bg", alien_bg_samples),
+                                 ("rage2", alien_rage2_samples)):
                     p = os.path.join(d, name + ".wav")
                     if not os.path.exists(p):
                         with open(p + ".tmp", "wb") as f:
@@ -9308,6 +9437,58 @@ class App(tk.Tk):
             self._mci("setaudio ca_alien_bg volume to 450")
             self._mci("play ca_alien_bg repeat")
             self._alien_bg_on = True
+
+    # 1.27.7: звуки ходів - свої дерев'яні «тук» (WAV у %TEMP%, MCI waveaudio - кілька звуків можуть звучати разом)
+    _SND_V = 1
+    _snd_dir = None
+
+    def _sounds_prepare(self):
+        if self._snd_dir is not None or sys.platform != "win32":
+            return
+        self._snd_dir = "busy"
+        self._snd_open = set()
+        d = os.path.join(tempfile.gettempdir(), f"chess_analyzer_sounds_v{self._SND_V}")
+
+        def work():
+            try:
+                os.makedirs(d, exist_ok=True)
+                for kind in ("move", "capture", "castle", "check", "promote"):
+                    p = os.path.join(d, kind + ".wav")
+                    if not os.path.exists(p):
+                        with open(p + ".tmp", "wb") as f:
+                            f.write(wav_bytes(move_sound_samples(kind), MOVE_SR))
+                        os.replace(p + ".tmp", p)
+                self._snd_dir = d
+            except Exception:  # noqa: BLE001
+                self._snd_dir = "failed"
+        threading.Thread(target=work, daemon=True).start()
+
+    def _move_sound(self, san):
+        """Звук ходу (як на lichess / chess.com): хід, взяття, шах, рокіровка, перетворення."""
+        if not san or not self.sound_var.get() or sys.platform != "win32":
+            return
+        d = self._snd_dir
+        if d in (None, "busy", "failed"):
+            self._sounds_prepare()
+            return
+        kind = move_sound_kind(san)
+        alias = "ca_snd_" + kind
+        if alias not in self._snd_open:
+            r, _ = self._mci(f'open "{os.path.join(d, kind + ".wav")}" type waveaudio alias {alias}')
+            if r != 0:
+                return
+            self._snd_open.add(alias)
+        self._mci(f"play {alias} from 0")
+
+    def _alien_play(self, name):
+        d = self._alien_audio
+        if sys.platform != "win32" or d in (None, "busy", "failed"):
+            return
+        try:
+            import ctypes
+            ctypes.windll.winmm.PlaySoundW(os.path.join(d, name + ".wav"), None, 0x20000 | 0x1 | 0x2)
+        except Exception:  # noqa: BLE001
+            pass
 
     def _alien_sfx(self):
         """Глибокий «голос прибульця» (один з трьох) - на хід Witty Alien у «режимі прибульця»."""
@@ -9408,7 +9589,59 @@ class App(tk.Tk):
             self.after(rng.randint(45, 110), frame, i + 1)
         frame(0)
 
-    def _rage_end(self, title0, fg0, bg0):
+    def _alien_rage2(self):
+        """1.27.7: другий «лютий глюк» (~2,4 с) - на 1...c6 проти Witty Alien: «телевізійний шум» на дошці, фігури
+        тремтять і розлітаються, чорна смуга котиться вниз, як на старій касеті, спалахи негативу, «c6??»; свій звук."""
+        if getattr(self, "_rage_on", False):
+            return
+        self._rage_on = True
+        bv, rng = self.board, self._bot_rng
+        S = bv.SQ
+        S8 = S * 8
+        title0, fg0 = self.title_lbl.cget("text"), str(ttk.Style(self).lookup("Title.TLabel", "foreground"))
+        bg0 = str(self.cget("bg"))
+        card = self._bot_live() and self.bot["spec"]["id"] == "wittyalien"
+        self._alien_play("rage2")
+        moved = {}
+        cell = max(6, S // 3)
+
+        def frame(i):
+            for it, (dx, dy) in moved.items():
+                bv.move(it, -dx, -dy)
+            moved.clear()
+            bv.delete("rage")
+            if i >= 30:
+                self._rage_end(title0, fg0, bg0, pick("👽 c6?? Він це запам'ятав.", "👽 c6?? He will remember that."))
+                return
+            for y in range(0, S8, cell):                   # телевізійний шум
+                for x in range(0, S8, cell):
+                    if rng.random() < 0.3:
+                        bv.create_rectangle(x, y, x + cell, y + cell, width=0, tags="rage", stipple="gray50",
+                                            fill=rng.choice(("#000000", "#3a3a3a", "#9a9a9a", "#ffffff", "#1c5c1c")))
+            yb = (i * S8 // 10) % S8                       # смуга, що котиться
+            bv.create_rectangle(0, yb, S8, yb + S // 2, width=0, fill="#000000", tags="rage")
+            if i % 5 in (1, 2):                            # спалах негативу
+                bv.create_rectangle(0, 0, S8, S8, width=0, stipple="gray75", tags="rage",
+                                    fill=rng.choice(("#ffffff", "#ff0033")))
+            for items in bv.piece_items.values():          # фігури тремтять
+                for it in items:
+                    dx, dy = rng.randint(-S // 3, S // 3), rng.randint(-S // 3, S // 3)
+                    bv.move(it, dx, dy)
+                    moved[it] = (dx, dy)
+            bv.create_text(S8 // 2 + rng.randint(-S, S), S8 // 2 + rng.randint(-S, S), tags="rage",
+                           text=rng.choice(("c6??", "c6 ??", "ПОМИЛКА ВИДУ" if STATE["lang"] == "uk" else "SPECIES ERROR")),
+                           fill=rng.choice(("#ff1744", "#ffffff")), font=("Consolas", max(18, S * 2 // 3), "bold"))
+            self.title_lbl.configure(text=rng.choice(("c̷6̸?̵?̶", "▓▓ C6 ▓▓", "Ẅ̵̡I̷̛T̸̨T̶Y̷ ̸S̷E̸E̵S̶", "░ ?? ░")))
+            ttk.Style(self).configure("Title.TLabel", foreground=rng.choice(("#ff1744", "#ffffff", "#000000")))
+            self.configure(bg=rng.choice(("#3a0008", "#000000", ALIEN_BG, "#ffffff")))
+            if card:
+                self.botc_pic.configure(image=self._alien_frame(rng.choice(("neg", "stare", "glitch", "stare"))))
+            self.status_var.set(rng.choice(("▓▒░ c6?? ░▒▓", "░ КАРО-КАНН ЗАФІКСОВАНО ░" if STATE["lang"] == "uk"
+                                            else "░ CARO-KANN DETECTED ░", "👁 👁 👁")))
+            self.after(rng.randint(60, 100), frame, i + 1)
+        frame(0)
+
+    def _rage_end(self, title0, fg0, bg0, msg=None):
         self._rage_on = False
         self.title_lbl.configure(text=title0)
         ttk.Style(self).configure("Title.TLabel", foreground=fg0)
@@ -9416,7 +9649,7 @@ class App(tk.Tk):
         self.board.draw()
         if self.bot and self._bot_live():
             self._bot_card_render()
-        self.status_var.set(pick("👽 Кінь на f7. Він це зробив.", "👽 Knight on f7. He did it."))
+        self.status_var.set(msg or pick("👽 Кінь на f7. Він це зробив.", "👽 Knight on f7. He did it."))
 
     def _alien_frame(self, kind):
         key = ("fx", kind)
@@ -10598,6 +10831,8 @@ class App(tk.Tk):
 
     def _on_close(self):
         self._alien_bg(False)
+        for alias in getattr(self, "_snd_open", ()):
+            self._mci(f"close {alias}")
         self._flush_save()                  # недописаний коментар теж зберігаємо
         self._cancel = True
         self._stop_play()
