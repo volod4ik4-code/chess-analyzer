@@ -793,7 +793,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.27.10"
+APP_VERSION = "1.27.11"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -805,6 +805,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.27.11", "2026-11-16 21:40", [
+        ("Ботам можна писати: поле під реплікою бота — він відповідає у своєму характері (без підказок).",
+         "You can chat with the bots: type in the field under the bot's line — it answers in character (no hints)."),
+    ]),
     ("1.27.10", "2026-11-16 21:10", [
         ("«Геніальний» і за жертву, яку відіграють лише завдяки тому, що суперник її взяв (16.Rxe5!! fxe5 Nxf8).",
          "\"Brilliant\" also for a sacrifice that is won back only because the opponent took it (16.Rxe5!! fxe5 Nxf8)."),
@@ -3489,6 +3493,8 @@ BOT_CANNED = {
              ("Гаразд, повернемо назад.", "Okay, let's take it back.")],
     "hint": [("Підглядаєш? Я все бачу. 😉", "Peeking? I see everything. 😉"), ("Підказка… цього разу пробачу.", "A hint… I'll forgive you this time.")],
     "end": [("Дякую за партію!", "Thanks for the game!"), ("Гарна гра. Ще одну?", "Good game. Another one?")],
+    "chat": [("Поговоримо після партії — зараз я думаю над ходом.", "Let's talk after the game — I'm thinking about my move."),
+             ("Без інтернету я небагатослівний. Грай!", "Without the internet I'm a man of few words. Play!")],
 }
 
 
@@ -3507,6 +3513,8 @@ ALIEN_CANNED = {
              ("Підказка від людської машини. Як мило.", "A hint from a human machine. How sweet.")],
     "end": [("Сигнал обривається… але я повернуся.", "The signal fades… but I will return."),
             ("Корабель чекає. До наступного Каро-Канн.", "The ship is waiting. Until the next Caro-Kann.")],
+    "chat": [("Твої слова губляться в космічному шумі…", "Your words are lost in the cosmic noise…"),
+             ("Ми не розмовляємо. Ми спостерігаємо.", "We do not talk. We observe.")],
 }
 
 
@@ -7219,7 +7227,10 @@ class App(tk.Tk):
             focused = False
         if on and not e.get().strip() and not focused:
             e.delete(0, "end")
-            e.insert(0, pick("Спитати ШІ-тренера про позицію…", "Ask the AI coach about the position…"))
+            if self._bot_ui_on and self.bot:          # 1.27.11: чат з ботом
+                e.insert(0, pick("Написати ботові…", f"Message {bot_name(self.bot['spec'])}…"))
+            else:
+                e.insert(0, pick("Спитати ШІ-тренера про позицію…", "Ask the AI coach about the position…"))
             e.config(fg=MUTED)
             self._ask_hint_on = True
         elif not on and self._ask_hint_on:
@@ -7228,11 +7239,16 @@ class App(tk.Tk):
             self._ask_hint_on = False
 
     def _ask_row_update(self):
-        if self.ai_var.get() and not self._bot_ui_on:     # у партії з ботом запитань немає
+        # 1.27.11: у партії з ботом це поле - чат з ботом (без інтернету бот відповідає запасною фразою)
+        if self.ai_var.get() or self._bot_ui_on:
             if not self.ask_row.winfo_ismapped():
                 self.ask_row.pack(fill="x", pady=(8, 0))
         else:
             self.ask_row.pack_forget()
+        if getattr(self, "_ask_hint_on", False):          # підказка в полі - для потрібного режиму
+            self._ask_hint_on = False
+            self.ask_entry.delete(0, "end")
+            self._ask_hint(True)
 
     def _ask_err_text(self, err):
         if err == "quota":
@@ -7245,6 +7261,10 @@ class App(tk.Tk):
 
     def _ask_clear(self):
         """Очистити чат з ШІ-тренером у поточній позиції (відповіді, що ще йдуть, нікуди не потраплять)."""
+        if self._bot_ui_on and self.bot:                 # 1.27.11: чат з ботом
+            self.bot["chat"] = [x for x in self.bot["chat"] if not isinstance(x, dict)]
+            self._bot_coach_render()
+            return
         if self._ask_threads.pop(self._ask_key(), None) is not None:
             self._coach_render(*self._coach_last)
 
@@ -7252,6 +7272,10 @@ class App(tk.Tk):
         if self._ask_hint_on:
             return
         q = self.ask_entry.get().strip()[:500]
+        if self._bot_ui_on and self.bot:                 # 1.27.11: повідомлення ботові
+            if q and self._bot_live():
+                self._bot_chat_send(q[:300])
+            return
         ctx, key = self._ask_ctx, self._ask_key()
         if not q or not ctx or not self.ai_var.get():
             return
@@ -9797,8 +9821,18 @@ class App(tk.Tk):
         t.config(state="normal")
         t.delete("1.0", "end")
         t.insert("end", f"💬 {bot_name(b['spec'])}\n", "head")
-        for line in b["chat"][-1:]:                    # 1.25.2: лише остання репліка
-            t.insert("end", line + "\n", "ai")
+        items = b["chat"]
+        # 1.25.2: лише остання репліка; 1.27.11 - або остання розмова з гравцем і що бот сказав після неї
+        me = max((i for i, x in enumerate(items) if isinstance(x, dict)), default=-1)
+        for x in (items[me:] if me >= 0 and len(items) - me <= 3 else items[-1:]):
+            if isinstance(x, dict):
+                t.insert("end", "🗨 " + pick("Ви", "You") + ": " + x["me"] + "\n", "q")
+                if x["a"]:
+                    t.insert("end", x["a"] + "\n", "ai")
+                else:
+                    t.insert("end", pick("Пише…", "Typing…") + "\n", "muted")
+            else:
+                t.insert("end", x + "\n", "ai")
         if b["thinking"]:
             t.insert("end", pick("Думає над ходом…", "Thinking about the move…") + "\n", "muted")
         elif not b["chat"]:
@@ -9842,9 +9876,45 @@ class App(tk.Tk):
             except queue.Empty:
                 break
             got = True
+            if isinstance(event, dict):                  # 1.27.11: відповідь на повідомлення гравця
+                event["a"] = text or bot_canned("chat", self._bot_rng, self._alien_mode)
+                if b is self.bot and self._bot_live():
+                    self._bot_coach_render()
+                continue
             self._bot_said(b, text or bot_canned(event, self._bot_rng), event)
         if not got:
             self.after(150, self._bot_say_poll)
+
+    def _bot_chat_send(self, q):
+        """1.27.11: повідомлення гравця ботові - відповідь ШІ в характері шахіста, без підказок."""
+        b = self.bot
+        self.ask_entry.delete(0, "end")
+        history = [{"q": x["me"], "a": x["a"]} for x in b["chat"] if isinstance(x, dict) and x["a"]][-3:]
+        item = {"me": q, "a": None}
+        b["chat"].append(item)
+        alien = self._alien_mode
+        if not self.ai_var.get() or self._ai_off:
+            item["a"] = bot_canned("chat", self._bot_rng, alien)
+            self._bot_coach_render()
+            return
+        self._bot_coach_render()
+        try:
+            facts = bot_chat_facts("chat", self._bot_board() or chess.Board(), b["color"], b["result"])
+        except Exception:  # noqa: BLE001
+            facts = pick("Партія триває.", "The game is in progress.")
+        spec, lang = b["spec"], STATE["lang"]
+        persona = {"name": bot_name(spec), "style": pick(spec["d_uk"], spec["d_en"]), "message": q, "history": history}
+        if alien:
+            persona["mood"] = "alien"
+
+        def work():
+            try:
+                text = fetch_ai_coach(facts, lang, timeout=25, bot=persona)
+            except Exception:  # noqa: BLE001
+                text = None
+            self._botsayq.put((b, item, text))
+        threading.Thread(target=work, daemon=True).start()
+        self.after(150, self._bot_say_poll)
 
     def _bot_said(self, b, text, event):
         if b is not self.bot:

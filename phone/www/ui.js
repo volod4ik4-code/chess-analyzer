@@ -406,12 +406,15 @@ function renderCoach(lines, aiText = null, waiting = false, note = false, noFlas
   el.hidden = !cfg.coach || !lines;
   if (!lines) return;
   if (!noFlash) flash(el);
-  $('askRow').hidden = !cfg.ai || botLive();
+  const bl = botLive();                       // 1.27.11: у партії з ботом - чат з ботом
+  $('askRow').hidden = !cfg.ai && !bl;
   const inp = $('askIn');
-  inp.placeholder = pick('Спитати ШІ-тренера про позицію…', 'Ask the AI coach about the position…');
+  inp.placeholder = bl ? pick('Написати ботові…', `Message ${botName(A.bot.spec)}…`)
+    : pick('Спитати ШІ-тренера про позицію…', 'Ask the AI coach about the position…');
   $('askClear').textContent = pick('🗑 Очистити', '🗑 Clear');
   let html;
-  if (A.coachHead) html = `<div class="ch">${esc(A.coachHead)}</div>` + lines.map(l => `<div class="ai">${esc(l)}</div>`).join('');
+  if (A.coachHead) html = `<div class="ch">${esc(A.coachHead)}</div>`
+    + lines.map(l => `<div class="${l.startsWith('🗨') ? 'q' : 'ai'}">${esc(l)}</div>`).join('');
   else if (aiText) html = `<div class="ch">${esc(pick('🤖 ШІ-тренер', '🤖 AI coach'))}</div><div class="ai">${esc(aiText)}</div>`;
   // 1.23.3: поки ШІ думає - лише його заголовок; звичайний тренер - тільки якщо ШІ недоступний
   else if (waiting) html = `<div class="ch">${esc(pick('🤖 ШІ-тренер', '🤖 AI coach'))}</div><div class="aimuted">${esc(pick('Думає…', 'Thinking…'))}</div>`;
@@ -455,12 +458,14 @@ function askErrText(e) {
 
 // 1.23.6: очистити чат у поточній позиції
 function askClear() {
+  if (botLive()) { A.bot.chat = A.bot.chat.filter(x => typeof x === 'string'); showCoach(A.coachLines); return; }   // 1.27.11
   const key = askKey();
   if (A.askThreads[key]) { delete A.askThreads[key]; if (A.coachLast[0]) renderCoach(...A.coachLast, true); }
 }
 
 async function askSend() {
   const inp = $('askIn'), q = inp.value.trim().slice(0, 500), ctx = A.askCtx, key = askKey();
+  if (botLive()) { if (q) botChatSend(q.slice(0, 300)); return; }   // 1.27.11: повідомлення ботові
   if (!q || !ctx || !cfg.ai) return;
   inp.value = '';
   const thread = (A.askThreads[key] ??= []);
@@ -1788,8 +1793,14 @@ function botPlay() {
 }
 
 function botCoach() {
-  const b = A.bot;
-  const lines = b.chat.slice(-1);                           // 1.25.2: лише остання репліка
+  const b = A.bot, items = b.chat, lines = [];
+  // 1.25.2: лише остання репліка; 1.27.11 - або остання розмова з гравцем і що бот сказав після неї
+  let me = -1;
+  items.forEach((x, i) => { if (typeof x === 'object') me = i; });
+  for (const x of (me >= 0 && items.length - me <= 3 ? items.slice(me) : items.slice(-1))) {
+    if (typeof x === 'object') lines.push('🗨 ' + pick('Ви', 'You') + ': ' + x.me, x.a || pick('Пише…', 'Typing…'));
+    else lines.push(x);
+  }
   if (b.thinking) lines.push('⏳ ' + pick('Думає над ходом…', 'Thinking about the move…'));
   else if (!lines.length) lines.push(pick('Ваш хід.', 'Your move.'));
   return [`💬 ${botName(b.spec)}`, lines];
@@ -1811,6 +1822,26 @@ async function botSay(event, ucis = null) {
   b.chat.push(text);
   if (event === 'end') { b.quote = text; if (A.boxKind === 'bots') botsRenderBody(); if (A.boxKind === 'botend') botendRenderBody(); }
   else if (botLive()) showCoach(A.coachLines);
+}
+
+/** 1.27.11: повідомлення гравця ботові - відповідь ШІ в характері шахіста, без підказок. */
+async function botChatSend(q) {
+  const b = A.bot;
+  $('askIn').value = '';
+  const history = b.chat.filter(x => typeof x === 'object' && x.a).map(x => ({ q: x.me, a: x.a })).slice(-3);
+  const item = { me: q, a: null };
+  b.chat.push(item);
+  showCoach(A.coachLines);
+  let text = null;
+  if (cfg.ai && !A.aiOff) {
+    try {
+      const facts = botChatFacts('chat', A.res.fens[0], botMoves(), b.color, b.result);
+      text = await fetchAiCoach(facts, S.lang, null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en),
+        message: q, history, ...(A.alienMode ? { mood: 'alien' } : {}) });
+    } catch (_) { text = null; }
+  }
+  item.a = text || botCanned('chat');
+  if (A.bot === b && botLive()) showCoach(A.coachLines);
 }
 
 /** Ходи від початку партії до кінця поточної лінії. */
