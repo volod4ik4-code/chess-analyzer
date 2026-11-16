@@ -452,6 +452,20 @@ function bestCapture(c) {
   return best;
 }
 
+/** Що сторона, чий хід, відіграє після взяття на sq: на sq - усе, деінде - не більше, ніж ready(поле). */
+function regain(c, sq, ready) {
+  const me = c._turn;
+  let best = 0;
+  for (let i = 0; i < 120; i++) {
+    if (i & 0x88) { i += 7; continue; }
+    const p = c._board[i];
+    if (!p || p.color === me || p.type === 'k' || !c._attacked(me, i)) continue;
+    const v = see(c, i);
+    best = Math.max(best, i === sq ? v : Math.min(v, ready(i)));
+  }
+  return best;
+}
+
 /** Ендшпіль за правилом lichess: не більше шести фігур без королів і пішаків. */
 export function isEndgame(b) {
   let n = 0;
@@ -466,6 +480,20 @@ export function sacrificeAmount(board, uci, after) {
   let gained = mv.captured ? VAL[mv.captured] : 0;
   if (mv.promotion) gained += VAL[mv.promotion] - 1;
   const ca = rawChess(after.fen());
+  // 1.27.10: відіграш деінде - лише той, що був і до взяття (mine: після ходу знову ходить той, хто жертвує)
+  let mine = null;
+  const readyCache = new Map();
+  const ready = t => {
+    if (!readyCache.has(t)) {
+      if (!mine) {
+        const f = after.fen().split(' ');
+        f[1] = mover; f[3] = '-';
+        mine = rawChess(f.join(' '));
+      }
+      readyCache.set(t, see(mine, t));
+    }
+    return readyCache.get(t);
+  };
   let caps = null, flipped = null, riskMoved = null, best = 0;
   for (const [sq, p] of after.pieceMapDesc()) {
     if (p.color !== mover || p.type === 'p' || p.type === 'k') continue;
@@ -487,7 +515,7 @@ export function sacrificeAmount(board, uci, after) {
     for (const c of caps) {
       if (c.to !== s88 || (c.promotion && c.promotion !== 'q')) continue;
       ca._makeMove(c);
-      worst = Math.max(worst, VAL[p.type] + (c.promotion ? 8 : 0) - bestCapture(ca));
+      worst = Math.max(worst, VAL[p.type] + (c.promotion ? 8 : 0) - regain(ca, s88, ready));
       ca._undoMove();
     }
     best = Math.max(best, worst - gained - pre);
