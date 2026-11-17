@@ -370,9 +370,8 @@ export function grade(drop, isBest, winB, winA, sacrifice, secondW, prevDrop, re
   // Геніальний (chess.com): добра жертва фігури, позиція після неї не погана, без неї партія ще не виграна;
   // в ендшпілі - лише якщо це єдиний добрий хід
   if (soundLoss == null) soundLoss = drop;
-  const onlyGood = isBest && secondW != null && winB - secondW >= 10;
-  // 1.27.5 (користувач): «Геніальний» і в уже виграній позиції - умову «без цього ходу ще не виграно» прибрано
-  if (sacrifice >= minSac && drop <= 5 && soundLoss <= 2 && winA >= 45 && (onlyGood || !endgame)) return 'Геніальний';
+  // 1.27.15 (ПРАВИЛО КОРИСТУВАЧА): «Геніальний» = жертва фігури + найкращий хід, без жодних порогів
+  if (sacrifice >= minSac && isBest) return 'Геніальний';
   // 1.25.6: «Чудовий» - найкращий хід, який дуже важко помітити (рушій на малій глибині його не бачить)
   if (greatCandidate(isBest, recapture, winB, secondW) && hard) return 'Чудовий';
   if (isBest) return 'Найкращий';
@@ -581,10 +580,7 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   // checkHard=false (аналіз партії): перевірка після всіх ходів, щоб очищення хешу не змінювало оцінок
   const great = greatCandidate(isBest, recapture, winB, secondW);
   const hard = great && checkHard && await hardToFind(eng, hist, uci);
-  // 1.27.15: найкращий хід рушія нічого не втрачає - коливання оцінки до 5 очок після нього - шум (як missedBrilliant)
-  const noise = isBest && drop <= 5;
-  let quality = grade(noise ? 0 : drop, isBest, winB, noise ? winB : winA, sacrifice, secondW, prevDrop, recapture, rating, missedMate,
-    noise ? 0 : soundLoss, isEndgame(board), hard);
+  let quality = grade(drop, isBest, winB, winA, sacrifice, secondW, prevDrop, recapture, rating, missedMate, soundLoss, isEndgame(board), hard);
   // 1.25.15: «Пропуск» лише якщо найкращий хід вигравав матеріал (більше пішака) або мат
   if (quality === 'Пропуск' && !missedMate && zone(winA) >= zone(winB) && blunderMaterial(board, uci, after, peBefore, peAfter, mover) < D.MISS_MATERIAL
     && Math.max(Math.abs(beforeM), Math.abs(afterM)) < MATE - 100)
@@ -592,7 +588,8 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   // 1.22.2: хід, рівноцінний найкращому (втрата до 0.5 очікуваних очок - шум рушія), - теж «Найкращий»;
   // але не тоді, коли в оцінці мат і він став гіршим (довший свій або ближчий чужий)
   const mateWorse = afterM < beforeM && Math.max(Math.abs(beforeM), Math.abs(afterM)) >= MATE - 100;
-  if (quality === 'Відмінний' && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse))) quality = 'Найкращий';
+  if (quality === 'Відмінний' && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse)))
+    quality = sacrifice >= 1 ? 'Геніальний' : 'Найкращий';     // 1.27.15: рівноцінний найкращому - теж
   // 1.25.13 (правило користувача): віддав пішака чи менше - «Помилка», не «Груба помилка»
   if (quality === 'Груба помилка' && drop < D.BLUNDER_SURE && blunderMaterial(board, uci, after, peBefore, peAfter, mover) <= 1
     && Math.max(Math.abs(beforeM), Math.abs(afterM)) < MATE - 100) quality = 'Помилка';
