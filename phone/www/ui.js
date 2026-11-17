@@ -27,6 +27,79 @@ const cfg = Object.assign({}, DEF, saved || {});
 // мова за замовчуванням - англійська, як на ПК (1.22.5: раніше бралась мова телефона)
 S.lang = cfg.lang;
 const saveCfg = () => store.set('ca.settings', cfg);
+
+// ---- 1.27.12: АНОНІМНА СТАТИСТИКА (лише з дозволу гравця; вимикач у ⚙). Надсилається: випадковий ID пристрою,
+// платформа, версія, мова і лічильники подій. Не надсилається: партії, ніки, PGN, тексти повідомлень, IP.
+const TELE = Object.assign({ on: null, id: '', pending: {} }, store.get('ca.tele', {}) || {});
+if (!/^[0-9a-f]{32}$/.test(TELE.id || '')) TELE.id = [...crypto.getRandomValues(new Uint8Array(16))].map(x => x.toString(16).padStart(2, '0')).join('');
+delete TELE.busy;
+if (!TELE.pending || typeof TELE.pending !== 'object') TELE.pending = {};
+const teleSave = () => store.set('ca.tele', TELE);
+teleSave();
+const QUALITY_CODE = { 'Геніальний': 'brilliant', 'Чудовий': 'great', 'Теорія': 'book', 'Найкращий': 'best', 'Відмінний': 'excellent',
+  'Добрий': 'good', 'Неточність': 'inaccuracy', 'Пропуск': 'miss', 'Помилка': 'mistake', 'Груба помилка': 'blunder' };
+function tele(key, n = 1) {
+  if (TELE.on !== true || !n) return;
+  TELE.pending[key] = Math.round(((TELE.pending[key] || 0) + n) * 100) / 100;
+  teleSave();
+}
+async function teleSend() {
+  if (TELE.on !== true || !Object.keys(TELE.pending).length || TELE.busy) return;
+  const sent = { ...TELE.pending };
+  TELE.busy = true;
+  try {
+    const r = await fetch(D.AI_COACH_URL + '/t', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: TELE.id, p: 'phone', v: D.APP_VERSION, lang: S.lang, c: sent }) });
+    if (r.ok) {
+      for (const [k, v] of Object.entries(sent)) {
+        const left = Math.round(((TELE.pending[k] || 0) - v) * 100) / 100;
+        if (left > 0) TELE.pending[k] = left; else delete TELE.pending[k];
+      }
+    }
+  } catch (_) { /* без інтернету - наступного разу */ }
+  TELE.busy = false;
+  delete TELE.busy;
+  teleSave();
+}
+function teleAnalysis(res) {
+  const moves = res.moves || [];
+  tele('an.games'); tele('an.moves', moves.length);
+  for (const m of moves) { const c = QUALITY_CODE[m.quality]; if (c) tele('q.' + c); }
+  const s = res.summary || {};
+  for (const k of ['white_acc', 'black_acc']) if (typeof s[k] === 'number' && isFinite(s[k])) { tele('acc.sum', s[k]); tele('acc.n'); }
+}
+function teleSet(on) {
+  if (TELE.on === on) return;
+  TELE.on = on;
+  if (!on) TELE.pending = {};
+  teleSave();
+  if (on) { tele('start'); teleSend(); }
+}
+function teleStart() {
+  if (TELE.on === null) { if (!A.boxKind) openBox('tele'); return; }
+  if (TELE.on) { tele('start'); teleSend(); }
+}
+function appStatsText(a) {
+  const c = a.counters || {}, n = k => Math.round(c[k] || 0), pl = a.platforms || {};
+  const acc = c['acc.n'] ? (c['acc.sum'] || 0) / c['acc.n'] : null;
+  const bots = Object.entries(c).filter(([k]) => k.startsWith('bot.g.')).sort((x, y) => y[1] - x[1]);
+  const spec = bots.length && D.BOTS.find(b => b.id === bots[0][0].slice(6));
+  const top = spec ? pick(`; найпопулярніший — ${botName(spec)} (${Math.round(bots[0][1])})`, `; most popular: ${botName(spec)} (${Math.round(bots[0][1])})`) : '';
+  const countries = (a.countries || []).slice(0, 6).map(([k, v]) => `${k} ${v}`).join(', ');
+  const a1 = a.active_1d || 0, a7 = a.active_7d || 0, a30 = a.active_30d || 0;
+  const lines = [pick(`📊 Гравців: ${a.devices || 0} (💻 ПК ${pl.pc || 0}, 📱 телефон ${pl.phone || 0}); сьогодні ${a1}, за 7 днів ${a7}, за 30 днів ${a30}`,
+    `📊 Players: ${a.devices || 0} (💻 PC ${pl.pc || 0}, 📱 phone ${pl.phone || 0}); today ${a1}, last 7 days ${a7}, last 30 days ${a30}`)];
+  if (countries) lines.push(pick('🌍 Країни: ', '🌍 Countries: ') + countries);
+  lines.push(pick(`♟ Проаналізовано партій: ${n('an.games')} (ходів ${n('an.moves')})`, `♟ Games analyzed: ${n('an.games')} (${n('an.moves')} moves)`)
+    + (acc !== null ? pick(`, середня точність ${acc.toFixed(1)}`, `, average accuracy ${acc.toFixed(1)}`) : ''));
+  lines.push(pick(`💎 Геніальних ходів: ${n('q.brilliant')}, ❗ Чудових: ${n('q.great')}, ⁇ Грубих помилок: ${n('q.blunder')}`,
+    `💎 Brilliant moves: ${n('q.brilliant')}, ❗ Great: ${n('q.great')}, ⁇ Blunders: ${n('q.blunder')}`));
+  lines.push(pick(`🤖 Партій з ботами: ${n('bot.games')} — перемог ${n('bot.win')}, нічиїх ${n('bot.draw')}, поразок ${n('bot.loss')}${top}; ⭐ зірок ${n('bot.stars')}`,
+    `🤖 Games vs bots: ${n('bot.games')} — ${n('bot.win')} won, ${n('bot.draw')} drawn, ${n('bot.loss')} lost${top}; ⭐ ${n('bot.stars')} stars`));
+  lines.push(pick(`👽 Режим прибульця: ${n('alien.on')}, 💬 повідомлень ботам: ${n('bot.chat')}, 🧠 пояснень ШІ-тренера: ${n('f.ai')}`,
+    `👽 Alien mode: ${n('alien.on')}, 💬 messages to bots: ${n('bot.chat')}, 🧠 AI coach explanations: ${n('f.ai')}`));
+  return lines.join('\n');
+}
 const DEPTHS = [8, 10, 12, 14, 16, 18, 20, 22, 24];
 const ARROW_LABELS = {
   off: ['вимкнено', 'off'], bad: ['після помилок', 'after mistakes'],
@@ -468,6 +541,7 @@ async function askSend() {
   if (botLive()) { if (q) botChatSend(q.slice(0, 300)); return; }   // 1.27.11: повідомлення ботові
   if (!q || !ctx || !cfg.ai) return;
   inp.value = '';
+  tele('f.ask');
   const thread = (A.askThreads[key] ??= []);
   const history = thread.filter(it => it.a).map(it => ({ q: it.q, a: it.a }));
   const item = { q, a: null, err: null };
@@ -493,6 +567,7 @@ async function aiStart(key, ai, force = false) {
   let facts;
   try { facts = aiFacts(...ai); } catch (_) { A.aiFailed[key] = Date.now(); A.aiErr = 'facts'; if (key === A.aiCur) renderCoach(A.coachLines, null, false, true); return; }
   A.aiBusy.add(key);
+  tele('f.ai');
   let text = null;
   try { text = await fetchAiCoach(facts, key.split('|')[2]); A.aiCache[key] = text; A.aiErr = null; }
   catch (e) { A.aiFailed[key] = Date.now(); A.aiErr = e.message; if (e.message === 'quota') A.aiOff = true; }
@@ -540,6 +615,7 @@ function parsePgn(text) {
 }
 
 function loadPgn(text) {
+  tele('f.pgn');
   const g = parsePgn(text);
   if (!g) { msg(tr('Не вдалося прочитати PGN або в ньому немає ходів.')); return false; }
   stopPlay();
@@ -613,6 +689,7 @@ async function startAnalysis() {
       },
     });
     if (doc === A.docId) {
+      teleAnalysis(res);
       showResults(res);
       // розбивка часу: увесь аналіз / сам рушій (щоб було видно, що гальмує)
       const all = (performance.now() - tAnalysis) / 1000, eng = (engine.searchMs || 0) / 1000;
@@ -1628,6 +1705,7 @@ function alienSet(on) {
   board.alien = on; if (A.bot) board.alienSide = A.bot.color; board.render();
   $('title').textContent = on ? '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸' : pick('♞ Аналізатор', '♞ Chess Analyzer');
   alienBg(on);
+  if (on) tele('alien.on');
   if (on) { setStatus(() => pick('👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.', '👽 Signal intercepted. The Caro-Kann… He was waiting for this.')); if (botMoves().slice(-1)[0] === 'c7c6') setTimeout(alienRage2, 250); else alienSfx(); if (botLive()) botSay('alien'); }
   else { clearTimeout(A.alienT); A.alienT = 0; A.alienHover = false; }
   if (botLive()) renderBotCard();
@@ -1780,6 +1858,7 @@ function botPlay() {
   const elo = cfg.bot[2] >= 1 && D.BOT_LEVELS[cfg.bot[2] - 1] ? D.BOT_LEVELS[cfg.bot[2] - 1] : spec.elo;
   closeBox();
   startFree();
+  tele('bot.games'); tele('bot.g.' + spec.id);
   if (board.flipped === userWhite) flipBoard();           // гравець завжди внизу дошки
   A.bot = { spec, color: userWhite ? 'b' : 'w', elo, over: false, thinking: false, token: 0, res: A.res, result: '*', reason: '',
     undos: 0, hints: 0, hint: null, hintWait: false, chat: [], saidAt: 0, botMoves: 0, stars: 0, record: false, quote: '' };
@@ -1827,6 +1906,7 @@ async function botSay(event, ucis = null) {
 /** 1.27.11: повідомлення гравця ботові - відповідь ШІ в характері шахіста, без підказок. */
 async function botChatSend(q) {
   const b = A.bot;
+  tele('bot.chat');
   $('askIn').value = '';
   const history = b.chat.filter(x => typeof x === 'object' && x.a).map(x => ({ q: x.me, a: x.a })).slice(-3);
   const item = { me: q, a: null };
@@ -1913,6 +1993,7 @@ async function botThink(ucis, fen) {
 async function botHint() {
   const b = A.bot;
   if (!botLive() || b.hints || b.thinking || b.hintWait) return;
+  tele('bot.hint');
   const ucis = botMoves(), st = botState(A.res.fens[0], ucis);
   if (!st || st.over || st.turn === b.color) return;
   b.hintWait = true; renderBotCard();
@@ -1940,6 +2021,7 @@ function botFinish(result, reason) {
   b.token++;
   const won = reason !== 'resign' && result !== '1/2-1/2' && ((result === '1-0') === (b.color === 'b'));
   b.stars = botStarsFor(won, b.elo === b.spec.elo, b.undos, b.hints);
+  tele(won ? 'bot.win' : result === '1/2-1/2' && reason !== 'resign' ? 'bot.draw' : 'bot.loss'); tele('bot.stars', b.stars);
   cfg.botStars = cfg.botStars || {};
   if (b.stars > (cfg.botStars[b.spec.id] || 0)) { cfg.botStars[b.spec.id] = b.stars; b.record = true; saveCfg(); }
   A.res.summary.result = result;
@@ -2033,6 +2115,7 @@ function botResign() { const b = A.bot; if (botLive()) botFinish(b.color === 'b'
 /** «Повернути хід» у партії з ботом: назад до свого ходу (хід бота і свій перед ним). */
 function botUndo() {
   const b = A.bot;
+  tele('bot.undo');
   b.token++; b.thinking = false;
   if (!A.v || !A.v.rows.length) return;
   b.undos++;
@@ -2124,6 +2207,7 @@ function ccAnalyze(r) {
 function openChesscom() {
   if (A.boxKind === 'chesscom') { closeBox(); return; }
   openBox('chesscom');
+  tele('f.chesscom');
   if (!CC.months.length && CC.user && CC.seq === 0) ccSearch();
 }
 
@@ -2131,13 +2215,13 @@ function openChesscom() {
 // stats.json у репозиторії: перегляди сторінки GitHub і канал Telegram; файл оновлює автор під час релізу.
 const STATS_URL = 'https://raw.githubusercontent.com/volod4ik4-code/chess-analyzer/main/stats.json';
 function statsText() {
-  const s = A.stats;
+  const s = A.stats, app = A.appStats ? appStatsText(A.appStats) + '\n' : '';
   if (s === undefined) return pick('Завантажую…', 'Loading…');
   if (s === null) return pick('Не вдалося отримати статистику. Перевірте інтернет.', 'Could not get the statistics. Check your internet connection.');
   const g = s.github || {}, tg = s.telegram || {}, V = [['перегляд', 'перегляди', 'переглядів'], ['view', 'views']];
   const nV = plural(g.views || 0, ...V), nP = plural(g.visitors || 0, ['відвідувач', 'відвідувачі', 'відвідувачів'], ['visitor', 'visitors']);
   const nS = plural(tg.subscribers || 0, ['підписник', 'підписники', 'підписників'], ['subscriber', 'subscribers']), nT = plural(tg.views || 0, ...V);
-  return pick(`🐙 GitHub: ${nV} сторінки, ${nP}\n✈ Telegram (t.me/chessanalyser): ${nS}, ${nT} дописів\n(оновлено ${s.updated || ''})`,
+  return app + pick(`🐙 GitHub: ${nV} сторінки, ${nP}\n✈ Telegram (t.me/chessanalyser): ${nS}, ${nT} дописів\n(оновлено ${s.updated || ''})`,
     `🐙 GitHub: ${nV} of the page, ${nP}\n✈ Telegram (t.me/chessanalyser): ${nS}, ${nT} of posts\n(updated ${s.updated || ''})`);
 }
 async function loadStats() {
@@ -2150,6 +2234,10 @@ async function loadStats() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     A.stats = await r.json(); A.statsTime = Date.now();
   } catch (_) { if (!A.stats) A.stats = null; }
+  try {                                          // 1.27.12: загальна статистика програми
+    const r = await fetch(`${D.AI_COACH_URL}/stats?t=${Math.floor(Date.now() / 300000)}`);
+    if (r.ok) A.appStats = await r.json();
+  } catch (_) { /* */ }
   A.statsBusy = false;
   show();
 }
@@ -2173,7 +2261,9 @@ function openBox(kind) {
       + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
-      + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label><div class="hint" id="sStats" style="white-space:pre-line"></div>`
+      + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label>`
+      + chk('sTele', pick('Надсилати анонімну статистику', 'Send anonymous statistics'), TELE.on === true)
+      + `<div class="hint" id="sStats" style="white-space:pre-line"></div>`
       + `<label class="f">${esc(pick('Ми в мережі', 'Follow us'))}</label><div class="social">`   // 1.26.6: з верху сторінки сюди
       + `<button data-link="TIKTOK_URL">♪ TikTok</button><button data-link="TELEGRAM_URL">✈ Telegram</button>`
       + `<button data-link="GITHUB_URL">🐙 GitHub</button></div>`
@@ -2189,6 +2279,7 @@ function openBox(kind) {
     on('sCoach', 'change', e => { cfg.coach = e.target.checked; saveCfg(); refreshView(); if (!A.res) showCoach(null); });
     on('sAi', 'change', e => { cfg.ai = e.target.checked; saveCfg(); refreshView(); });
     on('sEval', 'change', e => { cfg.evalbar = e.target.checked; saveCfg(); layout(); });
+    on('sTele', 'change', e => teleSet(e.target.checked));
     on('sReset', 'click', () => {
       Object.assign(cfg, DEF, { lang: cfg.lang });
       saveCfg(); board.theme = cfg.board; layout(); refreshView(); board.render(); openBox('settings');
@@ -2196,7 +2287,21 @@ function openBox(kind) {
     on('sDone', 'click', closeBox);
     on('sUpd', 'click', () => checkUpdate(true));
     on('sBench', 'click', benchEngine);
-    loadStats();  } else if (kind === 'donate') {
+    tele('f.settings');
+    loadStats();  } else if (kind === 'tele') {      // 1.27.12: згода на анонімну статистику
+    $('boxTitle').textContent = pick('📊  Анонімна статистика', '📊  Anonymous statistics');
+    body.innerHTML = `<div style="white-space:pre-line">${esc(pick(
+      'Можна допомогти зробити програму кращою: надсилати анонімну статистику — скільки партій проаналізовано, які оцінки ходів, '
+      + 'з якими ботами грають, якими функціями користуються, версію програми, мову й країну.\n\nНе надсилаються: партії, ніки, '
+      + 'тексти повідомлень, IP-адреса. Загальні цифри видно всім у ⚙ «Статистика». Вимкнути можна будь-коли в ⚙.',
+      'You can help make the app better by sending anonymous statistics: how many games were analyzed, move grades, which bots '
+      + 'people play, which features are used, the app version, language and country.\n\nNot sent: games, usernames, message texts, '
+      + 'IP address. The totals are visible to everyone in ⚙ Statistics. You can turn it off any time in ⚙.'))}</div>`
+      + `<div class="row"><button id="tNo">${esc(pick('Ні, дякую', 'No, thanks'))}</button>`
+      + `<button id="tYes" class="primary">${esc(pick('Так, надсилати', 'Yes, send'))}</button></div>`;
+    $('tYes').addEventListener('click', () => { closeBox(); teleSet(true); });
+    $('tNo').addEventListener('click', () => { closeBox(); teleSet(false); });
+  } else if (kind === 'donate') {
     $('boxTitle').textContent = tr('☕  Підтримати кавою');
     body.innerHTML = `<div>${esc(pick('Програма безкоштовна. Якщо вона вам подобається, можна пригостити автора кавою — переказ на картку:',
       'The app is free. If you like it, you can treat the author to a coffee — a transfer to the card:'))}</div>`
@@ -2587,8 +2692,8 @@ function wire() {
     if (u) { if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank'); }
   });
   click('bPgn', () => toggleBox('pgn'));
-  click('bNew', () => startFree());
-  click('bStudies', () => toggleBox('studies'));
+  click('bNew', () => { tele('f.free'); startFree(); });
+  click('bStudies', () => { if (A.boxKind !== 'studies') tele('f.study'); toggleBox('studies'); });
   click('bRun', startAnalysis);
   click('nStart', goStart); click('nPrev', () => { stopPlay(); step(-1); }); click('nNext', () => { stopPlay(); step(1); });
   click('nEnd', goEnd); click('nPlay', togglePlay); click('nFlip', flipBoard); click('nDraw', toggleDraw);
@@ -2639,7 +2744,7 @@ function wire() {
   $('overlay').addEventListener('pointerdown', e => { if (e.target === $('overlay')) closeBox(); });
   window.addEventListener('resize', () => { layout(); if (A.boxKind) clampBox(); });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { flushSave(); return; }
+    if (document.hidden) { flushSave(); teleSend(); return; }
     // повернулися в програму (напр. зі сповіщення) - перевірити оновлення, не частіше разу на 10 хв
     if (Date.now() - (A.lastUpdCheck || 0) > 600000) checkUpdate(false);
   });
@@ -2666,6 +2771,8 @@ startFree();
 setStatus(() => pick('Вставте PGN партії (📋 PGN) або відкрийте файл. Можна й просто ходити на дошці.',
   'Paste a game PGN (📋 PGN) or open a file. You can also just play on the board.'));
 setTimeout(() => checkUpdate(false), 2500);
+setTimeout(teleStart, 1800);                       // 1.27.12
+setInterval(teleSend, 600000);
 // старі налаштування (рушії «full» і «усі ядра» WebAssembly з версій до 1.11) -> справжній Stockfish
 if (!['native', 'lite'].includes(cfg.engine) || (cfg.engine === 'native' && DEF.engine !== 'native')) { cfg.engine = DEF.engine; saveCfg(); }
 window.__app = { A, cfg, engine, board, loadPgn, chapterPgn, parsePgn, checkUpdate, goto };

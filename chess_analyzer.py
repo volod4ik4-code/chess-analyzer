@@ -793,7 +793,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.27.11"
+APP_VERSION = "1.27.12"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -805,6 +805,12 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.27.12", "2026-11-17 12:07", [
+        ("Анонімна статистика (лише з вашого дозволу, вимикач у ⚙): загальні цифри — скільки гравців, партій, "
+         "геніальних ходів, партій з ботами — тепер видно всім у ⚙ «Статистика».",
+         "Anonymous statistics (only with your permission, switch in ⚙): the totals — players, games, brilliant "
+         "moves, games vs bots — are now visible to everyone in ⚙ Statistics."),
+    ]),
     ("1.27.11", "2026-11-16 21:40", [
         ("Ботам можна писати: поле під реплікою бота — він відповідає у своєму характері (без підказок).",
          "You can chat with the bots: type in the field under the bot's line — it answers in character (no hints)."),
@@ -1548,6 +1554,9 @@ for _q, _en in QUALITY_EN.items():
 for _q, (_c, _sym, _n) in QUALITY.items():
     TR_EN[f"{_sym}  {_q}"] = f"{_sym}  {QUALITY_EN[_q]}"
 TR_EN["!!  Геніальний"] = "!!  Brilliant"
+TR_EN.update({"📊  Анонімна статистика": "📊  Anonymous statistics",
+              "Надсилати анонімну статистику": "Send anonymous statistics",
+              "Так, надсилати": "Yes, send", "Ні, дякую": "No, thanks"})
 
 
 def tr(uk):
@@ -3787,6 +3796,142 @@ def fetch_site_stats():
     with urllib.request.urlopen(req, timeout=15) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
+
+
+# ---- 1.27.12: АНОНІМНА СТАТИСТИКА (лише якщо гравець погодився; вимикач у ⚙). Надсилається: випадковий ID
+# пристрою, платформа, версія, мова і лічильники подій (скільки партій, які оцінки ходів, з якими ботами грали…).
+# Не надсилається: партії, ніки, PGN, тексти повідомлень; IP не зберігається (лише країна від Cloudflare).
+TELE_PATH = os.path.join(os.path.expanduser("~"), ".chess_analyzer_telemetry.json")
+TELE_URL = AI_COACH_URL + "/t"
+APP_STATS_URL = AI_COACH_URL + "/stats"
+TELE = {"on": None, "id": "", "pending": {}}
+_tele_lock = threading.Lock()
+QUALITY_CODE = {"Геніальний": "brilliant", "Чудовий": "great", "Теорія": "book", "Найкращий": "best",
+                "Відмінний": "excellent", "Добрий": "good", "Неточність": "inaccuracy", "Пропуск": "miss",
+                "Помилка": "mistake", "Груба помилка": "blunder"}
+
+
+def tele_load():
+    try:
+        with open(TELE_PATH, encoding="utf-8") as f:
+            d = json.load(f)
+        if d.get("on") in (True, False):
+            TELE["on"] = d["on"]
+        if re.fullmatch(r"[0-9a-f]{32}", str(d.get("id", ""))):
+            TELE["id"] = d["id"]
+        if isinstance(d.get("pending"), dict):
+            TELE["pending"] = {k: v for k, v in d["pending"].items() if isinstance(v, (int, float))}
+    except Exception:  # noqa: BLE001
+        pass
+    if not TELE["id"]:
+        TELE["id"] = os.urandom(16).hex()
+
+
+def tele_save():
+    with _tele_lock:
+        data = json.dumps({"on": TELE["on"], "id": TELE["id"], "pending": TELE["pending"]})
+    try:
+        tmp = TELE_PATH + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(data)
+        os.replace(tmp, TELE_PATH)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def tele_count(key, n=1):
+    """Додати до лічильника (нічого не робить, якщо статистику не дозволено)."""
+    if TELE["on"] is not True or not n:
+        return
+    with _tele_lock:
+        TELE["pending"][key] = round(TELE["pending"].get(key, 0) + n, 2)
+
+
+def tele_send():
+    """Надіслати накопичене (у фоновому потоці). Не вийшло - лишається на наступний раз."""
+    if TELE["on"] is not True:
+        return
+    with _tele_lock:
+        sent = dict(TELE["pending"])
+    body = json.dumps({"id": TELE["id"], "p": "pc", "v": APP_VERSION, "lang": STATE["lang"],
+                       "c": sent}).encode("utf-8")
+    req = urllib.request.Request(TELE_URL, data=body, method="POST",
+                                 headers={"Content-Type": "application/json", "User-Agent": "ChessAnalyzer"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            r.read()
+    except Exception:  # noqa: BLE001
+        return
+    with _tele_lock:
+        for k, v in sent.items():
+            left = round(TELE["pending"].get(k, 0) - v, 2)
+            if left > 0:
+                TELE["pending"][k] = left
+            else:
+                TELE["pending"].pop(k, None)
+    tele_save()
+
+
+def tele_analysis(res):
+    """Лічильники для проаналізованої партії: кількість, ходи, оцінки ходів, точність."""
+    moves = res.get("moves") or []
+    tele_count("an.games")
+    tele_count("an.moves", len(moves))
+    for m in moves:
+        code = QUALITY_CODE.get(m.get("quality"))
+        if code:
+            tele_count("q." + code)
+    s = res.get("summary") or {}
+    for k in ("white_acc", "black_acc"):
+        if isinstance(s.get(k), (int, float)):
+            tele_count("acc.sum", s[k])
+            tele_count("acc.n")
+
+
+def fetch_app_stats():
+    req = urllib.request.Request(f"{APP_STATS_URL}?t={int(time.time()) // 300}", headers={"User-Agent": "ChessAnalyzer"})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
+def app_stats_text(a):
+    """Загальна статистика програми (з усіх, хто дозволив) для ⚙ «Статистика»."""
+    c = a.get("counters") or {}
+
+    def n(k):
+        return int(c.get(k, 0))
+    pl = a.get("platforms") or {}
+    acc = c.get("acc.sum", 0) / c["acc.n"] if c.get("acc.n") else None
+    bots = sorted(((k[6:], v) for k, v in c.items() if k.startswith("bot.g.")), key=lambda x: -x[1])
+    top = ""
+    if bots:
+        spec = next((b for b in BOTS if b["id"] == bots[0][0]), None)
+        if spec:
+            top = pick(f"; найпопулярніший — {spec['uk']} ({int(bots[0][1])})",
+                       f"; most popular: {spec['en']} ({int(bots[0][1])})")
+    countries = ", ".join(f"{k} {v}" for k, v in (a.get("countries") or [])[:6])
+    a1, a7, a30 = a.get("active_1d", 0), a.get("active_7d", 0), a.get("active_30d", 0)
+    lines = [pick(f"📊 Гравців: {a.get('devices', 0)} (💻 ПК {pl.get('pc', 0)}, 📱 телефон {pl.get('phone', 0)}); "
+                  f"сьогодні {a1}, за 7 днів {a7}, за 30 днів {a30}",
+                  f"📊 Players: {a.get('devices', 0)} (💻 PC {pl.get('pc', 0)}, 📱 phone {pl.get('phone', 0)}); "
+                  f"today {a1}, last 7 days {a7}, last 30 days {a30}")]
+    if countries:
+        lines.append(pick("🌍 Країни: ", "🌍 Countries: ") + countries)
+    lines.append(pick(f"♟ Проаналізовано партій: {n('an.games')} (ходів {n('an.moves')})",
+                      f"♟ Games analyzed: {n('an.games')} ({n('an.moves')} moves)")
+                 + (pick(f", середня точність {acc:.1f}", f", average accuracy {acc:.1f}") if acc is not None else ""))
+    lines.append(pick(f"💎 Геніальних ходів: {n('q.brilliant')}, ❗ Чудових: {n('q.great')}, "
+                      f"⁇ Грубих помилок: {n('q.blunder')}",
+                      f"💎 Brilliant moves: {n('q.brilliant')}, ❗ Great: {n('q.great')}, ⁇ Blunders: {n('q.blunder')}"))
+    lines.append(pick(f"🤖 Партій з ботами: {n('bot.games')} — перемог {n('bot.win')}, нічиїх {n('bot.draw')}, "
+                      f"поразок {n('bot.loss')}{top}; ⭐ зірок {n('bot.stars')}",
+                      f"🤖 Games vs bots: {n('bot.games')} — {n('bot.win')} won, {n('bot.draw')} drawn, "
+                      f"{n('bot.loss')} lost{top}; ⭐ {n('bot.stars')} stars"))
+    lines.append(pick(f"👽 Режим прибульця: {n('alien.on')}, 💬 повідомлень ботам: {n('bot.chat')}, "
+                      f"🧠 пояснень ШІ-тренера: {n('f.ai')}",
+                      f"👽 Alien mode: {n('alien.on')}, 💬 messages to bots: {n('bot.chat')}, "
+                      f"🧠 AI coach explanations: {n('f.ai')}"))
+    return "\n".join(lines)
 
 
 def release_notes_for(body):
@@ -6233,6 +6378,9 @@ class App(tk.Tk):
         self.arrow_var = tk.StringVar(value=DEFAULTS["arrow"])      # стрілка найкращого ходу: ARROW_MODES
         self.coach_var = tk.BooleanVar(value=DEFAULTS["coach"])     # показувати панель тренера
         self.ai_var = tk.BooleanVar(value=DEFAULTS["ai_coach"])     # ШІ-тренер (1.23.2)
+        tele_load()                                                  # 1.27.12: анонімна статистика
+        self.tele_var = tk.BooleanVar(value=TELE["on"] is True)
+        self.tele_var.trace_add("write", lambda *_a: self._tele_set(bool(self.tele_var.get())))
         self._ai_cache, self._ai_failed, self._ai_busy = {}, {}, set()
         self._ai_cur = self._ai_after = self._ai_polling = None
         self._ai_err, self._ai_off = None, False
@@ -6271,7 +6419,7 @@ class App(tk.Tk):
         tk.Frame(bar, bg=BORDER, width=1, height=24).pack(side="left", padx=14)
         RButton(bar, text="📋  PGN з буфера", command=self.load_clipboard).pack(side="left")
         RButton(bar, text="📂  Відкрити файл", command=self.load_file).pack(side="left", padx=(8, 0))
-        RButton(bar, text="♟  Нова партія", command=self._start_free).pack(side="left", padx=(8, 0))
+        RButton(bar, text="♟  Нова партія", command=lambda: (tele_count("f.free"), self._start_free())).pack(side="left", padx=(8, 0))
         RButton(bar, text="📚  Дослідження", command=self.toggle_studies).pack(side="left", padx=(8, 0))
         tk.Frame(bar, bg=BORDER, width=1, height=24).pack(side="left", padx=14)
         self.run_btn = RButton(bar, text="▶  Аналізувати", style="Accent.TButton", command=self.start_analysis)
@@ -6463,7 +6611,9 @@ class App(tk.Tk):
         self._build_chesscom_box()
         self._build_bots_box()
         self._build_bot_ui()
+        self._build_tele_box()
         self.after(3000, lambda: self.check_update(False))
+        self.after(2500, self._tele_start)
 
     def _build_settings_box(self):
         """Налаштування - квадрат поверх програми (OverlayBox), кнопка ⚙ показує його по центру.
@@ -6512,6 +6662,9 @@ class App(tk.Tk):
                 command=lambda: self.check_update(True)).grid(row=r, column=0, columnspan=3, sticky="w")
         r += 1
         section("СТАТИСТИКА", 16)
+        Switch(sf, "Надсилати анонімну статистику", self.tele_var).grid(row=r, column=0, columnspan=3, sticky="w",
+                                                                        pady=(0, 6))
+        r += 1
         self.stats_label = ttk.Label(sf, style="PanelMuted.TLabel", justify="left")
         self.stats_label.grid(row=r, column=0, columnspan=3, sticky="w")
         r += 1
@@ -6712,6 +6865,7 @@ class App(tk.Tk):
                 self._load_pgn(f.read())
 
     def _load_pgn(self, text):
+        tele_count("f.pgn")
         try:
             game = chess.pgn.read_game(io.StringIO(text))
         except Exception:
@@ -6882,6 +7036,7 @@ class App(tk.Tk):
                     part = None
                     self.run_btn.config(state="normal")
                     if kind == "done":
+                        tele_analysis(msg[1])
                         self._show_results(msg[1])
                     else:
                         if self.result and self.result.get("partial"):    # лишаємо те, що встигли
@@ -7186,6 +7341,7 @@ class App(tk.Tk):
             return
         self._ai_busy.add(key)
         lang = key[2]
+        tele_count("f.ai")
 
         def work():
             try:
@@ -7292,6 +7448,7 @@ class App(tk.Tk):
             facts = pick("Позиція (FEN): ", "Position (FEN): ") + ctx["fen"]
         qkey = ("ask", id(item))
         self._ai_busy.add(qkey)
+        tele_count("f.ask")
 
         def work():
             try:
@@ -7371,6 +7528,61 @@ class App(tk.Tk):
         if not self.donate_box.is_open:
             self._render_donate()
         self.donate_box.toggle()
+
+    # ---------- 1.27.12: анонімна статистика
+    def _build_tele_box(self):
+        self.tele_box = OverlayBox(self, "📊  Анонімна статистика")
+        body = ttk.Frame(self.tele_box.box, style="Panel.TFrame", padding=(22, 14))
+        body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+        self.tele_text = ttk.Label(body, style="Panel.TLabel", wraplength=440, justify="left")
+        self.tele_text.pack(anchor="w")
+        btns = ttk.Frame(body, style="Panel.TFrame")
+        btns.pack(pady=(14, 0), anchor="e")
+        RButton(btns, text="Так, надсилати", style="Accent.TButton",
+                command=lambda: self._tele_answer(True)).pack(side="left", padx=(0, 8))
+        RButton(btns, text="Ні, дякую", style="Small.TButton",
+                command=lambda: self._tele_answer(False)).pack(side="left")
+
+    def _tele_start(self):
+        if TELE["on"] is None:
+            self.tele_text.configure(text=pick(
+                "Можна допомогти зробити програму кращою: надсилати анонімну статистику — скільки партій "
+                "проаналізовано, які оцінки ходів, з якими ботами грають, якими функціями користуються, версію "
+                "програми, мову й країну.\n\nНе надсилаються: партії, ніки, тексти повідомлень, IP-адреса. "
+                "Загальні цифри видно всім у ⚙ «Статистика». Вимкнути можна будь-коли в ⚙.",
+                "You can help make the app better by sending anonymous statistics: how many games were analyzed, "
+                "move grades, which bots people play, which features are used, the app version, language and "
+                "country.\n\nNot sent: games, usernames, message texts, IP address. The totals are visible to "
+                "everyone in ⚙ Statistics. You can turn it off any time in ⚙."))
+            self.tele_box.show()
+            return
+        if TELE["on"]:
+            tele_count("start")
+            self._tele_tick()
+
+    def _tele_answer(self, on):
+        self.tele_box.hide()
+        self.tele_var.set(on)            # → _tele_set
+        if on:
+            tele_count("start")
+            self._tele_tick()
+
+    def _tele_set(self, on):
+        if TELE["on"] == on:
+            return
+        TELE["on"] = on
+        if not on:
+            with _tele_lock:
+                TELE["pending"] = {}
+        tele_save()
+
+    def _tele_tick(self):
+        """Надсилання накопиченого: зараз і далі раз на 10 хвилин (лише коли є що)."""
+        if getattr(self, "_tele_timer", None):
+            self.after_cancel(self._tele_timer)
+        if TELE["on"] and TELE["pending"]:
+            threading.Thread(target=tele_send, daemon=True).start()
+        self._tele_timer = self.after(600000, self._tele_tick)
 
     def _build_donate_box(self):
         self.donate_box = OverlayBox(self, "☕  Підтримати кавою")
@@ -8415,6 +8627,7 @@ class App(tk.Tk):
         self.donate_box.hide()
         self.settings.toggle()
         if self.settings.is_open:
+            tele_count("f.settings")
             self._load_stats()
 
     def _load_stats(self):
@@ -8430,6 +8643,10 @@ class App(tk.Tk):
                 box["v"] = fetch_site_stats()
             except Exception:  # noqa: BLE001
                 box["v"] = None
+            try:                                   # 1.27.12: загальна статистика програми
+                box["a"] = fetch_app_stats()
+            except Exception:  # noqa: BLE001
+                box["a"] = None
             box["done"] = True
 
         def poll():
@@ -8439,6 +8656,8 @@ class App(tk.Tk):
             self._stats_busy = False
             if box["v"] is not None:
                 self._stats, self._stats_time = box["v"], time.time()
+                if box.get("a"):
+                    self._stats["app"] = box["a"]
             elif self._stats is None:
                 self._stats = False
             self._render_stats()
@@ -8468,6 +8687,11 @@ class App(tk.Tk):
                        f"(оновлено {upd})",
                        f"🐙 GitHub: {n_v} of the page, {n_p}\n✈ Telegram (t.me/chessanalyser): {n_s}, {n_t} of posts\n"
                        f"(updated {upd})")
+            if s.get("app"):
+                try:
+                    txt = app_stats_text(s["app"]) + "\n" + txt
+                except Exception:  # noqa: BLE001
+                    pass
         self.stats_label.configure(text=txt)
 
     def toggle_changelog(self):
@@ -9396,6 +9620,7 @@ class App(tk.Tk):
         self.title_lbl.configure(text="C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸ 👽" if on else tr("Аналізатор партій"))
         self._alien_bg(on)
         if on:
+            tele_count("alien.on")
             self.status_var.set(pick("👽 Сигнал перехоплено. Каро-Канн… Він на це чекав.",
                                      "👽 Signal intercepted. The Caro-Kann… He was waiting for this."))
             self._alien_kick()
@@ -9794,6 +10019,8 @@ class App(tk.Tk):
                     "thinking": False, "token": 0, "res": self.result, "result": "*", "reason": "",
                     "undos": 0, "hints": 0, "hint": None, "chat": [], "said_at": 0, "bot_moves": 0, "stars": 0,
                     "record": False, "quote": ""}
+        tele_count("bot.games")
+        tele_count("bot.g." + spec["id"])
         s = self.result["summary"]
         s["white"], s["black"] = ("You", spec["en"] + " (bot)") if user_white else (spec["en"] + " (bot)", "You")
         if user_white:
@@ -9888,6 +10115,7 @@ class App(tk.Tk):
     def _bot_chat_send(self, q):
         """1.27.11: повідомлення гравця ботові - відповідь ШІ в характері шахіста, без підказок."""
         b = self.bot
+        tele_count("bot.chat")
         self.ask_entry.delete(0, "end")
         history = [{"q": x["me"], "a": x["a"]} for x in b["chat"] if isinstance(x, dict) and x["a"]][-3:]
         item = {"me": q, "a": None}
@@ -10081,6 +10309,7 @@ class App(tk.Tk):
         b = self.bot
         if not self._bot_live() or b["hints"] or b["thinking"]:
             return
+        tele_count("bot.hint")
         board = self._bot_board()
         path = self.engine_var.get().strip().strip('"')
         if board is None or board.turn == b["color"] or not path:
@@ -10144,6 +10373,9 @@ class App(tk.Tk):
         b["token"] += 1
         won = reason != "resign" and result != "1/2-1/2" and ((result == "1-0") == (b["color"] == chess.BLACK))
         b["stars"] = bot_stars_for(b["spec"], won, b["elo"] == b["spec"]["elo"], b["undos"], b["hints"])
+        draw = result == "1/2-1/2" and reason != "resign"
+        tele_count("bot.win" if won else "bot.draw" if draw else "bot.loss")
+        tele_count("bot.stars", b["stars"])
         prev = self._bot_stars.get(b["spec"]["id"], 0)
         if b["stars"] > prev:
             self._bot_stars[b["spec"]["id"]] = b["stars"]
@@ -10324,6 +10556,7 @@ class App(tk.Tk):
     def _bot_undo(self):
         """«Повернути хід» у партії з ботом: назад до свого ходу (хід бота і свій перед ним)."""
         b = self.bot
+        tele_count("bot.undo")
         b["token"] += 1                                  # якщо бот саме думає - його хід уже не потрібен
         b["thinking"] = False
         v = self.var
@@ -10415,6 +10648,7 @@ class App(tk.Tk):
             self.cc_box.hide()
             return
         self.cc_box.show()
+        tele_count("f.chesscom")
         if not self._cc_months and self.cc_user_var.get().strip():
             self.chesscom_search()
         else:
@@ -10549,6 +10783,7 @@ class App(tk.Tk):
 
     def toggle_studies(self):
         """Кнопка «Дослідження»: збережені дослідження квадратом по центру вікна."""
+        tele_count("f.study")
         self.settings.hide()
         self.changelog.hide()
         self.update_box.hide()
@@ -10934,6 +11169,8 @@ class App(tk.Tk):
 
     def _on_close(self):
         self._alien_bg(False)
+        if TELE["on"]:
+            tele_save()                     # 1.27.12: ненадіслане - наступного запуску
         self._flush_save()                  # недописаний коментар теж зберігаємо
         self._cancel = True
         self._stop_play()
