@@ -219,11 +219,29 @@ function setRunLabel() {
 
 // ------------------------------------------------------------ гравці, шкала ---
 function setNames(white, we, black, be) { A.names = [white, we, black, be]; renderPlayers(); }
+function clockAt(res, k, white) {
+  if (!res || !res.clocks) return null;
+  let t = res.clk0 == null ? null : res.clk0;
+  for (let i = 0; i < Math.min(k, res.clocks.length, res.fens.length); i++)
+    if (res.clocks[i] != null && (res.fens[i].split(' ')[1] === 'w') === white) t = res.clocks[i];
+  return t;
+}
+function fmtClock(sec) {
+  sec = Math.max(0, sec);
+  if (sec < 20) return '0:' + sec.toFixed(1).padStart(4, '0');
+  const s = Math.floor(sec), p = x => String(x).padStart(2, '0');
+  return s >= 3600 ? `${Math.floor(s / 3600)}:${p(Math.floor(s / 60) % 60)}:${p(s % 60)}` : `${Math.floor(s / 60)}:${p(s % 60)}`;
+}
 function renderPlayers() {
   const [white, we, black, be] = A.names || ['Білі', '', 'Чорні', ''];
   const w = `○  ${tr(white)}` + (we ? `  (${we})` : ''), b = `●  ${tr(black)}` + (be ? `  (${be})` : '');
   let wa = '', ba = '';
-  if (A.res && !A.res.free && A.res.summary) { wa = A.res.summary.white_acc.toFixed(1) + '%'; ba = A.res.summary.black_acc.toFixed(1) + '%'; }
+  if (A.res && !A.res.free && A.res.summary) {
+    wa = A.res.summary.white_acc.toFixed(1) + '%'; ba = A.res.summary.black_acc.toFixed(1) + '%';
+    const cw = clockAt(A.res, A.index, true), cb = clockAt(A.res, A.index, false);   // 1.27.13: час з годинника партії
+    if (cw != null) wa += '  ⏱ ' + fmtClock(cw);
+    if (cb != null) ba += '  ⏱ ' + fmtClock(cb);
+  }
   const [top, bot] = board.flipped ? [[w, wa], [b, ba]] : [[b, ba], [w, wa]];
   $('pTop').querySelector('.pname').textContent = top[0]; $('pTop').querySelector('.pacc').textContent = top[1];
   $('pBot').querySelector('.pname').textContent = bot[0]; $('pBot').querySelector('.pacc').textContent = bot[1];
@@ -611,7 +629,17 @@ function parsePgn(text) {
   const hist = c.history({ verbose: true });
   if (!hist.length) return null;
   const headers = (c.getHeaders ? c.getHeaders() : c.header()) || {};
-  return { root: hist[0].before || START_FEN, moves: hist.map(m => m.from + m.to + (m.promotion || '')), headers };
+  const g = { root: hist[0].before || START_FEN, moves: hist.map(m => m.from + m.to + (m.promotion || '')), headers };
+  try {                                     // 1.27.13: залишок годинника [%clk] після кожного ходу
+    const cm = {};
+    for (const x of (c.getComments ? c.getComments() : [])) cm[x.fen] = x.comment;
+    const clocks = hist.map(m => {
+      const r = /\[%clk\s+(\d+):(\d+):(\d+(?:\.\d+)?)\]/.exec(cm[m.after] || '');
+      return r ? +r[1] * 3600 + +r[2] * 60 + +r[3] : null;
+    });
+    if (clocks.some(x => x != null)) { g.clocks = clocks; const t = /^(\d+)/.exec(String(headers.TimeControl || '').trim()); g.clk0 = t ? +t[1] : null; }
+  } catch (_) {}
+  return g;
 }
 
 function loadPgn(text) {
@@ -717,6 +745,7 @@ async function startAnalysis() {
 }
 
 function showResults(res, save = true) {
+  if (!res.clocks && !res.free && A.game && A.game.clocks) { res.clocks = A.game.clocks; res.clk0 = A.game.clk0; }
   A.res = res;
   if (save && A.chapter) { A.chapter.result = res; autosave(); }
   const s = res.summary;
@@ -772,6 +801,7 @@ function goto(k, animate = null) {
   A.missedShown = false;                    // 1.26.6: показ пропущеного «Геніального» - лише після gotoMissed
   const prev = A.index;
   A.index = k;
+  renderPlayers();
   if (animate === null) animate = k === prev + 1;
   let last = null, badge = null, info = esc(tr('Початкова позиція'));
   const rec = recommend(res.fens[k], res.pos_info[k]);
