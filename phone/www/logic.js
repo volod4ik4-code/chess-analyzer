@@ -581,7 +581,10 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   // checkHard=false (аналіз партії): перевірка після всіх ходів, щоб очищення хешу не змінювало оцінок
   const great = greatCandidate(isBest, recapture, winB, secondW);
   const hard = great && checkHard && await hardToFind(eng, hist, uci);
-  let quality = grade(drop, isBest, winB, winA, sacrifice, secondW, prevDrop, recapture, rating, missedMate, soundLoss, isEndgame(board), hard);
+  // 1.27.15: найкращий хід рушія нічого не втрачає - коливання оцінки до 5 очок після нього - шум (як missedBrilliant)
+  const noise = isBest && drop <= 5;
+  let quality = grade(noise ? 0 : drop, isBest, winB, noise ? winB : winA, sacrifice, secondW, prevDrop, recapture, rating, missedMate,
+    noise ? 0 : soundLoss, isEndgame(board), hard);
   // 1.25.15: «Пропуск» лише якщо найкращий хід вигравав матеріал (більше пішака) або мат
   if (quality === 'Пропуск' && !missedMate && zone(winA) >= zone(winB) && blunderMaterial(board, uci, after, peBefore, peAfter, mover) < D.MISS_MATERIAL
     && Math.max(Math.abs(beforeM), Math.abs(afterM)) < MATE - 100)
