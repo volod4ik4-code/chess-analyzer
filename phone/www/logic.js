@@ -590,6 +590,7 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   const mateWorse = afterM < beforeM && Math.max(Math.abs(beforeM), Math.abs(afterM)) >= MATE - 100;
   if (quality === 'Відмінний' && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse)))
     quality = sacrifice >= 1 ? 'Геніальний' : 'Найкращий';     // 1.27.15: рівноцінний найкращому - теж
+  if (quality === 'Геніальний' && afterM <= -(MATE - 100)) quality = 'Найкращий';   // 1.27.16: мат у будь-якому разі
   // 1.25.13 (правило користувача): віддав пішака чи менше - «Помилка», не «Груба помилка»
   if (quality === 'Груба помилка' && drop < D.BLUNDER_SURE && blunderMaterial(board, uci, after, peBefore, peAfter, mover) <= 1
     && Math.max(Math.abs(beforeM), Math.abs(afterM)) < MATE - 100) quality = 'Помилка';
@@ -611,6 +612,7 @@ export function missedBrilliant(board, peBefore, rating = null) {
   const best = peBefore && peBefore.best;
   if (!best || !board.find(best)) return false;
   const sign = board.turn === 'w' ? 1 : -1;
+  if (sign * peBefore.cp <= -(MATE - 100)) return false;    // 1.27.16: мат у будь-якому разі
   const winB = expectedPoints(sign * peBefore.cp, rating);
   const secondW = peBefore.second != null ? expectedPoints(sign * peBefore.second, rating) : null;
   const after = board.copy(); after.push(best);
