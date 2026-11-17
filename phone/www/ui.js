@@ -237,10 +237,9 @@ function renderPlayers() {
   const w = `○  ${tr(white)}` + (we ? `  (${we})` : ''), b = `●  ${tr(black)}` + (be ? `  (${be})` : '');
   let wa = '', ba = '';
   if (A.res && !A.res.free && A.res.summary) {
-    wa = A.res.summary.white_acc.toFixed(1) + '%'; ba = A.res.summary.black_acc.toFixed(1) + '%';
-    const cw = clockAt(A.res, A.index, true), cb = clockAt(A.res, A.index, false);   // 1.27.13: час з годинника партії
-    if (cw != null) wa += '  ⏱ ' + fmtClock(cw);
-    if (cb != null) ba += '  ⏱ ' + fmtClock(cb);
+    const cw = clockAt(A.res, A.index, true), cb = clockAt(A.res, A.index, false);   // 1.27.14: лише час з годинника партії
+    if (cw != null) wa = '⏱ ' + fmtClock(cw);
+    if (cb != null) ba = '⏱ ' + fmtClock(cb);
   }
   const [top, bot] = board.flipped ? [[w, wa], [b, ba]] : [[b, ba], [w, wa]];
   $('pTop').querySelector('.pname').textContent = top[0]; $('pTop').querySelector('.pacc').textContent = top[1];

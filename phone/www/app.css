@@ -95,9 +95,9 @@ button.icon.donate { background: #ffdd00; color: #1f1a12; border-radius: 17px; }
 #actions button { flex: 1 0 auto; padding: 8px 9px; font-size: 13px; white-space: nowrap; }
 
 #boardArea { flex: none; padding: 0 10px; }
-.player { display: flex; justify-content: space-between; align-items: center; height: 26px; font-size: 13px; }
+.player { display: flex; justify-content: space-between; align-items: center; height: 30px; font-size: 13px; }
 .pname { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pacc { color: var(--accent); font-weight: 700; white-space: nowrap; flex: none; margin-left: 8px; }
+.pacc { color: var(--accent); font-weight: 700; white-space: nowrap; flex: none; margin-left: 8px; font-size: 18px; font-variant-numeric: tabular-nums; }
 #boardRow { display: flex; gap: 4px; justify-content: center; }
 #evalbar { position: relative; width: 16px; background: #403d39; border-radius: 3px; overflow: hidden; flex: none; }
 #evalFill { position: absolute; left: 0; right: 0; bottom: 0; background: #f0efec; transition: height .25s; }
