@@ -55,3 +55,7 @@ The app does not knowingly collect any personal data from anyone, including chil
 ## Contact
 
 Questions: open an issue at [github.com/volod4ik4-code/chess-analyzer/issues](https://github.com/volod4ik4-code/chess-analyzer/issues).
+
+## TikTok integration
+
+The project's author uses a small "Chess Analyzer" TikTok app only to upload the project's own videos to its own TikTok account ([@chessanalyzer.app](https://www.tiktok.com/@chessanalyzer.app)). It uses the TikTok access token of that one account, stored only on the author's computer. It does not access, collect or store any data of other TikTok users, and the Chess Analyzer apps themselves do not connect to TikTok. See also the [Terms of Service](TERMS.md).
