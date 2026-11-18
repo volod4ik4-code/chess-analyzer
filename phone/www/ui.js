@@ -2290,6 +2290,7 @@ function openBox(kind) {
       + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
+      + `<div class="row"><button id="sBug">${esc(pick('🐞 Повідомити про помилку', '🐞 Report a bug'))}</button></div>`
       + `<label class="f">${esc(pick('Статистика', 'Statistics'))}</label>`
       + chk('sTele', pick('Надсилати анонімну статистику', 'Send anonymous statistics'), TELE.on === true)
       + `<div class="hint" id="sStats" style="white-space:pre-line"></div>`
@@ -2315,6 +2316,12 @@ function openBox(kind) {
     });
     on('sDone', 'click', closeBox);
     on('sUpd', 'click', () => checkUpdate(true));
+    on('sBug', 'click', () => {       // 1.27.17: нова задача GitHub з версією й платформою
+      const m = /Android [\d.]+/.exec(navigator.userAgent), plat = (m ? m[0] : 'Android') + (bridge ? '' : ' (browser)');
+      const body = `**Version:** ${D.APP_VERSION}\n**Platform:** ${plat}\n\n**What happened?**\n\n\n**Steps to reproduce:**\n1. \n\n**PGN (if any):**\n`;
+      const u = D.GITHUB_URL + '/issues/new?' + new URLSearchParams({ title: 'Bug: ', body, labels: 'bug' });
+      if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank');
+    });
     on('sBench', 'click', benchEngine);
     tele('f.settings');
     loadStats();  } else if (kind === 'tele') {      // 1.27.12: згода на анонімну статистику
