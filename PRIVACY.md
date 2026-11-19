@@ -15,6 +15,7 @@ The app works offline. It goes online only for the features below.
 | chess.com games | `api.chess.com` | The chess.com username you type in | Only when you use the "chess.com games" button |
 | Statistics in ⚙ Settings | `raw.githubusercontent.com`, `chess-analyzer-coach.chessanalyzer.workers.dev/stats` | A normal HTTPS request, no personal data | Only when you open the statistics |
 | Anonymous usage statistics | `chess-analyzer-coach.chessanalyzer.workers.dev/t` | See "Anonymous usage statistics" below | Only if you answered "Yes" on first start (or turned it on in ⚙ Settings) |
+| Bug report (⚙ Settings → "🐞 Report a bug" → Send) | `chess-analyzer-coach.chessanalyzer.workers.dev/bug` | Only what you type: the description, the optional contact, the current game (PGN) if you tick it; plus app version, platform, language and country (from Cloudflare). No IP address is stored | Only when you press "Send" |
 | Opening book | `raw.githubusercontent.com` (lichess-org/chess-openings) | A normal HTTPS request, no personal data | Once, if the opening book is not cached yet |
 
 These services may see your IP address, as with any internet request. Their own privacy policies apply: [GitHub](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement), [Cloudflare](https://www.cloudflare.com/privacypolicy/), [chess.com](https://www.chess.com/legal/privacy).

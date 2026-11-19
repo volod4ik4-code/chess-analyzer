@@ -2316,12 +2316,7 @@ function openBox(kind) {
     });
     on('sDone', 'click', closeBox);
     on('sUpd', 'click', () => checkUpdate(true));
-    on('sBug', 'click', () => {       // 1.27.17: нова задача GitHub з версією й платформою
-      const m = /Android [\d.]+/.exec(navigator.userAgent), plat = (m ? m[0] : 'Android') + (bridge ? '' : ' (browser)');
-      const body = `**Version:** ${D.APP_VERSION}\n**Platform:** ${plat}\n\n**What happened?**\n\n\n**Steps to reproduce:**\n1. \n\n**PGN (if any):**\n`;
-      const u = D.GITHUB_URL + '/issues/new?' + new URLSearchParams({ title: 'Bug: ', body, labels: 'bug' });
-      if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank');
-    });
+    on('sBug', 'click', () => openBox('bug'));
     on('sBench', 'click', benchEngine);
     tele('f.settings');
     loadStats();  } else if (kind === 'tele') {      // 1.27.12: згода на анонімну статистику
@@ -2337,6 +2332,20 @@ function openBox(kind) {
       + `<button id="tYes" class="primary">${esc(pick('Так, надсилати', 'Yes, send'))}</button></div>`;
     $('tYes').addEventListener('click', () => { closeBox(); teleSet(true); });
     $('tNo').addEventListener('click', () => { closeBox(); teleSet(false); });
+  } else if (kind === 'bug') {          // 1.27.18: звіт про помилку без акаунта GitHub
+    $('boxTitle').textContent = pick('🐞  Повідомити про помилку', '🐞  Report a bug');
+    body.innerHTML = `<div class="hint">${esc(pick('Опишіть, що сталося і що ви робили перед цим. Звіт отримає автор програми.',
+      'Describe what happened and what you did before it. The report goes to the author of the app.'))}</div>`
+      + `<textarea id="bugText" rows="6"></textarea>`
+      + `<label class="f">${esc(pick("Як з вами зв'язатися (необов'язково): Telegram, пошта…", 'How to contact you (optional): Telegram, email…'))}</label>`
+      + `<input id="bugContact" type="text" autocomplete="off">`
+      + `<label class="check"><input type="checkbox" id="bugPgn"> ${esc(pick('Додати поточну партію (PGN)', 'Attach the current game (PGN)'))}</label>`
+      + `<div class="hint" id="bugStatus"></div>`
+      + `<div class="row"><button id="bugGh">${esc(pick('🐙 Через GitHub', '🐙 Via GitHub'))}</button>`
+      + `<button id="bugSend" class="primary">${esc(pick('Надіслати', 'Send'))}</button></div>`;
+    $('bugGh').addEventListener('click', bugGithub);
+    $('bugSend').addEventListener('click', bugSend);
+    $('bugText').focus();
   } else if (kind === 'donate') {
     $('boxTitle').textContent = tr('☕  Підтримати кавою');
     body.innerHTML = `<div>${esc(pick('Програма безкоштовна. Якщо вона вам подобається, можна пригостити автора кавою — переказ на картку:',
@@ -2409,6 +2418,44 @@ function openBox(kind) {
   placeBox();
 }
 function reopenBox() { if (A.boxKind) { const k = A.boxKind; const b = $('box'), l = b.style.left, t = b.style.top; openBox(k); b.style.left = l; b.style.top = t; clampBox(); } }
+function bugPlatform() {
+  const m = /Android [\d.]+/.exec(navigator.userAgent);
+  return (m ? m[0] : 'Android') + (bridge ? '' : ' (browser)');
+}
+function bugGithub() {
+  const body = `**Version:** ${D.APP_VERSION}\n**Platform:** ${bugPlatform()}\n\n**What happened?**\n\n\n**Steps to reproduce:**\n1. \n\n**PGN (if any):**\n`;
+  const u = D.GITHUB_URL + '/issues/new?' + new URLSearchParams({ title: 'Bug: ', body, labels: 'bug' });
+  if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank');
+}
+function bugPgnText() {
+  try {
+    if (!A.res || !A.res.moves || !A.res.moves.length) return "";
+    return chapterPgn({ name: 'bug', headers: A.game ? { ...A.game.headers } : {}, result: A.res, lines: A.lines, notes: {}, shapes: {} });
+  } catch (_) { return ''; }
+}
+async function bugSend() {
+  const st = $('bugStatus'), btn = $('bugSend'), text = $('bugText').value.trim();
+  if (text.length < 3) { st.textContent = pick('Напишіть кілька слів про проблему.', 'Write a few words about the problem.'); return; }
+  btn.disabled = true; st.textContent = pick('Надсилаю…', 'Sending…');
+  let r = 'net';
+  try {
+    const res = await fetch(D.AI_COACH_URL + '/bug', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, contact: $('bugContact').value.trim(), pgn: $('bugPgn').checked ? bugPgnText() : '',
+        p: 'phone', v: D.APP_VERSION, lang: cfg.lang }) });
+    r = res.ok ? ((await res.json()).ok ? true : 'error') : (res.status === 429 ? 'rate' : 'error');
+  } catch (_) { /* немає мережі */ }
+  if (A.boxKind !== 'bug') return;
+  if (r === true) {
+    $('bugText').value = '';
+    st.textContent = pick('✓ Дякуємо! Звіт надіслано.', '✓ Thank you! The report was sent.');
+    setTimeout(() => { if (A.boxKind === 'bug') closeBox(); }, 1800);
+    return;
+  }
+  btn.disabled = false;
+  st.textContent = r === 'net' ? pick("Немає з'єднання з інтернетом. Спробуйте пізніше або через GitHub.", 'No internet connection. Try later or via GitHub.')
+    : r === 'rate' ? pick('Забагато звітів. Спробуйте за хвилину.', 'Too many reports. Try again in a minute.')
+    : pick('Не вдалося надіслати. Спробуйте через GitHub.', 'Could not send. Try via GitHub.');
+}
 function closeBox() { A.boxKind = null; $('overlay').hidden = true; $('boxBody').innerHTML = ''; }
 function toggleBox(kind) { if (A.boxKind === kind) closeBox(); else openBox(kind); }
 function placeBox() {
