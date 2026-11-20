@@ -237,6 +237,12 @@ button:active { transform: scale(.96); }
 #app.wide #actions button.cc, #app.wide #actions button.bots { flex: 0 0 auto; }
 .aibtn { margin-top: 8px; width: 100%; }
 .gotwBtn { margin-top: 8px; width: 100%; }
+.glit { display: flex; align-items: center; gap: 8px; }
+.glheart { flex: none; min-width: 52px; padding: 6px 8px; }
+.glheart.on { color: #ff5a7a; }
+.glmain { flex: 1; min-width: 0; }
+.glmain small { display: block; }
+.glc { color: var(--fg); opacity: .85; }
 .famrow { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
 .famrow button.chip { padding: 4px 8px; font-size: 12px; }
 .dbt { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 14px; }

@@ -387,7 +387,7 @@ function renderSummary() {
   const mb = w => { const n = missedList(w).length; return `<td class="n">${n ? `<button class="missedBtn" data-missed="${w ? 'w' : 'b'}">${n}</button>` : 0}</td>`; };
   rows.push(`<tr class="missed"><td>💎 <span style="color:${QUALITY['Геніальний'][0]}">${esc(pick('Пропущені геніальні', 'Missed brilliants'))}</span></td>${mb(true)}${mb(false)}</tr>`);
   el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`
-    + (analysing() ? '' : `<button class="gotwBtn" data-gotw="1">${esc(pick('🏆 Партія тижня', '🏆 Game of the week'))}</button>`);
+    + (analysing() ? '' : `<button class="gotwBtn" data-gotw="1">${esc(pick('🏆 Подати заявку на гру тижня', '🏆 Apply for game of the week'))}</button>`);
 }
 
 function missedList(white) {
@@ -2577,14 +2577,17 @@ function openBox(kind) {
       + `<button id="tYes" class="primary">${esc(pick('Так, надсилати', 'Yes, send'))}</button></div>`;
     $('tYes').addEventListener('click', () => { closeBox(); teleSet(true); });
     $('tNo').addEventListener('click', () => { closeBox(); teleSet(false); });
+  } else if (kind === 'gotwlist') {     // 1.29.1: «Партії тижня»
+    $('boxTitle').textContent = pick('🏆  Партії тижня', '🏆  Games of the week');
+    glLoad();
   } else if (kind === 'db') {           // 1.29.0: база партій майстрів
     $('boxTitle').textContent = pick('📖  База партій майстрів', '📖  Masters games database');
     MS.fen = null; dbTick();
   } else if (kind === 'gotw') {         // 1.28.3: «Партія тижня»
     const s = (A.res && A.res.summary) || {};
-    $('boxTitle').textContent = pick('🏆  Партія тижня', '🏆  Game of the week');
-    body.innerHTML = `<div class="hint">${esc(pick('Цікава партія? Надішліть її авторові. Найкращі партії тижня покажемо в нашому Telegram-каналі (разом з іменами гравців з партії).',
-      'An interesting game? Send it to the author. The best games of the week will be shown in our Telegram channel (with the player names from the game).'))}</div>`
+    $('boxTitle').textContent = pick('🏆  Подати заявку на гру тижня', '🏆  Apply for game of the week');
+    body.innerHTML = `<div class="hint">${esc(pick('Цікава партія? Подайте заявку. Її побачать інші гравці у вкладці «🏆 Партії тижня» (з іменами гравців з партії) і зможуть поставити ❤, а найкращі покажемо в нашому Telegram-каналі.',
+      'An interesting game? Apply with it. Other players will see it in the «🏆 Games of the week» tab (with the player names from the game) and can give it a ❤, and the best ones will be shown in our Telegram channel.'))}</div>`
       + `<div style="font-weight:700;margin:8px 0">${esc(`${tr(s.white || '?')} – ${tr(s.black || '?')} · ${s.result || '*'} · ${(s.white_acc || 0).toFixed(1)}% / ${(s.black_acc || 0).toFixed(1)}%`)}</div>`
       + `<label class="f">${esc(pick("Як вас підписати (необов'язково):", 'How to credit you (optional):'))}</label><input id="gwNick" type="text" maxlength="60" autocomplete="off">`
       + `<label class="f">${esc(pick("Чим цікава партія (необов'язково):", 'What makes it interesting (optional):'))}</label><textarea id="gwText" rows="3" maxlength="500"></textarea>`
@@ -2678,6 +2681,72 @@ function openBox(kind) {
   placeBox();
 }
 function reopenBox() { if (A.boxKind) { const k = A.boxKind; const b = $('box'), l = b.style.left, t = b.style.top; openBox(k); b.style.left = l; b.style.top = t; clampBox(); } }
+// 1.29.1: вкладка «Партії тижня» - заявки гравців і лайки
+const GL = { sort: 'new', rows: [], err: null, loading: false };
+function glLikes() {
+  let d = store.get('ca.likes', null);
+  if (!d || !/^[0-9a-f]{32}$/.test(d.id || '')) {
+    const a = new Uint8Array(16); crypto.getRandomValues(a);
+    d = { id: [...a].map(x => x.toString(16).padStart(2, '0')).join(''), liked: [] };
+    store.set('ca.likes', d);
+  }
+  return d;
+}
+async function glLoad() {
+  GL.loading = true; GL.err = null; glRender();
+  try {
+    const r = await fetch(`${D.AI_COACH_URL}/gotw/list?sort=${GL.sort}`);
+    if (!r.ok) throw new Error(r.status === 429 ? 'rate' : 'err');
+    GL.rows = (await r.json()).games || [];
+  } catch (e) { GL.err = e.message === 'rate' ? 'rate' : 'net'; }
+  GL.loading = false; glRender();
+}
+function glRender() {
+  if (A.boxKind !== 'gotwlist') return;
+  const L = glLikes();
+  const seg = (k, l) => `<button data-glsort="${k}" class="${GL.sort === k ? 'primary' : ''}">${esc(l)}</button>`;
+  let html = `<div class="row">${seg('new', pick('🆕 Нові', '🆕 Newest'))}${seg('top', pick('❤ Найкращі', '❤ Best'))}</div>`
+    + `<div class="hint">${esc(pick('Партії, які надіслали гравці. Торкніться партії, щоб відкрити, або ♡, щоб поставити лайк.', 'Games sent by players. Tap a game to open it, or ♡ to like it.'))}</div>`;
+  if (GL.loading) html += `<div class="hint">${esc(pick('Завантажую…', 'Loading…'))}</div>`;
+  else if (GL.err) html += `<div class="hint">${esc(GL.err === 'rate' ? pick('Забагато запитів - спробуйте за хвилину.', 'Too many requests - try in a minute.') : pick("Немає з'єднання з інтернетом.", 'No internet connection.'))}</div>`;
+  else if (!GL.rows.length) html += `<div class="hint">${esc(pick('Ще ніхто не подав заявку - будьте першим!', 'No applications yet - be the first!'))}</div>`;
+  else html += `<div class="list gllist">` + GL.rows.map(g => {
+    const liked = L.liked.includes(g.n), acc = g.white_acc != null && g.black_acc != null ? ` · ${Math.round(g.white_acc)}% / ${Math.round(g.black_acc)}%` : '';
+    return `<div class="it glit" data-gln="${g.n}"><button class="glheart${liked ? ' on' : ''}" data-gllike="${g.n}">${liked ? '❤' : '♡'} ${g.likes || 0}</button>`
+      + `<div class="glmain">${esc(`${g.white || '?'} – ${g.black || '?'} ${g.result || ''}`)}<small>${esc(`${g.nick || '—'} · ${(g.at || '').slice(0, 10)}${acc}`)}</small>`
+      + (g.comment ? `<small class="glc">💬 ${esc(g.comment)}</small>` : '') + `</div></div>`;
+  }).join('') + `</div>`;
+  html += `<div class="row"><button id="glClose">${esc(pick('Закрити', 'Close'))}</button></div>`;
+  $('boxBody').innerHTML = html;
+  $('glClose').addEventListener('click', closeBox);
+  $('boxBody').querySelectorAll('[data-glsort]').forEach(b => b.addEventListener('click', () => { GL.sort = b.dataset.glsort; glLoad(); }));
+  $('boxBody').querySelectorAll('[data-gllike]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); glLike(+b.dataset.gllike); }));
+  $('boxBody').querySelectorAll('[data-gln]').forEach(it => it.addEventListener('click', () => glOpen(+it.dataset.gln)));
+}
+async function glLike(n) {
+  const L = glLikes(), on = !L.liked.includes(n);
+  tele('gotw.like');
+  try {
+    const r = await fetch(`${D.AI_COACH_URL}/gotw/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ n, id: L.id, on }) });
+    if (!r.ok) throw new Error('x');
+    const d = await r.json();
+    L.liked = on ? [...L.liked, n] : L.liked.filter(x => x !== n);
+    store.set('ca.likes', L);
+    const g = GL.rows.find(x => x.n === n);
+    if (g) g.likes = d.likes;
+    glRender();
+  } catch (_) { msg(pick("Не вдалося - немає з'єднання?", 'Failed - no connection?')); }
+}
+async function glOpen(n) {
+  try {
+    const r = await fetch(`${D.AI_COACH_URL}/gotw/pgn?n=${n}`);
+    const d = await r.json();
+    if (!d.pgn) throw new Error('x');
+    closeBox();
+    loadPgn(d.pgn);
+  } catch (_) { msg(pick('Не вдалося завантажити партію.', 'Could not load the game.')); }
+}
+
 async function gotwSend() {
   const st = $('gwStatus'), btn = $('gwSend'), res = A.res, s = (res && res.summary) || {};
   if (!res || res.free || analysing()) return;
@@ -2689,11 +2758,11 @@ async function gotwSend() {
   try {
     const x = await fetch(D.AI_COACH_URL + '/gotw', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pgn, nick: $('gwNick').value.trim(), comment: $('gwText').value.trim(), white: s.white, black: s.black,
-        result: s.result, white_acc: s.white_acc, black_acc: s.black_acc, p: 'phone', v: D.APP_VERSION, lang: cfg.lang }) });
+        result: s.result, white_acc: s.white_acc, black_acc: s.black_acc, p: 'phone', v: D.APP_VERSION, lang: cfg.lang, public: true }) });
     r = x.ok ? ((await x.json()).ok ? true : 'error') : (x.status === 429 ? 'rate' : 'error');
   } catch (_) { /* немає мережі */ }
   if (A.boxKind !== 'gotw') return;
-  if (r === true) { st.textContent = pick('✓ Дякуємо! Партію надіслано.', '✓ Thank you! The game was sent.'); setTimeout(() => { if (A.boxKind === 'gotw') closeBox(); }, 1800); return; }
+  if (r === true) { st.textContent = pick('✓ Дякуємо! Заявку подано - партія вже у «🏆 Партіях тижня».', '✓ Thank you! Applied - the game is in «🏆 Games of the week».'); setTimeout(() => { if (A.boxKind === 'gotw') closeBox(); }, 1800); return; }
   btn.disabled = false;
   st.textContent = r === 'net' ? pick("Немає з'єднання з інтернетом. Спробуйте пізніше.", 'No internet connection. Try later.')
     : r === 'rate' ? pick('Забагато спроб. Спробуйте за хвилину.', 'Too many attempts. Try again in a minute.')
@@ -3047,7 +3116,7 @@ function wire() {
   click('bSettings', () => toggleBox('settings'));
   click('bNews', () => toggleBox('news'));
   click('bDonate', openDonate);
-  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
+  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3
