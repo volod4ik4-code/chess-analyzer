@@ -604,17 +604,18 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
     book: bookHit || bookBad, book_bad: bookBad, opening: '', fen: after.fen(), acc,
     drop: bookHit ? 0 : drop, cap_sq: isCap ? uci.slice(2, 4) : null, ...(great && !checkHard && quality === 'Найкращий' ? { _great: true } : {}),
     // 1.26.6: тут був «Геніальний» хід (best_san), але зіграно інший
-    ...(quality !== 'Геніальний' && quality !== 'Теорія' && !isBest && missedBrilliant(board, peBefore, rating) ? { missed_bril: true } : {}),
+    ...(quality !== 'Геніальний' && quality !== 'Чудовий' && quality !== 'Теорія' && !isBest && missedBrilliant(board, peBefore, rating, prevBril) ? { missed_bril: true } : {}),
   }, peAfter];
 }
 
 /** 1.26.6: чи був найкращий хід рушія «Геніальним» (як missed_brilliant у ПК: drop 0, позиція після = до). */
-export function missedBrilliant(board, peBefore, rating = null) {
+export function missedBrilliant(board, peBefore, rating = null, prevBril = false) {
   const best = peBefore && peBefore.best;
   if (!best || !board.find(best)) return false;
   const sign = board.turn === 'w' ? 1 : -1;
   if (sign * peBefore.cp <= -(MATE - 100)) return false;    // 1.27.16: мат у будь-якому разі
   const winB = expectedPoints(sign * peBefore.cp, rating);
+  if (prevBril && zone(winB) === 0) return false;   // 1.29.2.1: була б лише «!»
   const secondW = peBefore.second != null ? expectedPoints(sign * peBefore.second, rating) : null;
   const after = board.copy(); after.push(best);
   if (after.isGameOver()) return false;
