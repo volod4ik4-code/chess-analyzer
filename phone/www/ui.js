@@ -449,7 +449,7 @@ function recommend(fen, pe) {
 
 function bestArrow(row, peNow) {
   const mode = cfg.arrow;
-  if (pzHide()) return A.pz.arrow || null;        // 1.28.0: задача ще не розв'язана
+  if (A.pz) return null;                     // 1.28.2: у тренуванні стрілки немає зовсім
   if (botLive()) return botHintArrow();      // у партії з ботом - лише взята підказка (1.25.0)
   if (mode === 'hint') return (peNow || {}).best || null;
   if (mode === 'off' || !row || !row.best_uci) return null;
@@ -944,6 +944,7 @@ async function onUserMove(uci, dragged) {
   renderMoves();
   showVarState(v.index, !dragged);
   queueEval(v, row);
+  if (A.pz) puzzleInstant(v, row);
 }
 
 // ---- черга оцінок ходів гравця: по одному, по порядку (кожна оцінка спирається на попередню)
@@ -985,10 +986,11 @@ async function evalRow(v, row) {
     await ensureEngine();
     const t0 = performance.now(), hist = { root: v.fens[j - 1], moves: [] };
     let pb = v.pes[j - 1];
+    if (!pb && j === 1 && res.pos_info) pb = res.pos_info[v.base] || null;   // 1.28.2: пораховано у фоні
     if (!pb || pb.req_depth !== depth) pb = posEval(await engine.analyse(hist.root, [], depth), depth);
     // 1.23.7: спершу швидка оцінка (на 4 глибини менше) - за нею ШІ-тренер починає думати одразу
     const qd = depth - 4;
-    if (qd >= 8 && cfg.ai && cfg.coach && !A.aiOff && !botLive()) {
+    if (false && qd >= 8 && cfg.ai && cfg.coach && !A.aiOff && !botLive()) {   // 1.28.2: ШІ лише за кнопкою
       try {
         const [rq, peq] = await evaluateMove(engine, qd, new Pos(v.fens[j - 1]), { root: v.fens[j - 1], moves: [] }, row.uci, pb,
           prevDrop, prevCap, rating, bookHit, !analysing());
@@ -1225,6 +1227,25 @@ function puzzleStart() {
   $('pzCard').hidden = false;
   puzzleRender();
   $('pzCard').scrollIntoView({ block: 'nearest' });
+  // 1.28.2: поки гравець думає - Stockfish рахує позицію задачі (в черзі оцінок, тож хід потім оцінюється швидше)
+  const depth = cfg.depth;
+  A.evalChain = (A.evalChain || Promise.resolve()).then(async () => {
+    if (A.res !== res || res.pos_info[0]) return;
+    await ensureEngine();
+    const pe = posEval(await engine.analyse(p.fen, [], depth), depth);
+    if (A.res !== res) return;
+    res.pos_info[0] = pe;
+    if (A.v && A.v.base === 0 && !A.v.pes[0]) A.v.pes[0] = pe;
+  }).catch(() => {});
+}
+function puzzleInstant(v, row) {
+  const pz = A.pz;
+  if (pz.solved || pz.shown || A.res !== pz.res || v.base !== 0 || v.rows[0] !== row || row.uci !== pz.best) return;
+  pz.solved = true;
+  const first = !pz.tried;
+  if (first) { pzResult(pz.id, true); tele('pz.ok'); }
+  const extra = first ? '' : pick(' (не з першої спроби)', ' (not on the first try)');
+  puzzleRender(pick(`✓ Правильно! ${row.san}${extra} - тисніть «Наступна».`, `✓ Correct! ${row.san}${extra} - press «Next».`));
 }
 function puzzleSan() { try { return new Pos(A.pz.fen).san(A.pz.best) || A.pz.best; } catch (_) { return A.pz.best; } }
 function puzzleRender(text = null) {
@@ -1258,13 +1279,14 @@ function puzzleShow() {
   const pz = A.pz;
   if (!pz || pz.solved) return;
   pzTried();
-  pz.shown = true; pz.arrow = pz.best;
-  if (A.v) showVarState(A.v.index, false); else board.setPosition(pz.fen, null, null, pz.best, []);
+  pz.shown = true;
+  if (A.v) { clearVar(); goto(0, false); }    // 1.28.2: прибрати свій хід і зіграти розв'язок на дошці
+  onUserMove(pz.best, false);
   puzzleRender(pick(`Розв'язок: ${puzzleSan()}. Задача повернеться пізніше.`, `Solution: ${puzzleSan()}. The puzzle will come back later.`));
 }
 function puzzleCheck(v, row) {
   const pz = A.pz;
-  if (pz.solved || A.res !== pz.res || !v || v.base !== 0 || v.rows[0] !== row || row.pending || row.failed) return;
+  if (pz.solved || pz.shown || A.res !== pz.res || !v || v.base !== 0 || v.rows[0] !== row || row.pending || row.failed) return;
   if (row.uci === pz.best || PZ_OK.includes(row.quality)) {
     pz.solved = true;
     const first = !pz.tried;
