@@ -794,7 +794,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.28.2"
+APP_VERSION = "1.28.3"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -806,6 +806,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.28.3", "2026-11-20 19:53", [
+        ("Нове: «🏆 Партія тижня» - після аналізу партію можна надіслати авторові. Найкращі покажемо в нашому Telegram-каналі.",
+         "New: «🏆 Game of the week» - after the analysis you can send the game to the author. The best ones will be shown in our Telegram channel."),
+    ]),
     ("1.28.2", "2026-11-20 19:39", [
         ("Тренування: «Розв'язок» одразу робить хід на дошці замість стрілки.",
          "Training: «Solution» now plays the move on the board instead of showing an arrow."),
@@ -1584,7 +1588,7 @@ TR_EN.update({
     "У дослідженні ще немає розділів.": "The study has no chapters yet.",
     "Зберегти дослідження як PGN": "Save the study as PGN", "Збережено:": "Saved:",
     # оновлення
-    "⬆  Оновлення": "⬆  Update", "СТАТИСТИКА": "STATISTICS", "⬆ Перевірити оновлення": "⬆ Check for updates", "🐞 Повідомити про помилку": "🐞 Report a bug", "🐞  Повідомити про помилку": "🐞  Report a bug", "🐙 Через GitHub": "🐙 Via GitHub", "Надіслати": "Send", "Додати поточну партію (PGN)": "Attach the current game (PGN)",
+    "⬆  Оновлення": "⬆  Update", "СТАТИСТИКА": "STATISTICS", "⬆ Перевірити оновлення": "⬆ Check for updates", "🐞 Повідомити про помилку": "🐞 Report a bug", "🐞  Повідомити про помилку": "🐞  Report a bug", "🐙 Через GitHub": "🐙 Via GitHub", "🏆  Партія тижня": "🏆  Game of the week", "🏆  Надіслати як партію тижня": "🏆  Send as game of the week", "Надіслати": "Send", "Додати поточну партію (PGN)": "Attach the current game (PGN)",
     "Завантажити й встановити": "Download and install", "Сторінка релізу": "Release page",
     "Пізніше": "Later",
     "📋 Копіювати номер": "📋 Copy number",
@@ -3884,6 +3888,7 @@ def fetch_site_stats():
 TELE_PATH = os.path.join(os.path.expanduser("~"), ".chess_analyzer_telemetry.json")
 TELE_URL = AI_COACH_URL + "/t"
 BUG_URL = AI_COACH_URL + "/bug"     # 1.27.18: звіти про помилки без акаунта GitHub
+GOTW_URL = AI_COACH_URL + "/gotw"   # 1.28.3: «Партія тижня»
 
 
 def send_bug_report(text, contact="", pgn=""):
@@ -6976,6 +6981,9 @@ class App(tk.Tk):
             lbl.grid(row=r + 1, column=c + 1, padx=(8, 2), pady=1)
             lbl.bind("<Button-1>", lambda e, w=(c == 1): self._goto_missed(w))
             self.sum_labels[("missed", c)] = lbl
+        # 1.28.3: надіслати партію як «Партію тижня»
+        self.gotw_btn = RButton(box, text="🏆  Партія тижня", kind="small", command=self._open_gotw)
+        self.gotw_btn.grid(row=r + 2, column=0, columnspan=4, sticky="ew", pady=(8, 0))
 
     def _missed_list(self, white):
         """Індекси ходів основної партії, де був пропущений «Геніальний» хід (1.26.6)."""
@@ -8513,6 +8521,100 @@ class App(tk.Tk):
         self._comment_key = None
         if STATE["lang"] == "en":
             self._apply_lang()
+
+    def _open_gotw(self):
+        """1.28.3: «Партія тижня» - проаналізована партія йде авторові (нік і коментар - необов'язково)."""
+        res = self.result
+        if not res or res.get("free") or res.get("partial") or self.game is None:
+            self.status_var.set(pick("Спершу проаналізуйте партію - тоді її можна надіслати як партію тижня.",
+                                     "Analyze a game first - then you can send it as the game of the week."))
+            return
+        if not hasattr(self, "gotw_box"):
+            self.gotw_box = OverlayBox(self, "🏆  Надіслати як партію тижня")
+            body = ttk.Frame(self.gotw_box.box, style="Panel.TFrame", padding=(18, 12))
+            body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+            self.gotw_hint = ttk.Label(body, style="PanelMuted.TLabel", justify="left", wraplength=420)
+            self.gotw_hint.pack(anchor="w")
+            self.gotw_game = ttk.Label(body, style="Panel.TLabel", font=fsemi(11))
+            self.gotw_game.pack(anchor="w", pady=(8, 8))
+            self.gotw_nick_lbl = ttk.Label(body, style="Panel.TLabel")
+            self.gotw_nick_lbl.pack(anchor="w")
+            self.gotw_nick = tk.StringVar()
+            ttk.Entry(body, textvariable=self.gotw_nick, width=40).pack(anchor="w", fill="x", pady=(2, 8))
+            self.gotw_com_lbl = ttk.Label(body, style="Panel.TLabel")
+            self.gotw_com_lbl.pack(anchor="w")
+            self.gotw_text = tk.Text(body, width=52, height=4, wrap="word", bg="#2b2926", fg=FG, insertbackground=FG,
+                                     bd=0, relief="flat", padx=8, pady=6, font=("Segoe UI", 10),
+                                     highlightthickness=1, highlightbackground=BORDER, highlightcolor=ACCENT)
+            self.gotw_text.pack(fill="both", expand=True, pady=(2, 8))
+            self.gotw_status = ttk.Label(body, style="PanelMuted.TLabel", wraplength=420)
+            self.gotw_status.pack(anchor="w", pady=(0, 6))
+            btns = ttk.Frame(body, style="Panel.TFrame")
+            btns.pack(fill="x")
+            self.gotw_send_btn = RButton(btns, text="Надіслати", style="Accent.TButton", command=self._send_gotw)
+            self.gotw_send_btn.pack(side="right")
+            RButton(btns, text="Скасувати", style="Small.TButton",
+                    command=self.gotw_box.hide).pack(side="right", padx=(0, 8))
+            if STATE["lang"] == "en":
+                self._apply_lang()
+        s = res["summary"]
+        self.gotw_box.title.configure(text=pick("🏆  Надіслати як партію тижня", "🏆  Send as game of the week"))
+        self.gotw_hint.configure(text=pick(
+            "Цікава партія? Надішліть її авторові. Найкращі партії тижня покажемо в нашому Telegram-каналі "
+            "(разом з іменами гравців з партії).",
+            "An interesting game? Send it to the author. The best games of the week will be shown in our "
+            "Telegram channel (with the player names from the game)."))
+        self.gotw_game.configure(text=f"{tr(s['white'])} – {tr(s['black'])}  ·  {s['result']}  ·  "
+                                      f"{s['white_acc']:.1f}% / {s['black_acc']:.1f}%")
+        self.gotw_nick_lbl.configure(text=pick("Як вас підписати (необов'язково):", "How to credit you (optional):"))
+        self.gotw_com_lbl.configure(text=pick("Чим цікава партія (необов'язково):", "What makes it interesting (optional):"))
+        self.gotw_status.configure(text="")
+        self.gotw_send_btn.configure(state="normal")
+        self.gotw_box.show()
+
+    def _send_gotw(self):
+        res, game = self.result, self.game
+        if not res or game is None:
+            return
+        s = res["summary"]
+        payload = {"pgn": str(game), "nick": self.gotw_nick.get().strip(), "comment": self.gotw_text.get("1.0", "end").strip(),
+                   "white": s.get("white"), "black": s.get("black"), "result": s.get("result"),
+                   "white_acc": s.get("white_acc"), "black_acc": s.get("black_acc"),
+                   "p": "pc", "v": APP_VERSION, "lang": STATE["lang"]}
+        self.gotw_send_btn.configure(state="disabled")
+        self.gotw_status.configure(text=pick("Надсилаю…", "Sending…"))
+        out = queue.Queue()
+
+        def work():
+            req = urllib.request.Request(GOTW_URL, data=json.dumps(payload).encode("utf-8"), method="POST",
+                                         headers={"Content-Type": "application/json", "User-Agent": "ChessAnalyzer"})
+            try:
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    out.put(bool(json.loads(r.read().decode("utf-8")).get("ok")) or "error")
+            except urllib.error.HTTPError as e:
+                out.put("rate" if e.code == 429 else "error")
+            except Exception:  # noqa: BLE001
+                out.put("net")
+        threading.Thread(target=work, daemon=True).start()
+        tele_count("f.gotw")
+
+        def poll():
+            try:
+                r = out.get_nowait()
+            except queue.Empty:
+                self.after(200, poll)
+                return
+            if r is True:
+                self.gotw_text.delete("1.0", "end")
+                self.gotw_status.configure(text=pick("✓ Дякуємо! Партію надіслано.", "✓ Thank you! The game was sent."))
+                self.after(1800, self.gotw_box.hide)
+                return
+            self.gotw_send_btn.configure(state="normal")
+            self.gotw_status.configure(text={
+                "net": pick("Немає з'єднання з інтернетом. Спробуйте пізніше.", "No internet connection. Try later."),
+                "rate": pick("Забагато спроб. Спробуйте за хвилину.", "Too many attempts. Try again in a minute."),
+            }.get(r, pick("Не вдалося надіслати. Спробуйте пізніше.", "Could not send. Try later.")))
+        poll()
 
     def _open_bug(self):
         """1.27.18: квадрат «Повідомити про помилку» - текст, контакт (необов'язково), PGN партії (за бажанням)."""

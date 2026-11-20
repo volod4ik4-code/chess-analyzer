@@ -236,6 +236,7 @@ button:active { transform: scale(.96); }
 #actions button.bots { flex: 1 0 28%; font-weight: 800; font-size: 15px; padding: 10px 14px; }
 #app.wide #actions button.cc, #app.wide #actions button.bots { flex: 0 0 auto; }
 .aibtn { margin-top: 8px; width: 100%; }
+.gotwBtn { margin-top: 8px; width: 100%; }
 /* 1.28.0: «Тренування» */
 .pzcard .pzt { color: var(--muted); font-size: 12px; font-weight: 700; }
 .pzcard .pzx { margin: 6px 0 8px; white-space: pre-line; }

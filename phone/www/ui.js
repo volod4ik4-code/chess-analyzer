@@ -386,7 +386,8 @@ function renderSummary() {
   // 1.26.6 (користувач): пропущені «Геніальні» - торкання числа показує їх по черзі
   const mb = w => { const n = missedList(w).length; return `<td class="n">${n ? `<button class="missedBtn" data-missed="${w ? 'w' : 'b'}">${n}</button>` : 0}</td>`; };
   rows.push(`<tr class="missed"><td>💎 <span style="color:${QUALITY['Геніальний'][0]}">${esc(pick('Пропущені геніальні', 'Missed brilliants'))}</span></td>${mb(true)}${mb(false)}</tr>`);
-  el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`;
+  el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`
+    + (analysing() ? '' : `<button class="gotwBtn" data-gotw="1">${esc(pick('🏆 Партія тижня', '🏆 Game of the week'))}</button>`);
 }
 
 function missedList(white) {
@@ -2513,6 +2514,18 @@ function openBox(kind) {
       + `<button id="tYes" class="primary">${esc(pick('Так, надсилати', 'Yes, send'))}</button></div>`;
     $('tYes').addEventListener('click', () => { closeBox(); teleSet(true); });
     $('tNo').addEventListener('click', () => { closeBox(); teleSet(false); });
+  } else if (kind === 'gotw') {         // 1.28.3: «Партія тижня»
+    const s = (A.res && A.res.summary) || {};
+    $('boxTitle').textContent = pick('🏆  Партія тижня', '🏆  Game of the week');
+    body.innerHTML = `<div class="hint">${esc(pick('Цікава партія? Надішліть її авторові. Найкращі партії тижня покажемо в нашому Telegram-каналі (разом з іменами гравців з партії).',
+      'An interesting game? Send it to the author. The best games of the week will be shown in our Telegram channel (with the player names from the game).'))}</div>`
+      + `<div style="font-weight:700;margin:8px 0">${esc(`${tr(s.white || '?')} – ${tr(s.black || '?')} · ${s.result || '*'} · ${(s.white_acc || 0).toFixed(1)}% / ${(s.black_acc || 0).toFixed(1)}%`)}</div>`
+      + `<label class="f">${esc(pick("Як вас підписати (необов'язково):", 'How to credit you (optional):'))}</label><input id="gwNick" type="text" maxlength="60" autocomplete="off">`
+      + `<label class="f">${esc(pick("Чим цікава партія (необов'язково):", 'What makes it interesting (optional):'))}</label><textarea id="gwText" rows="3" maxlength="500"></textarea>`
+      + `<div class="hint" id="gwStatus"></div>`
+      + `<div class="row"><button id="gwCancel">${esc(tr('Скасувати'))}</button><button id="gwSend" class="primary">${esc(pick('Надіслати', 'Send'))}</button></div>`;
+    $('gwCancel').addEventListener('click', closeBox);
+    $('gwSend').addEventListener('click', gotwSend);
   } else if (kind === 'bug') {          // 1.27.18: звіт про помилку без акаунта GitHub
     $('boxTitle').textContent = pick('🐞  Повідомити про помилку', '🐞  Report a bug');
     body.innerHTML = `<div class="hint">${esc(pick('Опишіть, що сталося і що ви робили перед цим. Звіт отримає автор програми.',
@@ -2599,6 +2612,27 @@ function openBox(kind) {
   placeBox();
 }
 function reopenBox() { if (A.boxKind) { const k = A.boxKind; const b = $('box'), l = b.style.left, t = b.style.top; openBox(k); b.style.left = l; b.style.top = t; clampBox(); } }
+async function gotwSend() {
+  const st = $('gwStatus'), btn = $('gwSend'), res = A.res, s = (res && res.summary) || {};
+  if (!res || res.free || analysing()) return;
+  const pgn = bugPgnText((A.game && A.game.headers && A.game.headers.Event) || '?');
+  if (!pgn) { st.textContent = pick('Не вдалося зібрати партію.', 'Could not build the game.'); return; }
+  btn.disabled = true; st.textContent = pick('Надсилаю…', 'Sending…');
+  tele('f.gotw');
+  let r = 'net';
+  try {
+    const x = await fetch(D.AI_COACH_URL + '/gotw', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pgn, nick: $('gwNick').value.trim(), comment: $('gwText').value.trim(), white: s.white, black: s.black,
+        result: s.result, white_acc: s.white_acc, black_acc: s.black_acc, p: 'phone', v: D.APP_VERSION, lang: cfg.lang }) });
+    r = x.ok ? ((await x.json()).ok ? true : 'error') : (x.status === 429 ? 'rate' : 'error');
+  } catch (_) { /* немає мережі */ }
+  if (A.boxKind !== 'gotw') return;
+  if (r === true) { st.textContent = pick('✓ Дякуємо! Партію надіслано.', '✓ Thank you! The game was sent.'); setTimeout(() => { if (A.boxKind === 'gotw') closeBox(); }, 1800); return; }
+  btn.disabled = false;
+  st.textContent = r === 'net' ? pick("Немає з'єднання з інтернетом. Спробуйте пізніше.", 'No internet connection. Try later.')
+    : r === 'rate' ? pick('Забагато спроб. Спробуйте за хвилину.', 'Too many attempts. Try again in a minute.')
+    : pick('Не вдалося надіслати. Спробуйте пізніше.', 'Could not send. Try later.');
+}
 function bugPlatform() {
   const m = /Android [\d.]+/.exec(navigator.userAgent);
   return (m ? m[0] : 'Android') + (bridge ? '' : ' (browser)');
@@ -2608,10 +2642,10 @@ function bugGithub() {
   const u = D.GITHUB_URL + '/issues/new?' + new URLSearchParams({ title: 'Bug: ', body, labels: 'bug' });
   if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank');
 }
-function bugPgnText() {
+function bugPgnText(name = 'bug') {
   try {
     if (!A.res || !A.res.moves || !A.res.moves.length) return "";
-    return chapterPgn({ name: 'bug', headers: A.game ? { ...A.game.headers } : {}, result: A.res, lines: A.lines, notes: {}, shapes: {} });
+    return chapterPgn({ name, headers: A.game ? { ...A.game.headers } : {}, result: A.res, lines: A.lines, notes: {}, shapes: {} });
   } catch (_) { return ''; }
 }
 async function bugSend() {
@@ -2950,6 +2984,7 @@ function wire() {
   click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart);
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
+  document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3
   document.addEventListener('click', e => { const b = e.target.closest('[data-missed]'); if (b) gotoMissed(b.dataset.missed === 'w'); });
   document.addEventListener('click', e => {     // TikTok / Telegram / GitHub під верхніми кнопками (1.26.2)
     const b = e.target.closest('[data-link]'), u = b && D[b.dataset.link];
