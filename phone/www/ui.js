@@ -999,7 +999,8 @@ async function evalRow(v, row) {
       } catch (_) { /* */ }
     }
     // 1.26.7: поки йде аналіз партії (той самий рушій) - без перевірки «Чудового»: вона очищає хеш і змінила б оцінки партії
-    const [r, peAfter] = await evaluateMove(engine, depth, b, hist, row.uci, pb, prevDrop, prevCap, rating, bookHit, !analysing());
+    const prevQ = prevRow ? prevRow.quality : (v.base >= 1 && res.moves[v.base - 1] ? res.moves[v.base - 1].quality : null);
+    const [r, peAfter] = await evaluateMove(engine, depth, b, hist, row.uci, pb, prevDrop, prevCap, rating, bookHit, !analysing(), prevQ === 'Геніальний');
     r.elapsed = (performance.now() - t0) / 1000;
     r.opening = bookHit ? openingStr : '';
     Object.assign(row, r);

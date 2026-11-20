@@ -550,7 +550,7 @@ export function blunderMaterial(board, uci, after, peBefore, peAfter, mover) {
   return best - played;
 }
 
-export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevDrop = 0, prevCap = null, rating = null, bookHit = false, checkHard = true) {
+export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevDrop = 0, prevCap = null, rating = null, bookHit = false, checkHard = true, prevBril = false) {
   const mover = board.turn, sign = mover === 'w' ? 1 : -1;
   const beforeM = sign * peBefore.cp;
   const best = peBefore.best || null;
@@ -591,6 +591,7 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   if (quality === 'Відмінний' && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse)))
     quality = sacrifice >= 1 ? 'Геніальний' : 'Найкращий';     // 1.27.15: рівноцінний найкращому - теж
   if (quality === 'Геніальний' && afterM <= -(MATE - 100)) quality = 'Найкращий';   // 1.27.16: мат у будь-якому разі
+  if (quality === 'Геніальний' && prevBril && zone(winA) === 0) quality = 'Чудовий';   // 1.29.2: відповідь на «!!», позиція не зрівнялась
   // 1.25.13 (правило користувача): віддав пішака чи менше - «Помилка», не «Груба помилка»
   if (quality === 'Груба помилка' && drop < D.BLUNDER_SURE && blunderMaterial(board, uci, after, peBefore, peAfter, mover) <= 1
     && Math.max(Math.abs(beforeM), Math.abs(afterM)) < MATE - 100) quality = 'Помилка';
@@ -647,7 +648,8 @@ export async function analyzeGame(eng, game, depth, { progress, cancelled, book 
       if (book.has(key)) { bookHit = true; if (book.name(key)) opening = book.name(key); }
       else inBook = false;
     }
-    const [row, peAfter] = await evaluateMove(eng, depth, board, hist, move, peBefore, prevDrop, prevCap, ratings[mover], bookHit, false);
+    const [row, peAfter] = await evaluateMove(eng, depth, board, hist, move, peBefore, prevDrop, prevCap, ratings[mover], bookHit, false,
+      rows.length > 0 && rows[rows.length - 1].quality === 'Геніальний');
     if (opening && bookHit) row.opening = `${opening[0]} · ${opening[1]}`;
     const stillBook = row.quality === 'Теорія';
     if (!stillBook) inBook = false;
