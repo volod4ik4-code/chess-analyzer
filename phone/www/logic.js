@@ -379,6 +379,8 @@ export function grade(drop, isBest, winB, winA, sacrifice, secondW, prevDrop, re
   if (drop <= 2) return 'Відмінний';
   if (drop <= 5) return 'Добрий';
   const base = drop <= 10 ? 'Неточність' : drop <= 20 ? 'Помилка' : 'Груба помилка';
+  // 1.29.3: хід зберіг помітну частину подарунка (понад чверть, не менше 3 очок) - не «Пропуск» (7.Nxc6, marwen_13)
+  if (prevDrop >= 10 && winA - (winB - prevDrop) > Math.max(3, 0.25 * prevDrop)) return base;
   if (prevDrop >= 10 && winB >= 65 && winA < 65 && winA >= 35) return 'Пропуск';
   const gift = winB - prevDrop;          // наші очікувані очки до помилки суперника
   if (prevDrop >= 10 && winA >= gift - 5) return 'Пропуск';
