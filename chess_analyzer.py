@@ -794,7 +794,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.28.3"
+APP_VERSION = "1.29.0"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -806,6 +806,12 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.29.0", "2026-11-20 20:03", [
+        ("Нове: «📖 База партій» - для позиції на дошці видно, які ходи грали майстри й гросмейстери (2,7 млн турнірних партій гравців FIDE 2200+), як часто й з яким результатом, і відомі партії; клік на хід - зіграти, на партію - відкрити й проаналізувати.",
+         "New: «📖 Games database» - for the position on the board you can see which moves masters and grandmasters played (2.7 million tournament games of FIDE 2200+ players), how often and with what result, and famous games; click a move to play it, click a game to open and analyze it."),
+        ("У «Партіях Chess.com» - кнопки відомих гросмейстерів: їхні партії можна дивитися без введення ніка.",
+         "«Chess.com games» now has buttons for famous grandmasters: browse their games without typing a username."),
+    ]),
     ("1.28.3", "2026-11-20 19:53", [
         ("Нове: «🏆 Партія тижня» - після аналізу партію можна надіслати авторові. Найкращі покажемо в нашому Telegram-каналі.",
          "New: «🏆 Game of the week» - after the analysis you can send the game to the author. The best ones will be shown in our Telegram channel."),
@@ -1570,7 +1576,7 @@ TR_EN.update({
     "⤓ Експорт PGN": "⤓ Export PGN", "Усі дослідження": "All studies",
     "🗑 Видалити варіант": "🗑 Delete variation",
     "🗑 Очистити": "🗑 Clear",
-    "🤖  Боти": "🤖  Bots", "🧩  Тренування": "🧩  Training", "🤖  Грати з ботом": "🤖  Play a bot", "⚔  Почати гру": "⚔  Start game",
+    "🤖  Боти": "🤖  Bots", "🧩  Тренування": "🧩  Training", "📖  База партій": "📖  Games database", "Гросмейстери:": "Grandmasters:", "🤖  Грати з ботом": "🤖  Play a bot", "⚔  Почати гру": "⚔  Start game",
     "🏳 Здатися": "🏳 Resign", "Ваш колір": "Your colour", "Сила гри": "Strength", "Ви": "You",
     "↶  Повернути хід": "↶  Take back", "💡  Підказка": "💡  Hint", "🏳  Здатися": "🏳  Resign",
     "ⓘ  Ліцензія фото": "ⓘ  Photo license", "ІНШІ ШАХІСТИ": "OTHER PLAYERS",
@@ -4329,6 +4335,10 @@ def cleanup_update_leftovers():
 CHESSCOM_API = "https://api.chess.com/pub/player/"
 CHESSCOM_UA = "ChessAnalyzer (github.com/volod4ik4-code/chess-analyzer)"
 CHESSCOM_NICK = re.compile(r"[A-Za-z0-9_-]{2,30}")
+# 1.29.0: акаунти відомих гросмейстерів на chess.com (кнопки у вікні «Партії Chess.com»)
+CHESSCOM_FAMOUS = ["Hikaru", "MagnusCarlsen", "DanielNaroditsky", "FabianoCaruana", "GukeshDommaraju", "Firouzja2003", "AnishGiri", "LyonBeast", "RpragChess", "GothamChess"]
+# 1.29.0: база партій майстрів (lichess Masters: турнірні партії гравців FIDE 2200+), без ключа
+MASTERS_URL = "https://explorer.lichess.ovh/masters"
 
 
 def chesscom_get(url):
@@ -6639,6 +6649,7 @@ class App(tk.Tk):
         RButton(bar, text="♞  Партії Chess.com", kind="chesscom", command=self.toggle_chesscom).pack(side="left")
         RButton(bar, text="🤖  Боти", command=self.toggle_bots).pack(side="left", padx=(8, 0))
         RButton(bar, text="🧩  Тренування", command=self.puzzle_start).pack(side="left", padx=(8, 0))
+        RButton(bar, text="📖  База партій", command=self.toggle_masters).pack(side="left", padx=(8, 0))
         tk.Frame(bar, bg=BORDER, width=1, height=24).pack(side="left", padx=14)
         RButton(bar, text="📋  PGN з буфера", command=self.load_clipboard).pack(side="left")
         RButton(bar, text="📂  Відкрити файл", command=self.load_file).pack(side="left", padx=(8, 0))
@@ -11283,6 +11294,12 @@ class App(tk.Tk):
         self.cc_type_cb.bind("<<ComboboxSelected>>", lambda e: self._cc_pick_type())
         ttk.Label(top, text="Тип", style="PanelMuted.TLabel").pack(side="right", padx=(14, 6))
 
+        fam = ttk.Frame(body, style="Panel.TFrame")      # 1.29.0: відомі гросмейстери - одним кліком
+        fam.pack(fill="x", pady=(10, 0))
+        ttk.Label(fam, text="Гросмейстери:", style="PanelMuted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        for i, nick in enumerate(CHESSCOM_FAMOUS):            # два рядки по 5 - щоб не вилазило за край
+            RButton(fam, text=nick, kind="small", command=lambda n=nick: self._cc_famous(n)).grid(
+                row=i // 5, column=i % 5 + 1, sticky="ew", padx=(0, 4), pady=(0, 4))
         mid = ttk.Frame(body, style="Panel.TFrame")
         mid.pack(fill="both", expand=True, pady=(12, 0))
         cols = ("date", "side", "opp", "res", "tc", "open")
@@ -11340,13 +11357,201 @@ class App(tk.Tk):
         else:
             self.cc_entry.focus_set()
 
-    def chesscom_search(self):
+    # ---------- 1.29.0: «📖 База партій» (майстри й гросмейстери, lichess Masters) ----------
+    def toggle_masters(self):
+        if not hasattr(self, "ms_box"):
+            self._build_masters_box()
+        if self.ms_box.is_open:
+            self.ms_box.hide()
+            return
+        tele_count("f.masters")
+        self.ms_box.show()
+        self._ms_fen = None
+        if not getattr(self, "_ms_ticking", False):
+            self._ms_ticking = True
+            self._ms_tick()
+
+    def _build_masters_box(self):
+        self.ms_box = OverlayBox(self, "📖  База партій")
+        body = ttk.Frame(self.ms_box.box, style="Panel.TFrame", padding=(18, 12))
+        body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+        self.ms_head = ttk.Label(body, style="Panel.TLabel", font=fsemi(11), justify="left", wraplength=640)
+        self.ms_head.pack(anchor="w")
+        self.ms_sub = ttk.Label(body, style="PanelMuted.TLabel", justify="left", wraplength=640)
+        self.ms_sub.pack(anchor="w", pady=(2, 8))
+        cols = ("mv", "n", "w", "d", "b", "r")
+        tv = ttk.Treeview(body, columns=cols, show="headings", selectmode="browse", height=9)
+        for c, w, a in (("mv", 90, "w"), ("n", 100, "e"), ("w", 80, "e"), ("d", 80, "e"), ("b", 80, "e"), ("r", 110, "e")):
+            tv.column(c, width=w, minwidth=40, anchor=a, stretch=(c == "mv"))
+        tv.pack(fill="x")
+        tv.bind("<Double-Button-1>", lambda e: self._ms_play())
+        tv.bind("<Return>", lambda e: self._ms_play())
+        self.ms_moves = tv
+        self.ms_games_lbl = ttk.Label(body, style="Section.TLabel")
+        self.ms_games_lbl.pack(anchor="w", pady=(12, 4))
+        gv = ttk.Treeview(body, columns=("wh", "bl", "res", "yr"), show="headings", selectmode="browse", height=7)
+        for c, w, a in (("wh", 230, "w"), ("bl", 230, "w"), ("res", 70, "center"), ("yr", 70, "center")):
+            gv.column(c, width=w, minwidth=40, anchor=a, stretch=c in ("wh", "bl"))
+        gv.pack(fill="x")
+        gv.bind("<Double-Button-1>", lambda e: self._ms_open_game())
+        gv.bind("<Return>", lambda e: self._ms_open_game())
+        self.ms_games = gv
+        bot = ttk.Frame(body, style="Panel.TFrame")
+        bot.pack(fill="x", pady=(10, 0))
+        self.ms_status = ttk.Label(bot, style="PanelMuted.TLabel")
+        self.ms_status.pack(side="left")
+        self.ms_close_btn = RButton(bot, text="Закрити", style="Small.TButton", command=self.ms_box.hide)
+        self.ms_close_btn.pack(side="right")
+        self._ms_cache, self._ms_fen, self._ms_data, self._ms_seq = {}, None, None, 0
+        self.msq = queue.Queue()
+        if STATE["lang"] == "en":
+            self._apply_lang()
+
+    def _ms_tick(self):
+        """Поки вікно відкрите - стежимо за позицією на дошці (ходи, гортання, варіанти)."""
+        if not self.ms_box.is_open:          # сховали (інший квадрат) - при наступному показі оновиться
+            self._ms_fen = None
+            self.after(800, self._ms_tick)
+            return
+        fen = self.board.fen
+        if fen != self._ms_fen:
+            self._ms_fen = fen
+            self._ms_load(fen)
+        self.after(400, self._ms_tick)
+
+    def _ms_load(self, fen):
+        self.ms_box.title.configure(text=pick("📖  База партій майстрів", "📖  Masters games database"))
+        self.ms_close_btn.configure(text=pick("Закрити", "Close"))
+        if fen in self._ms_cache:
+            self._ms_render(self._ms_cache[fen])
+            return
+        self._ms_seq += 1
+        seq = self._ms_seq
+        self.ms_status.configure(text=pick("Завантажую…", "Loading…"))
+
+        def work():
+            url = MASTERS_URL + "?" + urllib.parse.urlencode({"fen": fen, "moves": 12, "topGames": 12})
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "ChessAnalyzer (github.com/volod4ik4-code/chess-analyzer)"})
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    self.msq.put((seq, fen, json.loads(r.read().decode("utf-8")), None))
+            except urllib.error.HTTPError as e:
+                self.msq.put((seq, fen, None, "rate" if e.code == 429 else "err"))
+            except Exception:  # noqa: BLE001
+                self.msq.put((seq, fen, None, "net"))
+        threading.Thread(target=work, daemon=True).start()
+        self.after(150, self._ms_poll)
+
+    def _ms_poll(self):
+        try:
+            seq, fen, data, err = self.msq.get_nowait()
+        except queue.Empty:
+            self.after(150, self._ms_poll)
+            return
+        if data is not None:
+            self._ms_cache[fen] = data
+        if seq != self._ms_seq:
+            return
+        if data is None:
+            self.ms_status.configure(text={"rate": pick("База просить зачекати хвилинку.", "The database asks to wait a minute."),
+                                           "net": pick("Немає з'єднання з інтернетом.", "No internet connection.")}
+                                     .get(err, pick("База зараз недоступна.", "The database is unavailable right now.")))
+            return
+        self._ms_render(data)
+
+    def _ms_render(self, data):
+        self._ms_data = data
+        tot = data.get("white", 0) + data.get("draws", 0) + data.get("black", 0)
+        pc = lambda x, t: f"{100 * x / t:.0f}%" if t else "–"
+        op = data.get("opening") or {}
+        self.ms_head.configure(text=(f"{op.get('eco', '')} {op.get('name', '')}".strip() + "  ·  " if op else "")
+                               + pick(f"Партій з цією позицією: {tot:,}".replace(",", " "),
+                                      f"Games with this position: {tot:,}"))
+        self.ms_sub.configure(text=pick(
+            f"Білі виграли {pc(data.get('white', 0), tot)}, нічия {pc(data.get('draws', 0), tot)}, чорні {pc(data.get('black', 0), tot)}. "
+            "Турнірні партії гравців FIDE 2200+ (база lichess Masters). Подвійний клік на хід - зіграти його.",
+            f"White won {pc(data.get('white', 0), tot)}, draws {pc(data.get('draws', 0), tot)}, Black {pc(data.get('black', 0), tot)}. "
+            "Tournament games of FIDE 2200+ players (lichess Masters database). Double-click a move to play it."))
+        for c, t in zip(("mv", "n", "w", "d", "b", "r"), (pick("Хід", "Move"), pick("Партій", "Games"), pick("Білі", "White"),
+                                                         pick("Нічия", "Draw"), pick("Чорні", "Black"), pick("Сер. рейтинг", "Avg rating"))):
+            self.ms_moves.heading(c, text=t)
+        self.ms_moves.delete(*self.ms_moves.get_children())
+        for m in data.get("moves") or []:
+            n = m.get("white", 0) + m.get("draws", 0) + m.get("black", 0)
+            self.ms_moves.insert("", "end", iid=m["uci"], values=(m.get("san", m["uci"]), f"{n:,}".replace(",", " "),
+                                 pc(m.get("white", 0), n), pc(m.get("draws", 0), n), pc(m.get("black", 0), n),
+                                 m.get("averageRating") or "–"))
+        self.ms_games_lbl.configure(text=pick("ВІДОМІ ПАРТІЇ (подвійний клік - відкрити)", "FAMOUS GAMES (double-click to open)"))
+        for c, t in zip(("wh", "bl", "res", "yr"), (pick("Білі", "White"), pick("Чорні", "Black"), pick("Результат", "Result"), pick("Рік", "Year"))):
+            self.ms_games.heading(c, text=t)
+        self.ms_games.delete(*self.ms_games.get_children())
+        for g in (data.get("topGames") or []):
+            w, b = g.get("white") or {}, g.get("black") or {}
+            res = {"white": "1-0", "black": "0-1"}.get(g.get("winner"), "½-½")
+            self.ms_games.insert("", "end", iid=g["id"], values=(f"{w.get('name', '?')} ({w.get('rating', '?')})",
+                                 f"{b.get('name', '?')} ({b.get('rating', '?')})", res, g.get("year", "")))
+        self.ms_status.configure(text="" if (data.get("moves") or tot) else
+                                 pick("У базі майстрів такої позиції немає.", "This position is not in the masters database."))
+
+    def _ms_play(self):
+        sel = self.ms_moves.selection()
+        if not sel:
+            return
+        if self.result is None:
+            self._start_free()
+        if self.result and self.result.get("partial"):
+            self.ms_status.configure(text=pick("Зачекайте, поки закінчиться аналіз.", "Wait until the analysis finishes."))
+            return
+        try:
+            if chess.Move.from_uci(sel[0]) not in chess.Board(self.board.fen).legal_moves:
+                return
+        except ValueError:
+            return
+        self._on_user_move(sel[0], False)
+
+    def _ms_open_game(self):
+        sel = self.ms_games.selection()
+        if not sel:
+            return
+        gid = sel[0]
+        self.ms_status.configure(text=pick("Завантажую партію…", "Loading the game…"))
+        out = queue.Queue()
+
+        def work():
+            try:
+                req = urllib.request.Request(f"{MASTERS_URL}/pgn/{gid}", headers={"User-Agent": "ChessAnalyzer (github.com/volod4ik4-code/chess-analyzer)"})
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    out.put(r.read().decode("utf-8"))
+            except Exception:  # noqa: BLE001
+                out.put(None)
+        threading.Thread(target=work, daemon=True).start()
+
+        def poll():
+            try:
+                pgn = out.get_nowait()
+            except queue.Empty:
+                self.after(150, poll)
+                return
+            if not pgn:
+                self.ms_status.configure(text=pick("Не вдалося завантажити партію.", "Could not load the game."))
+                return
+            self.ms_status.configure(text="")
+            self.ms_box.hide()
+            self._load_pgn(pgn)
+        poll()
+
+    def _cc_famous(self, nick):
+        self.cc_user_var.set(nick)
+        self.chesscom_search(save=False)           # свій нік у налаштуваннях лишається
+
+    def chesscom_search(self, save=True):
         user = self.cc_user_var.get().strip()
         if not CHESSCOM_NICK.fullmatch(user):
             self.cc_status.configure(text=pick("Введіть свій нік на chess.com (латиницею).",
                                                "Enter your chess.com username."))
             return
-        if user != self._cc_user:
+        self._cc_who = user
+        if save and user != self._cc_user:
             self._cc_user = user
             self._save_config()
         self._cc_cache = {}
@@ -11424,7 +11629,7 @@ class App(tk.Tk):
         self._cc_rows = []
         self._cc_fill()
         self.cc_status.configure(text=pick("Завантажую партії…", "Loading games…"))
-        self._cc_request("games", self._cc_user, url)
+        self._cc_request("games", getattr(self, "_cc_who", None) or self._cc_user, url)
 
     def _cc_pick_type(self):
         types = [pick("Усі", "All")] + [pick(uk, en) for _k, uk, en in self.CC_CLASSES]

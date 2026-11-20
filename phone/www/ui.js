@@ -2347,10 +2347,12 @@ function ccRenderBody() {
   const res = { win: pick('Перемога', 'Win'), loss: pick('Поразка', 'Loss'), draw: pick('Нічия', 'Draw') };
   const z = x => String(x).padStart(2, '0');
   const view = ccView();
+  const fam = CC_FAMOUS.map(n => `<button class="chip" data-ccfam="${n}">${n}</button>`).join('');
   const typeOpts = [['all', pick('Усі', 'All')], ...CC_CLASSES.map(([k, uk, en]) => [k, pick(uk, en)])];
   body.innerHTML = `<label class="f">${esc(pick('Нік на chess.com', 'chess.com username'))}</label>`
-    + `<div class="row ccrow"><input type="text" id="ccUser" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(CC.user)}">`
+    + `<div class="row ccrow"><input type="text" id="ccUser" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(CC.who || CC.user)}">`
     + `<button id="ccFind" class="primary">${esc(pick('🔍 Знайти', '🔍 Find'))}</button></div>`
+    + `<div class="hint">${esc(pick('Гросмейстери:', 'Grandmasters:'))}</div><div class="famrow">${fam}</div>`
     + (CC.months.length ? `<div class="row ccrow"><select id="ccMonth">${CC.months.map(([y, m], i) => opt(i, `${pick(...CC_MONTHS[m - 1])} ${y}`, CC.month)).join('')}</select>`
       + `<select id="ccType">${typeOpts.map(([k, l]) => opt(k, l, CC.type)).join('')}</select></div>` : '')
     + `<div class="hint" id="ccStatus"></div>`
@@ -2362,7 +2364,8 @@ function ccRenderBody() {
         + `<small>${esc(when)} · ${esc(tc)}${r.opening ? ' · ' + esc(r.opening) : ''}</small></div>`;
     }).join('')}</div>` : '');
   ccSetStatus(CC.status || (() => pick('Введіть свій нік на chess.com і натисніть «Знайти».', 'Enter your chess.com username and press «Find».')));
-  $('ccFind').addEventListener('click', ccSearch);
+  $('ccFind').addEventListener('click', () => ccSearch());
+  body.querySelectorAll('[data-ccfam]').forEach(b => b.addEventListener('click', () => ccSearch(b.dataset.ccfam)));
   $('ccUser').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ccSearch(); } });
   if ($('ccMonth')) $('ccMonth').addEventListener('change', e => { CC.month = +e.target.value; ccLoadMonth(); });
   if ($('ccType')) $('ccType').addEventListener('change', e => { CC.type = e.target.value; CC.status = ccCount(); ccRenderBody(); });
@@ -2372,10 +2375,11 @@ function ccRenderBody() {
     box.style.top = Math.max(12, window.innerHeight - box.offsetHeight - 12) + 'px';
 }
 
-async function ccSearch() {
-  const user = ($('ccUser') ? $('ccUser').value : CC.user).trim();
+async function ccSearch(famous = null) {
+  const user = (famous || ($('ccUser') ? $('ccUser').value : CC.user)).trim();
   if (!/^[A-Za-z0-9_-]{2,30}$/.test(user)) { ccSetStatus(() => pick('Введіть свій нік на chess.com (латиницею).', 'Enter your chess.com username.')); return; }
-  if (user !== CC.user) { CC.user = user; store.set('ca.ccUser', user); }
+  CC.who = user;                           // 1.29.0: гросмейстер - не перезаписує свій нік
+  if (!famous && user !== CC.user) { CC.user = user; store.set('ca.ccUser', user); }
   const seq = ++CC.seq;
   CC.months = []; CC.rows = []; CC.cache = {}; CC.month = 0;
   CC.status = () => pick('Шукаю партії на chess.com…', 'Looking for games on chess.com…');
@@ -2395,7 +2399,7 @@ async function ccSearch() {
 async function ccLoadMonth() {
   const mo = CC.months[CC.month];
   if (!mo) return;
-  const url = mo[2], user = CC.user;
+  const url = mo[2], user = CC.who || CC.user;
   if (CC.cache[url]) { CC.rows = CC.cache[url]; CC.status = ccCount(); ccRenderBody(); return; }
   const seq = ++CC.seq;
   CC.rows = []; CC.status = () => pick('Завантажую партії…', 'Loading games…');
@@ -2415,6 +2419,65 @@ function ccAnalyze(r) {
   closeBox();
   if (loadPgn(r.pgn) && board.flipped !== !r.white) flipBoard();   // свої фігури - знизу
 }
+// ------------------------------------------------------------ 1.29.0: база партій майстрів ---
+const CC_FAMOUS = ["Hikaru", "MagnusCarlsen", "DanielNaroditsky", "FabianoCaruana", "GukeshDommaraju", "Firouzja2003", "AnishGiri", "LyonBeast", "RpragChess", "GothamChess"];
+const MASTERS_URL = 'https://explorer.lichess.ovh/masters';
+const MS = { fen: null, cache: {}, seq: 0, data: null, err: null };
+function dbTick() {
+  if (A.boxKind !== 'db') return;
+  if (board.fen !== MS.fen) { MS.fen = board.fen; dbLoad(MS.fen); }
+  setTimeout(dbTick, 500);
+}
+async function dbLoad(fen) {
+  if (MS.cache[fen]) { MS.data = MS.cache[fen]; MS.err = null; dbRender(); return; }
+  const seq = ++MS.seq;
+  MS.data = null; MS.err = 'loading'; dbRender();
+  try {
+    const r = await fetch(`${MASTERS_URL}?${new URLSearchParams({ fen, moves: 12, topGames: 10 })}`);
+    if (!r.ok) throw new Error(r.status === 429 ? 'rate' : 'err');
+    const d = await r.json();
+    MS.cache[fen] = d;
+    if (seq === MS.seq) { MS.data = d; MS.err = null; dbRender(); }
+  } catch (e) { if (seq === MS.seq) { MS.err = e.message === 'rate' ? 'rate' : 'net'; dbRender(); } }
+}
+function dbRender() {
+  if (A.boxKind !== 'db') return;
+  const d = MS.data, pc = (x, t) => (t ? Math.round(100 * x / t) + '%' : '–');
+  let html;
+  if (!d) html = `<div class="hint">${esc(MS.err === 'loading' ? pick('Завантажую…', 'Loading…') : MS.err === 'rate' ? pick('База просить зачекати хвилинку.', 'The database asks to wait a minute.') : pick("Немає з'єднання з базою.", "Can't reach the database."))}</div>`;
+  else {
+    const tot = (d.white || 0) + (d.draws || 0) + (d.black || 0), op = d.opening;
+    html = `<div style="font-weight:700">${esc((op ? `${op.eco} ${op.name} · ` : '') + pick(`Партій: ${tot.toLocaleString('uk')}`, `Games: ${tot.toLocaleString('en')}`))}</div>`
+      + `<div class="hint">${esc(pick(`Білі ${pc(d.white, tot)} · нічия ${pc(d.draws, tot)} · чорні ${pc(d.black, tot)}. Партії гравців FIDE 2200+ (lichess Masters). Торкніться ходу, щоб зіграти.`,
+        `White ${pc(d.white, tot)} · draw ${pc(d.draws, tot)} · Black ${pc(d.black, tot)}. Games of FIDE 2200+ players (lichess Masters). Tap a move to play it.`))}</div>`
+      + `<table class="dbt"><tr><th>${esc(pick('Хід', 'Move'))}</th><th>${esc(pick('Партій', 'Games'))}</th><th>${esc(pick('Б / Н / Ч', 'W / D / B'))}</th><th>Ø</th></tr>`
+      + (d.moves || []).map(m => { const n = m.white + m.draws + m.black; return `<tr data-dbmove="${m.uci}"><td><b>${esc(m.san)}</b></td><td>${n.toLocaleString('uk')}</td><td>${pc(m.white, n)} / ${pc(m.draws, n)} / ${pc(m.black, n)}</td><td>${m.averageRating || ''}</td></tr>`; }).join('')
+      + `</table>`
+      + ((d.topGames || []).length ? `<label class="f">${esc(pick('Відомі партії (торкніться, щоб відкрити)', 'Famous games (tap to open)'))}</label><div class="list">`
+        + d.topGames.map(g => `<div class="it" data-dbgame="${g.id}">${esc(`${g.white.name} (${g.white.rating}) – ${g.black.name} (${g.black.rating})`)}<small>${g.winner === 'white' ? '1-0' : g.winner === 'black' ? '0-1' : '½-½'} · ${g.year}</small></div>`).join('') + '</div>' : '')
+      + (!tot ? `<div class="hint">${esc(pick('У базі майстрів такої позиції немає.', 'This position is not in the masters database.'))}</div>` : '');
+  }
+  $('boxBody').innerHTML = html + `<div class="row"><button id="dbClose">${esc(pick('Закрити', 'Close'))}</button></div>`;
+  $('dbClose').addEventListener('click', closeBox);
+  $('boxBody').querySelectorAll('[data-dbmove]').forEach(tr => tr.addEventListener('click', () => dbPlay(tr.dataset.dbmove)));
+  $('boxBody').querySelectorAll('[data-dbgame]').forEach(it => it.addEventListener('click', () => dbOpen(it.dataset.dbgame)));
+}
+function dbPlay(uci) {
+  if (!A.res) startFree();
+  if (analysing()) { msg(pick('Зачекайте, поки закінчиться аналіз.', 'Wait until the analysis finishes.')); return; }
+  if (!new Pos(board.fen).isLegal(uci)) return;
+  onUserMove(uci, false);
+}
+async function dbOpen(id) {
+  try {
+    const r = await fetch(`${MASTERS_URL}/pgn/${encodeURIComponent(id)}`);
+    if (!r.ok) throw new Error('err');
+    const pgn = await r.text();
+    closeBox();
+    loadPgn(pgn);
+  } catch (_) { msg(pick('Не вдалося завантажити партію.', 'Could not load the game.')); }
+}
+
 function openChesscom() {
   if (A.boxKind === 'chesscom') { closeBox(); return; }
   openBox('chesscom');
@@ -2514,6 +2577,9 @@ function openBox(kind) {
       + `<button id="tYes" class="primary">${esc(pick('Так, надсилати', 'Yes, send'))}</button></div>`;
     $('tYes').addEventListener('click', () => { closeBox(); teleSet(true); });
     $('tNo').addEventListener('click', () => { closeBox(); teleSet(false); });
+  } else if (kind === 'db') {           // 1.29.0: база партій майстрів
+    $('boxTitle').textContent = pick('📖  База партій майстрів', '📖  Masters games database');
+    MS.fen = null; dbTick();
   } else if (kind === 'gotw') {         // 1.28.3: «Партія тижня»
     const s = (A.res && A.res.summary) || {};
     $('boxTitle').textContent = pick('🏆  Партія тижня', '🏆  Game of the week');
@@ -2981,7 +3047,7 @@ function wire() {
   click('bSettings', () => toggleBox('settings'));
   click('bNews', () => toggleBox('news'));
   click('bDonate', openDonate);
-  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart);
+  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3

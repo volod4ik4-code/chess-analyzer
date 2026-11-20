@@ -237,6 +237,12 @@ button:active { transform: scale(.96); }
 #app.wide #actions button.cc, #app.wide #actions button.bots { flex: 0 0 auto; }
 .aibtn { margin-top: 8px; width: 100%; }
 .gotwBtn { margin-top: 8px; width: 100%; }
+.famrow { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+.famrow button.chip { padding: 4px 8px; font-size: 12px; }
+.dbt { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 14px; }
+.dbt th { text-align: left; color: var(--muted); font-weight: 600; padding: 3px 4px; }
+.dbt td { padding: 6px 4px; border-top: 1px solid rgba(255,255,255,.06); }
+.dbt tr[data-dbmove] { cursor: pointer; }
 /* 1.28.0: «Тренування» */
 .pzcard .pzt { color: var(--muted); font-size: 12px; font-weight: 700; }
 .pzcard .pzx { margin: 6px 0 8px; white-space: pre-line; }
