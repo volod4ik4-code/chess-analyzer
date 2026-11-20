@@ -794,7 +794,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.27.18"
+APP_VERSION = "1.28.1"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -806,6 +806,16 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.28.1", "2026-11-20 19:31", [
+        ("ШІ-тренер пояснює хід лише після кнопки «🤖 Пояснити» - до 5 пояснень і запитань на день.",
+         "The AI coach explains a move only after the «🤖 Explain» button - up to 5 explanations and questions a day."),
+    ]),
+    ("1.28.0", "2026-11-20 15:39", [
+        ("Нове: «🧩 Тренування» - задачі з ваших власних помилок. Після аналізу партії позиції з грубими помилками, помилками, пропусками й пропущеними геніальними ходами стають задачами: знайдіть найкращий хід.",
+         "New: «🧩 Training» - puzzles from your own mistakes. After a game is analyzed, positions with blunders, mistakes, misses and missed brilliant moves become puzzles: find the best move."),
+        ("Розв'язані задачі повертаються через 1, 3, 7 і 30 днів, щоб закріпити; помилкові - одразу знову.",
+         "Solved puzzles come back after 1, 3, 7 and 30 days to stick; failed ones come back right away."),
+    ]),
     ("1.27.18", "2026-11-19 19:40", [
         ("«🐞 Повідомити про помилку» тепер працює без акаунта GitHub: просто опишіть проблему й надішліть.",
          "«🐞 Report a bug» now works without a GitHub account: just describe the problem and send it."),
@@ -1548,7 +1558,7 @@ TR_EN.update({
     "⤓ Експорт PGN": "⤓ Export PGN", "Усі дослідження": "All studies",
     "🗑 Видалити варіант": "🗑 Delete variation",
     "🗑 Очистити": "🗑 Clear",
-    "🤖  Боти": "🤖  Bots", "🤖  Грати з ботом": "🤖  Play a bot", "⚔  Почати гру": "⚔  Start game",
+    "🤖  Боти": "🤖  Bots", "🧩  Тренування": "🧩  Training", "🤖  Грати з ботом": "🤖  Play a bot", "⚔  Почати гру": "⚔  Start game",
     "🏳 Здатися": "🏳 Resign", "Ваш колір": "Your colour", "Сила гри": "Strength", "Ви": "You",
     "↶  Повернути хід": "↶  Take back", "💡  Підказка": "💡  Hint", "🏳  Здатися": "🏳  Resign",
     "ⓘ  Ліцензія фото": "ⓘ  Photo license", "ІНШІ ШАХІСТИ": "OTHER PLAYERS",
@@ -3914,6 +3924,127 @@ def tele_save():
             f.write(data)
         os.replace(tmp, TELE_PATH)
     except Exception:  # noqa: BLE001
+        pass
+
+
+# ---- 1.28.0: «Тренування» - задачі з власних помилок (позиція перед помилкою, треба знайти найкращий хід) ----
+PUZZLE_PATH = os.path.expanduser("~/.chess_analyzer_puzzles.json")
+PUZZLE_MAX = 400
+PUZZLE_QUALS = ("Груба помилка", "Помилка", "Пропуск")
+PUZZLE_OK = ("Найкращий", "Геніальний", "Чудовий")
+PUZZLE_DAYS = (1, 3, 7, 30)          # через скільки днів повертається розв'язана задача; після 4-ї - вивчена
+
+
+def puzzles_load():
+    try:
+        with open(PUZZLE_PATH, encoding="utf-8") as f:
+            d = json.load(f)
+        if isinstance(d, dict) and isinstance(d.get("list"), list):
+            return {"list": d["list"], "done": list(d.get("done") or [])}
+    except Exception:  # noqa: BLE001
+        pass
+    return {"list": [], "done": []}
+
+
+def puzzles_save(d):
+    tmp = PUZZLE_PATH + ".tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(d, f, ensure_ascii=False)
+        os.replace(tmp, PUZZLE_PATH)
+    except OSError:
+        pass
+
+
+def puzzles_from_result(res, me=None):
+    """Позиції перед поганими ходами -> задачі. me: True - лише білі, False - лише чорні, None - обидві сторони."""
+    if not res or res.get("free") or res.get("partial"):
+        return []
+    s = res.get("summary") or {}
+    src = f"{s.get('white') or '?'} – {s.get('black') or '?'}"
+    out = []
+    for k, row in enumerate(res.get("moves") or []):
+        pe = res["pos_info"][k] if k < len(res.get("pos_info") or []) else None
+        if not pe or not pe.get("best") or row.get("uci") == pe["best"]:
+            continue
+        q = row.get("quality")
+        if q not in PUZZLE_QUALS and not row.get("missed_bril"):
+            continue
+        fen = res["fens"][k]
+        white = chess.Board(fen).turn == chess.WHITE
+        if me is not None and me != white:
+            continue
+        out.append({"id": " ".join(fen.split()[:4]) + "|" + pe["best"], "fen": fen, "best": pe["best"],
+                    "played": row.get("san"), "q": q if q in PUZZLE_QUALS else "missed", "src": src,
+                    "move": f"{k // 2 + 1}{'.' if white else '…'}", "due": 0, "ok": 0})
+    return out
+
+
+def puzzles_add(new):
+    """Додати нові задачі (без повторів і вже вивчених). Повертає, скільки додано."""
+    if not new:
+        return 0
+    d = puzzles_load()
+    have = {x.get("id") for x in d["list"]} | set(d["done"])
+    added = [x for x in new if x["id"] not in have and not have.add(x["id"])]
+    if added:
+        d["list"] = (d["list"] + added)[-PUZZLE_MAX:]
+        puzzles_save(d)
+    return len(added)
+
+
+def puzzle_next(d, now, skip=None):
+    """Найближча задача, якій уже час (або None)."""
+    due = [x for x in d["list"] if x.get("due", 0) <= now and x.get("id") != skip]
+    return min(due, key=lambda x: (x.get("due", 0), x.get("ok", 0))) if due else None
+
+
+def puzzle_result(d, pid, solved, now):
+    """Записати спробу: розв'язано - наступний показ через 1/3/7/30 днів (потім вивчена), ні - одразу знову."""
+    for x in d["list"]:
+        if x.get("id") != pid:
+            continue
+        if solved:
+            x["ok"] = x.get("ok", 0) + 1
+            if x["ok"] > len(PUZZLE_DAYS):
+                d["list"].remove(x)
+                d["done"] = (d["done"] + [pid])[-2000:]
+            else:
+                x["due"] = now + PUZZLE_DAYS[x["ok"] - 1] * 86400
+        else:
+            x["ok"] = 0
+            x["due"] = now
+        break
+    puzzles_save(d)
+
+
+# ---- 1.28.1: ліміт ШІ-тренера - 5 пояснень/запитань на день на пристрої (безплатний ліміт Cloudflare малий) ----
+AI_DAILY = 5
+AI_QUOTA_PATH = os.path.expanduser("~/.chess_analyzer_ai.json")
+
+
+def _ai_quota():
+    today = datetime.date.today().isoformat()
+    try:
+        with open(AI_QUOTA_PATH, encoding="utf-8") as f:
+            d = json.load(f)
+        if d.get("day") == today:
+            return today, int(d.get("n", 0))
+    except Exception:  # noqa: BLE001
+        pass
+    return today, 0
+
+
+def ai_quota_left():
+    return max(0, AI_DAILY - _ai_quota()[1])
+
+
+def ai_quota_use():
+    day, n = _ai_quota()
+    try:
+        with open(AI_QUOTA_PATH, "w", encoding="utf-8") as f:
+            json.dump({"day": day, "n": n + 1}, f)
+    except OSError:
         pass
 
 
@@ -6494,6 +6625,7 @@ class App(tk.Tk):
         # партії з chess.com - найпомітніша кнопка, з самого краю (жовта, більша; з 1.20.1)
         RButton(bar, text="♞  Партії Chess.com", kind="chesscom", command=self.toggle_chesscom).pack(side="left")
         RButton(bar, text="🤖  Боти", command=self.toggle_bots).pack(side="left", padx=(8, 0))
+        RButton(bar, text="🧩  Тренування", command=self.puzzle_start).pack(side="left", padx=(8, 0))
         tk.Frame(bar, bg=BORDER, width=1, height=24).pack(side="left", padx=14)
         RButton(bar, text="📋  PGN з буфера", command=self.load_clipboard).pack(side="left")
         RButton(bar, text="📂  Відкрити файл", command=self.load_file).pack(side="left", padx=(8, 0))
@@ -6650,6 +6782,9 @@ class App(tk.Tk):
         self.coach.tag_configure("ai", spacing1=1, spacing2=2)
         self.coach.tag_configure("muted", foreground=MUTED, spacing1=3)
         self.coach.tag_configure("q", foreground=ACCENT, font=fsemi(12), spacing1=8)
+        # 1.28.1: ШІ пояснює лише на прохання гравця
+        self.ai_btn = RButton(self.coach_card.body, text="🤖", kind="accent", command=self._ai_click)
+        self._ai_cur_args = None
         self.ask_row = tk.Frame(self.coach_card.body, bg=PANEL)
         # 1.23.6: «очистити чат» (запитання й відповіді в цій позиції); з 1.23.7 стоїть праворуч
         self.ask_clear = RButton(self.ask_row, text="🗑 Очистити", style="Small.TButton", command=self._ask_clear)
@@ -7177,6 +7312,7 @@ class App(tk.Tk):
         self.graph.set_data(res["evals"], res["moves"])
         self._fill_summary(s)
         self._render_lines()
+        self._puzzles_collect(res)
         self.board.interactive = True
         keep = self._partial_seen and 0 <= self.index < len(res["fens"])
         self._partial_seen = False
@@ -7304,21 +7440,51 @@ class App(tk.Tk):
         показується звичайний тренер; готове пояснення замінює пункти."""
         self._coach_lines = lines
         self._ai_cur = None
+        self._ai_btn_show(False)
         if self._bot_live():                 # партія з ботом: замість тренера - репліки бота (ШІ)
             self._bot_coach_render()
             return
         if ai and self.ai_var.get() and not self._ai_off:
             key = (ai[0], ai[1], STATE["lang"], ai[2])      # з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
-            self._ai_cur = key
+            self._ai_cur, self._ai_cur_args = key, ai
             if key in self._ai_cache:
                 self._coach_render(lines, ai_text=self._ai_cache[key])
                 return
-            failed = self._ai_failed.get(key)
-            if failed is None or time.time() - failed > 60:     # після помилки - нова спроба не раніше ніж за хвилину
+            if key in self._ai_busy:
                 self._coach_render(lines, waiting=True)
-                self._ai_request(key, ai)
                 return
+            # 1.28.1: ШІ - лише після кнопки «Пояснити» (раніше питав сам на кожен хід і з'їдав ліміт)
+            self._coach_render(lines, note=key in self._ai_failed)
+            self._ai_btn_show(True)
+            return
         self._coach_render(lines, note=bool(ai and self.ai_var.get()))
+
+    def _ai_btn_show(self, on):
+        b = getattr(self, "ai_btn", None)
+        if b is None:
+            return
+        if not on:
+            if b.winfo_manager():
+                b.pack_forget()
+            return
+        left = ai_quota_left()
+        if left > 0:
+            b.configure(state="normal", text=pick(f"🤖  Пояснити (ШІ) · ще {left} з {AI_DAILY} сьогодні",
+                                                  f"🤖  Explain (AI) · {left} of {AI_DAILY} left today"))
+        else:
+            b.configure(state="disabled", text=pick(f"🤖  Ліміт ШІ на сьогодні вичерпано ({AI_DAILY})",
+                                                    f"🤖  AI limit for today is used up ({AI_DAILY})"))
+        if not b.winfo_manager():
+            b.pack(anchor="w", pady=(8, 0), after=self.coach)
+
+    def _ai_click(self):
+        key, ai = self._ai_cur, self._ai_cur_args
+        if key is None or not ai or ai_quota_left() <= 0 or key in self._ai_busy:
+            return
+        self._ai_failed.pop(key, None)
+        self._ai_btn_show(False)
+        self._coach_render(self._coach_lines, waiting=True)
+        self._ai_start(key, ai)
 
     def _ai_note(self):
         err = self._ai_err
@@ -7404,12 +7570,7 @@ class App(tk.Tk):
     def _ai_prefetch(self, ai):
         """1.23.7: ШІ починає думати, щойно є швидка оцінка ходу (повний аналіз Stockfish ще йде).
         Якщо повна оцінка дасть ту саму якість ходу - пояснення вже готове або в дорозі."""
-        if not ai or not self.ai_var.get() or self._ai_off:
-            return
-        key = (ai[0], ai[1], STATE["lang"], ai[2])
-        if key in self._ai_cache or key in self._ai_busy or key in self._ai_failed:
-            return
-        self._ai_start(key, ai, force=True)
+        return                     # 1.28.1: вимкнено - ШІ лише після кнопки «Пояснити» (ліміт)
 
     def _ai_start(self, key, ai, force=False):
         if not force:
@@ -7492,6 +7653,9 @@ class App(tk.Tk):
             self._ask_hint(True)
 
     def _ask_err_text(self, err):
+        if err == "limit":
+            return pick(f"🤖 Ліміт ШІ на сьогодні вичерпано ({AI_DAILY} пояснень і запитань). Завтра знову.",
+                        f"🤖 Today's AI limit is used up ({AI_DAILY} explanations and questions). Back tomorrow.")
         if err == "quota":
             return pick("🤖 ШІ-тренер на сьогодні вичерпав безплатний ліміт.", "🤖 The AI coach has used up today's free limit.")
         if err == "rate":
@@ -7525,6 +7689,10 @@ class App(tk.Tk):
         history = [{"q": it["q"], "a": it["a"]} for it in thread if it.get("a")]
         item = {"q": q, "a": None, "err": None}
         thread.append(item)
+        if ai_quota_left() <= 0:                     # 1.28.1: ліміт на сьогодні
+            item["err"] = "limit"
+            self._coach_render(*self._coach_last)
+            return
         self._coach_render(*self._coach_last)
         lang = STATE["lang"]
         try:
@@ -7555,9 +7723,14 @@ class App(tk.Tk):
             if key[0] == "ask":
                 item, ans = text
                 item["a"], item["err"] = ans, (None if ans else (err or "ai"))
+                if ans:
+                    ai_quota_use()
                 self._coach_render(*self._coach_last)
+                if self.ai_btn.winfo_manager():
+                    self._ai_btn_show(True)          # оновити «ще N»
                 continue
             if text:
+                ai_quota_use()
                 self._ai_cache[key] = text
                 self._ai_err = None
             else:
@@ -7567,6 +7740,8 @@ class App(tk.Tk):
                     self._ai_off = True          # до кінця сеансу - лише звичайний тренер
             if key == self._ai_cur:
                 self._coach_render(self._coach_lines, ai_text=text, note=not text)
+                if not text and not self._ai_off:
+                    self._ai_btn_show(True)          # не вийшло - можна натиснути ще раз
         if self._ai_busy:
             self._ai_polling = self.after(150, self._ai_poll)
 
@@ -8042,6 +8217,8 @@ class App(tk.Tk):
                     continue
                 _, row, err = msg
                 self._pending_evals = max(0, self._pending_evals - 1)
+                if getattr(self, "_puzzle", None) and not err:
+                    self._puzzle_check(row)
                 self._eval_status()
                 self._render_lines()
                 self._doc_changed()
@@ -8096,7 +8273,7 @@ class App(tk.Tk):
                     info += f"  {row['opening']}"
                 info += best_was(row)
         adv = ""
-        if rec and not self._bot_live():
+        if rec and not self._bot_live() and not self._pz_hide():
             d = v["pes"][j].get("depth")
             el = v["rows"][j - 1].get("elapsed") if j >= 1 else None
             parts = ([f"{tr('глибина')} {d}"] if d else []) + ([f"{el:.1f} {tr('с')}"] if el else [])
@@ -8409,6 +8586,190 @@ class App(tk.Tk):
                 "rate": pick("Забагато звітів. Спробуйте за хвилину.", "Too many reports. Try again in a minute."),
             }.get(r, pick("Не вдалося надіслати. Спробуйте через GitHub.", "Could not send. Try via GitHub.")))
         poll()
+
+    # ---------- 1.28.0: «🧩 Тренування» ----------
+    def _pz_hide(self):
+        pz = getattr(self, "_puzzle", None)
+        return bool(pz) and not pz.get("solved") and not pz.get("shown")
+
+    def _puzzles_collect(self, res):
+        """Після аналізу партії - позиції з поганими ходами стають задачами (лише гравця chess.com, якщо він у партії)."""
+        try:
+            s = res.get("summary") or {}
+            me, nick = None, (getattr(self, "_cc_user", "") or "").strip().lower()
+            if nick and nick == str(s.get("white") or "").lower():
+                me = True
+            elif nick and nick == str(s.get("black") or "").lower():
+                me = False
+            n = puzzles_add(puzzles_from_result(res, me))
+            if n:
+                self.status_var.set(self.status_var.get() + "  ·  " + pick(f"🧩 нових задач: {n}", f"🧩 new puzzles: {n}"))
+        except Exception:  # noqa: BLE001
+            pass
+
+    def _build_puzzle_card(self):
+        card = Card(self._right, pad=(14, 10))
+        self.pz_card = card
+        self.pz_title = tk.Label(card.body, bg=PANEL, fg=MUTED, font=fsemi(9), anchor="w")
+        self.pz_title.pack(fill="x")
+        self.pz_text = tk.Label(card.body, bg=PANEL, fg=FG, font=("Segoe UI", 11), anchor="w", justify="left",
+                                wraplength=460)
+        self.pz_text.pack(fill="x", pady=(4, 8))
+        self.pz_text.bind("<Configure>", lambda e: self.pz_text.configure(wraplength=max(200, e.width - 8)))
+        row = tk.Frame(card.body, bg=PANEL)
+        row.pack(fill="x")
+        self.pz_hint_btn = RButton(row, text="💡", command=self._puzzle_hint)
+        self.pz_hint_btn.pack(side="left")
+        self.pz_show_btn = RButton(row, text="✔", command=self._puzzle_show)
+        self.pz_show_btn.pack(side="left", padx=(6, 0))
+        self.pz_next_btn = RButton(row, text="⏭", kind="accent", command=self.puzzle_start)
+        self.pz_next_btn.pack(side="left", padx=(6, 0))
+        self.pz_exit_btn = RButton(row, text="✕", command=self._puzzle_exit)
+        self.pz_exit_btn.pack(side="right")
+
+    def puzzle_start(self):
+        """Наступна задача (кнопка «🧩 Тренування» і «Наступна»)."""
+        if self._bot_live():
+            self.status_var.set(pick("Спершу завершіть партію з ботом.", "Finish the game with the bot first."))
+            return
+        tele_count("f.puzzle")
+        now = time.time()
+        d = puzzles_load()
+        cur = getattr(self, "_puzzle", None)
+        p = puzzle_next(d, now, skip=cur["id"] if cur and len(d["list"]) > 1 else None) or puzzle_next(d, now)
+        if p is None:
+            if not d["list"]:
+                msg = pick("Задач ще немає. Проаналізуйте свої партії - позиції з помилками стануть задачами.",
+                           "No puzzles yet. Analyze your games - positions with mistakes become puzzles.")
+            else:
+                nxt = min(x.get("due", 0) for x in d["list"])
+                days = max(1, round((nxt - now) / 86400))
+                msg = pick(f"На сьогодні все розв'язано! Наступна задача - через {days} дн.",
+                           f"All done for today! Next puzzle in {days} day(s).")
+            if cur:
+                self._puzzle["solved"] = True
+                self._puzzle_render(msg)
+            else:
+                messagebox.showinfo(trd("🧩  Тренування", "🧩  Training"), msg)
+            return
+        due_now = sum(1 for x in d["list"] if x.get("due", 0) <= now)
+        res = {"free": True, "fens": [p["fen"]], "evals": [0], "pos_info": [None], "moves": [], "book_path": [False],
+               "depth": None,
+               "summary": {"white": "Білі", "black": "Чорні", "white_rating": None, "black_rating": None,
+                           "white_acc": 0.0, "black_acc": 0.0, "white_counts": {}, "black_counts": {},
+                           "result": "*", "opening": None}}
+        self._pz_loading = True
+        try:
+            self._new_doc()
+            self._puzzle = dict(p, res=res, tried=False, solved=False, shown=False, arrow=None, left=due_now)
+            self._start_free(res)
+        finally:
+            self._pz_loading = False
+        white = chess.Board(p["fen"]).turn == chess.WHITE
+        if white == self.board.flipped:          # сторона, що ходить, - знизу
+            self.flip_board()
+        if not hasattr(self, "pz_card"):
+            self._build_puzzle_card()
+        if self._graph_box.winfo_manager():
+            self._graph_box.pack_forget()
+        if not self.pz_card.winfo_manager():
+            self.pz_card.pack(fill="x", pady=(0, 10), before=self._mid)
+        self._puzzle_render()
+
+    def _puzzle_render(self, text=None):
+        pz = self._puzzle
+        white = chess.Board(pz["fen"]).turn == chess.WHITE
+        qn = pick("пропущений геніальний", "missed brilliant") if pz["q"] == "missed" else qname(pz["q"]).lower()
+        self.pz_title.configure(text=pick(f"🧩  ТРЕНУВАННЯ  ·  у черзі: {pz['left']}", f"🧩  TRAINING  ·  in queue: {pz['left']}"))
+        if text is None:
+            text = (pick(f"Знайдіть найкращий хід за {'білих' if white else 'чорних'}.",
+                         f"Find the best move for {'White' if white else 'Black'}.")
+                    + "\n" + pick(f"Партія {pz['src']}, хід {pz['move']} - там зіграно {pz['played']} ({qn}).",
+                                  f"Game {pz['src']}, move {pz['move']} - {pz['played']} was played ({qn})."))
+        self.pz_text.configure(text=text)
+        self.pz_hint_btn.configure(text=pick("💡  Підказка", "💡  Hint"),
+                                   state="disabled" if pz["solved"] or pz["shown"] else "normal")
+        self.pz_show_btn.configure(text=pick("✔  Розв'язок", "✔  Solution"),
+                                   state="disabled" if pz["solved"] or pz["shown"] else "normal")
+        self.pz_next_btn.configure(text=pick("⏭  Наступна", "⏭  Next"))
+        self.pz_exit_btn.configure(text=pick("✕  Вийти", "✕  Exit"))
+
+    def _puzzle_san(self):
+        b = chess.Board(self._puzzle["fen"])
+        try:
+            return b.san(chess.Move.from_uci(self._puzzle["best"]))
+        except ValueError:
+            return self._puzzle["best"]
+
+    def _puzzle_hint(self):
+        pz = getattr(self, "_puzzle", None)
+        if not pz or pz["solved"]:
+            return
+        b = chess.Board(pz["fen"])
+        mv = chess.Move.from_uci(pz["best"])
+        names = {chess.PAWN: ("пішак", "pawn"), chess.KNIGHT: ("кінь", "knight"), chess.BISHOP: ("слон", "bishop"),
+                 chess.ROOK: ("тура", "rook"), chess.QUEEN: ("ферзь", "queen"), chess.KING: ("король", "king")}
+        nm = pick(*names[b.piece_type_at(mv.from_square)])
+        if not pz["tried"]:
+            pz["tried"] = True                  # з підказкою задача не зараховується як розв'язана з першого разу
+            puzzle_result(puzzles_load(), pz["id"], False, time.time())
+        self._puzzle_render(pick(f"💡 Ходить {nm} з {chess.square_name(mv.from_square)}.",
+                                 f"💡 Move the {nm} on {chess.square_name(mv.from_square)}."))
+
+    def _puzzle_show(self):
+        pz = getattr(self, "_puzzle", None)
+        if not pz or pz["solved"]:
+            return
+        if not pz["tried"]:
+            pz["tried"] = True
+            puzzle_result(puzzles_load(), pz["id"], False, time.time())
+        pz["shown"] = True
+        pz["arrow"] = pz["best"]
+        if self.var is not None:
+            self._show_var_state(self.var["index"])
+        else:
+            self.board.set_position(pz["fen"], None, None, pz["best"], [])
+        self._puzzle_render(pick(f"Розв'язок: {self._puzzle_san()}. Задача повернеться пізніше.",
+                                 f"Solution: {self._puzzle_san()}. The puzzle will come back later."))
+
+    def _puzzle_check(self, row):
+        """Оцінено перший хід у позиції задачі - правильно чи ні."""
+        pz = self._puzzle
+        v = self.var
+        if pz["solved"] or self.result is not pz["res"] or v is None or v["base"] != 0 or not v["rows"] \
+                or v["rows"][0] is not row or row.get("pending"):
+            return
+        ok = row.get("uci") == pz["best"] or row.get("quality") in PUZZLE_OK
+        if ok:
+            pz["solved"] = True
+            first = not pz["tried"]
+            if first:
+                puzzle_result(puzzles_load(), pz["id"], True, time.time())
+                tele_count("pz.ok")
+            self._puzzle_render(pick(f"✓ Правильно! {row['san']}" + ("" if first else " (не з першої спроби)")
+                                     + " - тисніть «Наступна».",
+                                     f"✓ Correct! {row['san']}" + ("" if first else " (not on the first try)")
+                                     + " - press «Next»."))
+        else:
+            if not pz["tried"]:
+                pz["tried"] = True
+                puzzle_result(puzzles_load(), pz["id"], False, time.time())
+                tele_count("pz.fail")
+            self._puzzle_render(pick(f"✗ {row['san']} - {qname(row['quality']).lower()}. Поверніть хід (↶) і спробуйте ще, "
+                                     "або подивіться розв'язок.",
+                                     f"✗ {row['san']} - {qname(row['quality']).lower()}. Take the move back (↶) and try "
+                                     "again, or see the solution."))
+
+    def _puzzle_hide(self):
+        self._puzzle = None
+        if hasattr(self, "pz_card") and self.pz_card.winfo_manager():
+            self.pz_card.pack_forget()
+        if not self._graph_box.winfo_manager() and not self.study_panel.winfo_manager():
+            self._graph_box.pack(fill="x", pady=(0, 10), before=self._mid)
+
+    def _puzzle_exit(self):
+        self._puzzle_hide()
+        self._start_free()
 
     def _edit_comment(self, key, line, j):
         if not hasattr(self, "comment_box"):
@@ -8740,6 +9101,8 @@ class App(tk.Tk):
         row - щойно зіграний хід (або None), pe_now - оцінка поточної позиції (або None).
         """
         mode = self.arrow_var.get()
+        if self._pz_hide():                   # 1.28.0: задача ще не розв'язана - без стрілки
+            return self._puzzle.get("arrow")
         if self._bot_live():                  # у партії з ботом - лише взята підказка (1.25.0)
             return self._bot_hint_arrow()
         if mode == "hint":                    # що найкраще грати зараз
@@ -8913,6 +9276,8 @@ class App(tk.Tk):
     def _new_doc(self):
         """На дошці нова партія: свої варіанти, коментарі й стрілки починаються з нуля."""
         self._flush_save()
+        if getattr(self, "_puzzle", None) and not getattr(self, "_pz_loading", False):
+            self._puzzle_hide()              # 1.28.0: інша партія на дошці - тренування закінчилось
         self.bot = None                      # партія з ботом (якщо була) на цьому закінчується
         self._bot_ui_sync()
         self._doc_id += 1

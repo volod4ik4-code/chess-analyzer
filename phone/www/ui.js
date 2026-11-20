@@ -192,7 +192,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPgn', '📋 PGN', '📋 PGN'); T('bNew', '♟ Нова', '♟ New');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bPgn', '📋 PGN', '📋 PGN'); T('bNew', '♟ Нова', '♟ New');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -449,6 +449,7 @@ function recommend(fen, pe) {
 
 function bestArrow(row, peNow) {
   const mode = cfg.arrow;
+  if (pzHide()) return A.pz.arrow || null;        // 1.28.0: задача ще не розв'язана
   if (botLive()) return botHintArrow();      // у партії з ботом - лише взята підказка (1.25.0)
   if (mode === 'hint') return (peNow || {}).best || null;
   if (mode === 'off' || !row || !row.best_uci) return null;
@@ -468,17 +469,26 @@ function showCoach(lines, ai = null) {
   }
   if (lines && ai && cfg.ai && cfg.coach && !A.aiOff) {
     const key = `${ai[0]}|${ai[1]}|${S.lang}|${ai[2]}`;     // з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
-    A.aiCur = key;
+    A.aiCur = key; A.aiCurArgs = ai;
     if (A.aiCache[key]) { renderCoach(lines, A.aiCache[key]); return; }
-    const failed = A.aiFailed[key];
-    if (failed == null || Date.now() - failed > 60000) {
-      renderCoach(lines, null, true);
-      clearTimeout(A.aiTimer);
-      A.aiTimer = setTimeout(() => aiStart(key, ai), 350);   // швидке гортання не шле зайвих запитів
-      return;
-    }
+    if (A.aiBusy.has(key)) { renderCoach(lines, null, true); return; }
+    renderCoach(lines, null, false, A.aiFailed[key] != null);   // 1.28.1: ШІ - лише після кнопки «Пояснити»
+    return;
   }
   renderCoach(lines, null, false, !!(ai && cfg.ai));
+}
+
+// 1.28.1: ліміт ШІ-тренера - 5 пояснень/запитань на день на пристрої (як у ПК)
+const AI_DAILY = 5;
+function aiQuota() { const d = store.get('ca.aiq', null), today = new Date().toLocaleDateString('sv'); return d && d.day === today ? [today, d.n || 0] : [today, 0]; }
+const aiQuotaLeft = () => Math.max(0, AI_DAILY - aiQuota()[1]);
+function aiQuotaUse() { const [day, n] = aiQuota(); store.set('ca.aiq', { day, n: n + 1 }); }
+function aiExplain() {
+  const key = A.aiCur, ai = A.aiCurArgs;
+  if (!key || !ai || aiQuotaLeft() <= 0 || A.aiBusy.has(key)) return;
+  delete A.aiFailed[key];
+  renderCoach(A.coachLines, null, true);
+  aiStart(key, ai);
 }
 
 function aiNote() {
@@ -512,6 +522,12 @@ function renderCoach(lines, aiText = null, waiting = false, note = false, noFlas
     const extra = note ? aiNote() : '';
     html = `<div class="ch">${esc(pick('🎓 Тренер', '🎓 Coach'))}</div><ul>${lines.map(l => `<li>${esc(l)}</li>`).join('')}</ul>`
       + (extra ? `<div class="aimuted">${esc(extra)}</div>` : '');
+    if (A.aiCur && A.aiCurArgs && cfg.ai && !A.aiOff && !bl) {      // 1.28.1: кнопка «Пояснити»
+      const left = aiQuotaLeft();
+      html += `<button id="aiExplain" class="primary aibtn"${left ? '' : ' disabled'}>${esc(left
+        ? pick(`🤖 Пояснити (ШІ) · ще ${left} з ${AI_DAILY} сьогодні`, `🤖 Explain (AI) · ${left} of ${AI_DAILY} left today`)
+        : pick(`🤖 Ліміт ШІ на сьогодні вичерпано (${AI_DAILY})`, `🤖 AI limit for today is used up (${AI_DAILY})`))}</button>`;
+    }
   }
   // запитання гравця до цієї позиції і відповіді ШІ (1.23.5)
   const thread = cfg.ai ? (A.askThreads[askKey()] || []) : [];
@@ -520,6 +536,8 @@ function renderCoach(lines, aiText = null, waiting = false, note = false, noFlas
       : `<div class="aimuted">${esc(it.err ? askErrText(it.err) : pick('Думає…', 'Thinking…'))}</div>`);
   }
   body.innerHTML = html;
+  const eb = $('aiExplain');
+  if (eb) eb.addEventListener('click', aiExplain);
 }
 
 // ---- запитання до ШІ-тренера (1.23.5) ----
@@ -540,6 +558,7 @@ function askSetVar(j) {
 }
 
 function askErrText(e) {
+  if (e === 'limit') return pick(`🤖 Ліміт ШІ на сьогодні вичерпано (${AI_DAILY} пояснень і запитань). Завтра знову.`, `🤖 Today's AI limit is used up (${AI_DAILY} explanations and questions). Back tomorrow.`);
   if (e === 'quota') return pick('🤖 ШІ-тренер на сьогодні вичерпав безплатний ліміт.', "🤖 The AI coach has used up today's free limit.");
   if (e === 'rate') return pick('🤖 Забагато запитів — спробуйте за хвилину.', '🤖 Too many requests — try again in a minute.');
   if (e === 'net') return pick("🤖 Немає зв'язку з ШІ-тренером (немає інтернету?).", "🤖 Can't reach the AI coach (no internet?).");
@@ -564,15 +583,17 @@ async function askSend() {
   const item = { q, a: null, err: null };
   thread.push(item);
   const rerender = () => { if (A.coachLast[0]) renderCoach(...A.coachLast, true); };
+  if (aiQuotaLeft() <= 0) { item.err = 'limit'; rerender(); return; }   // 1.28.1
   rerender();
   let facts;
   try { facts = askFacts(ctx.fen, ctx.pe, ctx.sans, ctx.last); } catch (_) { facts = pick('Позиція (FEN): ', 'Position (FEN): ') + ctx.fen; }
-  try { item.a = await fetchAiCoach(facts, S.lang, q, history); } catch (e) { item.err = e.message || 'ai'; }
+  try { item.a = await fetchAiCoach(facts, S.lang, q, history); if (item.a) aiQuotaUse(); } catch (e) { item.err = e.message || 'ai'; }
   if (askKey() === key) rerender();
 }
 
 // 1.23.7: ШІ починає думати, щойно є швидка оцінка ходу (повний аналіз Stockfish ще йде)
 function aiPrefetch(ai) {
+  return;                                    // 1.28.1: вимкнено - ШІ лише після кнопки «Пояснити» (ліміт)
   if (!ai || !cfg.ai || !cfg.coach || A.aiOff) return;
   const key = `${ai[0]}|${ai[1]}|${S.lang}|${ai[2]}`;
   if (A.aiCache[key] || A.aiBusy.has(key) || A.aiFailed[key] != null) return;
@@ -586,7 +607,7 @@ async function aiStart(key, ai, force = false) {
   A.aiBusy.add(key);
   tele('f.ai');
   let text = null;
-  try { text = await fetchAiCoach(facts, key.split('|')[2]); A.aiCache[key] = text; A.aiErr = null; }
+  try { text = await fetchAiCoach(facts, key.split('|')[2]); A.aiCache[key] = text; A.aiErr = null; if (text) aiQuotaUse(); }
   catch (e) { A.aiFailed[key] = Date.now(); A.aiErr = e.message; if (e.message === 'quota') A.aiOff = true; }
   A.aiBusy.delete(key);
   if (key === A.aiCur) renderCoach(A.coachLines, text, false, !text);
@@ -753,6 +774,7 @@ function showResults(res, save = true) {
   else if (A.bookErr) extra = '  ·  ' + tr('без теорії (базу дебютів не завантажено)');
   setStatus(() => `${tr('Готово')} · ${tr('результат')} ${s.result}${extra}`);
   renderPlayers(); renderSummary(); renderMoves(); drawGraph();
+  puzzlesCollect(res);
   board.interactive = true;
   const keep = A.partialSeen && A.index >= 0 && A.index < res.fens.length;
   A.partialSeen = false;
@@ -994,6 +1016,7 @@ async function evalRow(v, row) {
   }
   renderMoves();
   docChanged();
+  if (A.pz) puzzleCheck(v, row);
   if (A.v && A.v.rows.includes(row)) {
     const at = A.v.rows.indexOf(row) + 1;
     if (A.v.index === at || A.v.index === at - 1) showVarState(A.v.index, false); else renderVar();
@@ -1026,7 +1049,7 @@ function showVarState(j, animate = false) {
     else { badge = botLive() ? null : [QUALITY[row.quality][0], QUALITY[row.quality][1]]; info = moveInfo(row); }
   }
   let adv = '';
-  if (rec && !botLive()) {
+  if (rec && !botLive() && !pzHide()) {
     const d = v.pes[j].depth, el = j >= 1 ? v.rows[j - 1].elapsed : null;
     const parts = [...(d ? [`${tr('глибина')} ${d}`] : []), ...(el ? [`${el.toFixed(1)} ${tr('с')}`] : [])];
     adv = `${toMove(fen)} — ${tr('Stockfish радить:')} ${rec}` + (parts.length ? `  (${parts.join(', ')})` : '');
@@ -1123,8 +1146,144 @@ function clearVar() {
 }
 
 // ------------------------------------------------------------ дослідження ---
+// ------------------------------------------------------------ 1.28.0: «🧩 Тренування» ---
+// Задачі з власних помилок: позиція перед поганим ходом, треба знайти найкращий. Те саме, що в ПК (puzzles_*).
+const PZ_QUALS = ['Груба помилка', 'Помилка', 'Пропуск'], PZ_OK = ['Найкращий', 'Геніальний', 'Чудовий'];
+const PZ_DAYS = [1, 3, 7, 30], PZ_MAX = 400;
+const pzLoad = () => { const d = store.get('ca.puzzles', null); return d && Array.isArray(d.list) ? { list: d.list, done: d.done || [] } : { list: [], done: [] }; };
+const pzSave = d => store.set('ca.puzzles', d);
+const pzHide = () => !!(A.pz && !A.pz.solved && !A.pz.shown);
+function puzzlesFromResult(res, me) {
+  if (!res || res.free || res.partial) return [];
+  const s = res.summary || {}, src = `${s.white || '?'} – ${s.black || '?'}`, out = [];
+  (res.moves || []).forEach((row, k) => {
+    const pe = (res.pos_info || [])[k];
+    if (!pe || !pe.best || row.uci === pe.best) return;
+    if (!PZ_QUALS.includes(row.quality) && !row.missed_bril) return;
+    const fen = res.fens[k], white = fen.split(' ')[1] === 'w';
+    if (me != null && me !== white) return;
+    out.push({ id: fen.split(' ').slice(0, 4).join(' ') + '|' + pe.best, fen, best: pe.best, played: row.san,
+      q: PZ_QUALS.includes(row.quality) ? row.quality : 'missed', src, move: `${Math.floor(k / 2) + 1}${white ? '.' : '…'}`, due: 0, ok: 0 });
+  });
+  return out;
+}
+function puzzlesCollect(res) {
+  try {
+    const s = res.summary || {}, nick = (CC.user || '').trim().toLowerCase();
+    const me = nick && nick === String(s.white || '').toLowerCase() ? true : nick && nick === String(s.black || '').toLowerCase() ? false : null;
+    const fresh = puzzlesFromResult(res, me);
+    if (!fresh.length) return;
+    const d = pzLoad(), have = new Set([...d.list.map(x => x.id), ...d.done]);
+    const add = fresh.filter(x => !have.has(x.id) && have.add(x.id));
+    if (!add.length) return;
+    d.list = d.list.concat(add).slice(-PZ_MAX);
+    pzSave(d);
+    const old = A.statusFn;
+    setStatus(() => old() + '  ·  ' + pick(`🧩 нових задач: ${add.length}`, `🧩 new puzzles: ${add.length}`));
+  } catch (_) { /* */ }
+}
+function pzNext(d, now, skip) {
+  const due = d.list.filter(x => (x.due || 0) <= now && x.id !== skip);
+  due.sort((a, b) => (a.due || 0) - (b.due || 0) || (a.ok || 0) - (b.ok || 0));
+  return due[0] || null;
+}
+function pzResult(id, solved) {
+  const d = pzLoad(), now = Date.now() / 1000, x = d.list.find(p => p.id === id);
+  if (x) {
+    if (solved) {
+      x.ok = (x.ok || 0) + 1;
+      if (x.ok > PZ_DAYS.length) { d.list.splice(d.list.indexOf(x), 1); d.done = d.done.concat([id]).slice(-2000); }
+      else x.due = now + PZ_DAYS[x.ok - 1] * 86400;
+    } else { x.ok = 0; x.due = now; }
+  }
+  pzSave(d);
+}
+function puzzleStart() {
+  if (botLive()) { msg(pick('Спершу завершіть партію з ботом.', 'Finish the game with the bot first.')); return; }
+  tele('f.puzzle');
+  const now = Date.now() / 1000, d = pzLoad(), cur = A.pz;
+  const p = pzNext(d, now, cur && d.list.length > 1 ? cur.id : null) || pzNext(d, now, null);
+  if (!p) {
+    let text;
+    if (!d.list.length) text = pick('Задач ще немає. Проаналізуйте свої партії - позиції з помилками стануть задачами.', 'No puzzles yet. Analyze your games - positions with mistakes become puzzles.');
+    else {
+      const days = Math.max(1, Math.round((Math.min(...d.list.map(x => x.due || 0)) - now) / 86400));
+      text = pick(`На сьогодні все розв'язано! Наступна задача - через ${days} дн.`, `All done for today! Next puzzle in ${days} day(s).`);
+    }
+    if (cur) { cur.solved = true; puzzleRender(text); } else msg(text);
+    return;
+  }
+  const left = d.list.filter(x => (x.due || 0) <= now).length;
+  const res = { free: true, fens: [p.fen], evals: [0], pos_info: [null], moves: [], book_path: [false], depth: null,
+    summary: { white: 'Білі', black: 'Чорні', white_rating: null, black_rating: null, white_acc: 0, black_acc: 0,
+      white_counts: {}, black_counts: {}, result: '*', opening: null } };
+  A.pzLoading = true;
+  try { newDoc(); A.pz = { ...p, res, tried: false, solved: false, shown: false, arrow: null, left }; startFree(res); }
+  finally { A.pzLoading = false; }
+  const white = p.fen.split(' ')[1] === 'w';
+  if (white === board.flipped) flipBoard();
+  $('pzCard').hidden = false;
+  puzzleRender();
+  $('pzCard').scrollIntoView({ block: 'nearest' });
+}
+function puzzleSan() { try { return new Pos(A.pz.fen).san(A.pz.best) || A.pz.best; } catch (_) { return A.pz.best; } }
+function puzzleRender(text = null) {
+  const pz = A.pz, white = pz.fen.split(' ')[1] === 'w';
+  const qn = pz.q === 'missed' ? pick('пропущений геніальний', 'missed brilliant') : qname(pz.q).toLowerCase();
+  if (text == null) text = pick(`Знайдіть найкращий хід за ${white ? 'білих' : 'чорних'}.`, `Find the best move for ${white ? 'White' : 'Black'}.`)
+    + '\n' + pick(`Партія ${pz.src}, хід ${pz.move} - там зіграно ${pz.played} (${qn}).`, `Game ${pz.src}, move ${pz.move} - ${pz.played} was played (${qn}).`);
+  const off = pz.solved || pz.shown ? ' disabled' : '';
+  $('pzCard').innerHTML = `<div class="pzt">${esc(pick(`🧩 ТРЕНУВАННЯ · у черзі: ${pz.left}`, `🧩 TRAINING · in queue: ${pz.left}`))}</div>`
+    + `<div class="pzx">${esc(text)}</div><div class="row">`
+    + `<button id="pzHint"${off}>${esc(pick('💡 Підказка', '💡 Hint'))}</button>`
+    + `<button id="pzShow"${off}>${esc(pick("✔ Розв'язок", '✔ Solution'))}</button>`
+    + `<button id="pzNext" class="primary">${esc(pick('⏭ Наступна', '⏭ Next'))}</button>`
+    + `<button id="pzExit">${esc(pick('✕ Вийти', '✕ Exit'))}</button></div>`;
+  $('pzHint').addEventListener('click', puzzleHint);
+  $('pzShow').addEventListener('click', puzzleShow);
+  $('pzNext').addEventListener('click', puzzleStart);
+  $('pzExit').addEventListener('click', () => { puzzleHide(); startFree(); });
+}
+function pzTried() { if (!A.pz.tried) { A.pz.tried = true; pzResult(A.pz.id, false); } }
+function puzzleHint() {
+  const pz = A.pz;
+  if (!pz || pz.solved) return;
+  const from = pz.best.slice(0, 2), t = new Pos(pz.fen).c.get(from);
+  const names = { p: ['пішак', 'pawn'], n: ['кінь', 'knight'], b: ['слон', 'bishop'], r: ['тура', 'rook'], q: ['ферзь', 'queen'], k: ['король', 'king'] };
+  const nm = pick(...names[t ? t.type : 'p']);
+  pzTried();
+  puzzleRender(pick(`💡 Ходить ${nm} з ${from}.`, `💡 Move the ${nm} on ${from}.`));
+}
+function puzzleShow() {
+  const pz = A.pz;
+  if (!pz || pz.solved) return;
+  pzTried();
+  pz.shown = true; pz.arrow = pz.best;
+  if (A.v) showVarState(A.v.index, false); else board.setPosition(pz.fen, null, null, pz.best, []);
+  puzzleRender(pick(`Розв'язок: ${puzzleSan()}. Задача повернеться пізніше.`, `Solution: ${puzzleSan()}. The puzzle will come back later.`));
+}
+function puzzleCheck(v, row) {
+  const pz = A.pz;
+  if (pz.solved || A.res !== pz.res || !v || v.base !== 0 || v.rows[0] !== row || row.pending || row.failed) return;
+  if (row.uci === pz.best || PZ_OK.includes(row.quality)) {
+    pz.solved = true;
+    const first = !pz.tried;
+    if (first) { pzResult(pz.id, true); tele('pz.ok'); }
+    const extra = first ? '' : pick(' (не з першої спроби)', ' (not on the first try)');
+    puzzleRender(pick(`✓ Правильно! ${row.san}${extra} - тисніть «Наступна».`, `✓ Correct! ${row.san}${extra} - press «Next».`));
+  } else {
+    if (!pz.tried) tele('pz.fail');
+    pzTried();
+    const qn = qname(row.quality).toLowerCase();
+    puzzleRender(pick(`✗ ${row.san} - ${qn}. Поверніть хід (↶) і спробуйте ще, або подивіться розв'язок.`,
+      `✗ ${row.san} - ${qn}. Take the move back (↶) and try again, or see the solution.`));
+  }
+}
+function puzzleHide() { A.pz = null; $('pzCard').hidden = true; $('pzCard').innerHTML = ''; }
+
 function newDoc() {
   flushSave();
+  if (A.pz && !A.pzLoading) puzzleHide();     // 1.28.0: інша партія - тренування закінчилось
   A.bot = null;                              // партія з ботом (якщо була) на цьому закінчується
   if (A.botUi) setTimeout(botUiSync, 0);
   if (A.alienMode) alienSet(false);          // 1.26.8
@@ -2766,7 +2925,7 @@ function wire() {
   click('bSettings', () => toggleBox('settings'));
   click('bNews', () => toggleBox('news'));
   click('bDonate', openDonate);
-  click('bCc', openChesscom); click('bBots', () => toggleBox('bots'));
+  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart);
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { const b = e.target.closest('[data-missed]'); if (b) gotoMissed(b.dataset.missed === 'w'); });
