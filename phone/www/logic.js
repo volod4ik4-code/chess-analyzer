@@ -593,7 +593,7 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   if (quality === 'Відмінний' && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse)))
     quality = sacrifice >= 1 ? 'Геніальний' : 'Найкращий';     // 1.27.15: рівноцінний найкращому - теж
   if (quality === 'Геніальний' && afterM <= -(MATE - 100)) quality = 'Найкращий';   // 1.27.16: мат у будь-якому разі
-  if (quality === 'Геніальний' && prevBril && zone(winA) === 0) quality = 'Чудовий';   // 1.29.2: відповідь на «!!», позиція не зрівнялась
+  if (quality === 'Геніальний' && prevBril && afterM < -100) quality = 'Чудовий';   // 1.29.3.1: за оцінкою, гірше ніж на пішака   // 1.29.2: відповідь на «!!», позиція не зрівнялась
   // 1.25.13 (правило користувача): віддав пішака чи менше - «Помилка», не «Груба помилка»
   if (quality === 'Груба помилка' && drop < D.BLUNDER_SURE && blunderMaterial(board, uci, after, peBefore, peAfter, mover) <= 1
     && Math.max(Math.abs(beforeM), Math.abs(afterM)) < MATE - 100) quality = 'Помилка';
@@ -617,7 +617,7 @@ export function missedBrilliant(board, peBefore, rating = null, prevBril = false
   const sign = board.turn === 'w' ? 1 : -1;
   if (sign * peBefore.cp <= -(MATE - 100)) return false;    // 1.27.16: мат у будь-якому разі
   const winB = expectedPoints(sign * peBefore.cp, rating);
-  if (prevBril && zone(winB) === 0) return false;   // 1.29.2.1: була б лише «!»
+  if (prevBril && sign * peBefore.cp < -100) return false;   // 1.29.2.1: була б лише «!»
   const secondW = peBefore.second != null ? expectedPoints(sign * peBefore.second, rating) : null;
   const after = board.copy(); after.push(best);
   if (after.isGameOver()) return false;
