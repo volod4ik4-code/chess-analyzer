@@ -3,7 +3,7 @@
 import { D } from './data.js';
 import { Chess } from './chess.js';
 import { aiFacts, askFacts, fetchAiCoach, botBookMove, botChoose, botState, botStarsFor, starsText, botChatFacts, gameAccuracy } from './logic.js';
-import { S, pick, tr, qname, QUALITY, BAD, START_FEN, MATE, Pos, coachLines, bookNote, fmtEval,
+import { S, pick, tr, qname, uiLang, QUALITY, BAD, START_FEN, MATE, Pos, coachLines, bookNote, fmtEval,
   expectedPoints, evaluateMove, analyzeGame, posEval, Book } from './logic.js';
 import { Engine } from './engine.js';
 import { BoardView, badgeSvg } from './board.js';
@@ -25,7 +25,7 @@ const DEF = { lang: 'en', board: D.DEFAULTS.board, depth: D.DEFAULTS.depth, arro
 const saved = store.get('ca.settings', null);
 const cfg = Object.assign({}, DEF, saved || {});
 // мова за замовчуванням - англійська, як на ПК (1.22.5: раніше бралась мова телефона)
-S.lang = cfg.lang;
+S.lang = cfg.lang === 'uk' ? 'uk' : 'en'; S.xl = ['pt', 'es'].includes(cfg.lang) ? cfg.lang : null;
 const saveCfg = () => store.set('ca.settings', cfg);
 
 // ---- 1.27.12: АНОНІМНА СТАТИСТИКА (лише з дозволу гравця; вимикач у ⚙). Надсилається: випадковий ID пристрою,
@@ -187,7 +187,7 @@ function layout() {
 }
 
 function applyLang() {
-  S.lang = cfg.lang;
+  S.lang = cfg.lang === 'uk' ? 'uk' : 'en'; S.xl = ['pt', 'es'].includes(cfg.lang) ? cfg.lang : null;
   document.documentElement.lang = cfg.lang;
   document.title = tr('Аналізатор шахових партій');
   const T = (id, uk, en) => { $(id).textContent = pick(uk, en); };
@@ -471,7 +471,7 @@ function showCoach(lines, ai = null) {
     return;
   }
   if (lines && ai && cfg.ai && cfg.coach && !A.aiOff) {
-    const key = `${ai[0]}|${ai[1]}|${S.lang}|${ai[2]}`;     // з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
+    const key = `${ai[0]}|${ai[1]}|${uiLang()}|${ai[2]}`;     // з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
     A.aiCur = key; A.aiCurArgs = ai;
     if (A.aiCache[key]) { renderCoach(lines, A.aiCache[key]); return; }
     if (A.aiBusy.has(key)) { renderCoach(lines, null, true); return; }
@@ -590,7 +590,7 @@ async function askSend() {
   rerender();
   let facts;
   try { facts = askFacts(ctx.fen, ctx.pe, ctx.sans, ctx.last); } catch (_) { facts = pick('Позиція (FEN): ', 'Position (FEN): ') + ctx.fen; }
-  try { item.a = await fetchAiCoach(facts, S.lang, q, history); if (item.a) aiQuotaUse(); } catch (e) { item.err = e.message || 'ai'; }
+  try { item.a = await fetchAiCoach(facts, uiLang(), q, history); if (item.a) aiQuotaUse(); } catch (e) { item.err = e.message || 'ai'; }
   if (askKey() === key) rerender();
 }
 
@@ -598,7 +598,7 @@ async function askSend() {
 function aiPrefetch(ai) {
   return;                                    // 1.28.1: вимкнено - ШІ лише після кнопки «Пояснити» (ліміт)
   if (!ai || !cfg.ai || !cfg.coach || A.aiOff) return;
-  const key = `${ai[0]}|${ai[1]}|${S.lang}|${ai[2]}`;
+  const key = `${ai[0]}|${ai[1]}|${uiLang()}|${ai[2]}`;
   if (A.aiCache[key] || A.aiBusy.has(key) || A.aiFailed[key] != null) return;
   aiStart(key, ai, true);
 }
@@ -2107,7 +2107,7 @@ async function botSay(event, ucis = null) {
   if (!['undo', 'hint'].includes(event) && cfg.ai && !A.aiOff) {
     try {
       const facts = botChatFacts(event, A.res.fens[0], ucis || botMoves(), b.color, b.result);
-      text = await fetchAiCoach(facts, S.lang, null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en), ...(A.alienMode ? { mood: 'alien' } : {}) });
+      text = await fetchAiCoach(facts, uiLang(), null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en), ...(A.alienMode ? { mood: 'alien' } : {}) });
     } catch (_) { text = null; }
   }
   if (A.bot !== b) return;
@@ -2130,7 +2130,7 @@ async function botChatSend(q) {
   if (cfg.ai && !A.aiOff) {
     try {
       const facts = botChatFacts('chat', A.res.fens[0], botMoves(), b.color, b.result);
-      text = await fetchAiCoach(facts, S.lang, null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en),
+      text = await fetchAiCoach(facts, uiLang(), null, null, { name: botName(b.spec), style: pick(b.spec.d_uk, b.spec.d_en),
         message: q, history, ...(A.alienMode ? { mood: 'alien' } : {}) });
     } catch (_) { text = null; }
   }
@@ -2527,7 +2527,7 @@ function openBox(kind) {
   const chk = (id, label, on) => `<label class="check"><input type="checkbox" id="${id}"${on ? ' checked' : ''}>${esc(label)}</label>`;
   if (kind === 'settings') {
     $('boxTitle').textContent = tr('⚙  Налаштування');
-    body.innerHTML = `<label class="f">${esc(tr('Мова'))}</label>${sel('sLang', [['uk', 'Українська'], ['en', 'English']], cfg.lang)}`
+    body.innerHTML = `<label class="f">${esc(tr('Мова'))}</label>${sel('sLang', [['uk', 'Українська'], ['en', 'English'], ['pt', 'Português'], ['es', 'Español']], cfg.lang)}`
       + `<label class="f">${esc(tr('Дошка'))}</label>${sel('sBoard', Object.keys(D.BOARD_THEMES).map(k => [k, k]), cfg.board)}`
       + `<label class="f">${esc(tr('Глибина'))}</label>${sel('sDepth', DEPTHS.map(d => [d, d]), cfg.depth)}`
       + `<label class="f">${esc(pick('Рушій', 'Engine'))}</label>${sel('sEngine', [

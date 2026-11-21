@@ -783,7 +783,7 @@ QUALITY = {
 BAD = ("Неточність", "Пропуск", "Помилка", "Груба помилка")
 GRAPH_MARKS = ("Геніальний", "Чудовий", "Пропуск", "Помилка", "Груба помилка")
 
-STATE = {"lang": "en"}   # англійська за замовчуванням; вибір користувача - у ~/.chess_analyzer.json
+STATE = {"lang": "en", "xl": None}   # 1.30.0: xl - "pt"/"es" поверх англійської (lang = "en")   # англійська за замовчуванням; вибір користувача - у ~/.chess_analyzer.json
 
 # Стандартні налаштування: так програма виглядає при першому запуску і після «Скинути».
 # Файл рушія за замовчуванням - знайдений автоматично (bundled_engine).
@@ -794,7 +794,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.29.4"
+APP_VERSION = "1.30.0"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -806,6 +806,10 @@ APP_ICON = {
     64: "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAANTklEQVR4AexYe3CU1RX/3e/b3WxCEkMCEZBHIoJAhaGEWuTVQlvLiPQBkUHb6pSxtaWpFWfawYpDW52RKShO7TjqALHjn8WZtur4fqIWEOpYbAVrK4koIiIgBkKy3739nfs9srtsYHcTqUnd3HPPPfdx7jm/c+79vi8O/s9/nwFQTAKse2ZJ3W3PNF56++bLfnjb843XrX1+0fK1z5LOIJd9hdaKDbRFbCrGl7wzYO1TC0et3bz45tuea3xdu6m34OBBY3APaZ2Cuh1K3a7gBJztLLm3x2GwDlDroM09cPGg56TeEtvWbm68WWxFnr+8AFj73KJbjav2GM9bqY0Zp7XhviStYYiAyD7vkjkP+kyP0zbjmZViq9icDwanBGDNk4smrXlm4Xb6uCIfZZ+mOWLzmmcbt4sPp7KrWwB++2zjLOOaFwzQINHtm6QbNH0QX7oDIScAgprR+mEuqiCSZCxEgjVTXmpSH5FhQB/0w+ITrT6p5ATAU3ojI16hedbJeZZ53olEX5WNNhXi00nes+MkAFY/9e1b2d9A6m+lIfAtw68MAG55eOEoorVCok7OdDfoZ3yF+JiOQAYATkJfbY82Kxbw/EjpV1x87BYAGNMo0ZdneD/mjTkBuPWRb9Ux6uP8kKdNYWeaZLOhN2TeqZDjpVPGXrICuNX7Ce1ndUtlME58laZQdARSjneBGBFR8AToTVnzzdBLaYQ0bvAM/GxOMy6dcC28Dg3tafTmfpEuoi1gh7L4Ks4LRQAoYJhE3wbAVhwmZ7FRz+Yczdkfzsse1wR0/OBZuG7uffjmBcvhegnoTgcJN4kLhs3C7PO+S2AM5PiJHdnrQ70hL3Zc1ivx1SoAP2mChvZQJpsLSsJDCuVsXsi4R+c9RvfwxwehmQUTR3wZi6f+EpWJWrhOHDE3gQvrL4FkhM0Ozi9Ev8wtzD6UBW53ARB2pKNv+wQyafSIGxgPaH1/F9o7jkHxb/SQyRh/zjQC4Ip2lJVUYNLwOfA6OZcp+8nYwa3oB9UrtmyJjoAxnorOCSMgiPaKTF3aM5AMqB802aa87OwoByNrx0KRiyw0vHoszq3+PDTvCc11vbI/vc3WAy27+RQB4Iv2WNsmgeo5pxJNA+IowXe+uApXzr4JAytqrd5cVXnyLEwaIVmgIeskC6jCTu1tbpWyigDwmKKyqaBlOQ23nJGwvAjZM5oprTGtfiHGDJ0Cx/HTnfvmLJINk0bNwpzzr0Sq04PH+4Lf9xYMyUhrRw/sCdd74mxgQQRAIPtM4BbyJT8tCpWZZvQfKaZzRWIwYrzsNB1678O30frev7DvYCs0b95wi5DHeSHOHrcQc8d8j8fGMAm4MQsb4ZTi7BEdXRqiVgYAhugK0hH1QBZnPUZxztgrMGnUTLvhR8cO4eV/Po229qOorqztNiPisRJMH/sNTDlnns0g0WVt6oE96eutMUEVAcCABV09Z7KZx4tvxuhGzBq/CMmE/9SpKq/BgplXYXzdFJTEkzk3Mkybjs52lCbKMXfC5Ti3pgFyifIE5pzf084IAOYj5IwI2j43Rcken/epTo2G4fMwZ8ISOjKgIBvlHjhBAI6faEPVgMH4+sTv46ySoZD3A98u/4LUzIaiZR7F0KguAKQnPCc5OTtZZFp0HjNkAwaP0dIYzajN/dwVdL7cTi+0Ki+txNv730TK68TQgfWYPeYy6vUgF6LVlbEve6zMioUSurMv6reT/CoCQEAxzDMW+JwOUWAJZOqlwBLImeOyXjP61ckRmDdpqY2ev0XhtWRBzVlDLAjyvjBh+DScXzsdkl2yTzH2ddkNiI7QqgiAsCOb083srgxZxq1ypmRN6Qg0fuF6DKs+N2NOMYLcF/sP7bVvjuXJKkytvxiaX47ifLo+2T9dzm6fbrwLAMISnSk6owNZngw6TdbSnybbcUbeNQlcOvlHGFU7Hop/2YYUKrtuDFUVg9Dy3m4opTBy0DiMHtwAL8X3A16w1g4ib/dPs8f2p8m5xpH2KhgBYJ8C4RkKrc1Dpg08EsCo6okYWlWPVKoTT+/4E1589TF0pE6EmnLyFM/4iY72nGPSefbA4XjznZ3oTHWgorQKE4ZdBE3n7YYyIQ/7ZFpEwXzGMOqKAJAeSa9iSFA/0nbQOhyPJTB78nxMn3QxEnyei95sklv+33v/gfsfuQMftR3KHo7kAclKHOfH0wdH9jELHL5NTkZ16TCeYSY2kS/GVlkTbcBGBgCUgQAl25YqT7n1g934z77XGByDmBunwUpWRyROv7TzcVx7x3z8YM2X8Jv7l2Js3UQMqjo7mpPdEDBrKoegdf8bdqiyrAYjqydA0pr+277T2Xu68QgA/4Y1yLwHTi8b7iCoKmrasusxHDp6wDcsqD2+7r6481Gsar4KG574FdrdwyitjGPxV5bhwnFzCRQXBnOzmVIKg/g02LN/t82uZLwU8sWY4j2gee9oOetEQjOntbSF8pDF13CvrN3zDHe4ms5Lk3bCiSns3r8Nm164y77ni+NH2j7En1/YiI1P/BpHvHdRRsdLymJonLkMF0+5HBJhWX8qkg+ofYf2oJ0vRoooD6mqs/cA/eSy4uzlwqh0AcBbUJRKNAvlgILjKMRLXLzS+hRu/MMSLF0zHdfdNR+PvnofSisSSJS6cGIOLp/xc8yZeFlezoO/AckK7OcH1PGONkrAwPJaDCofDom4vHgVZ69VZSvH1qzoP2teARZUVizSIWCw15ZuZWWglEIs4aKkNIYBVXFUDCxBOSlZHkc86djxK2aswLTzL7F3BPL8uU4M+4+0IOWl7Ip4rASVyRqA6W4A5GWfZKpMDueHzlJ2SEHxoHmWBFFN5eFdkK9sZBOSG1cWiHiZi1hSQWTRt+SiX2Dq6K9C3uxQwE++IMV2ecrYZRREn0fPdbH2wrOqpEoDQMQekgIUj4LrKjiuA4dtYoKLzltgP4ldx0UxP6UUI03P0xdnielDhbQjAAim3UQinkHMhgyZyGfIucbFa5JkUQxJTBsz3/7TE0X8Pjz6PsAj5hAE2B9zjc6z9u3NtX+6jTnGxVerilUEANu2cC0PFpvchDXdYC1tIWkKD0lkkp0kfWyH6+0Fxbe2hrqvYUjVSI4UXuRJ8vHxw1D8qxzAcx+qkL2EKFsmlZDIwkMSmXSSfdIXUARA+FyV6ErkLAXo2TY904XIhDnFf4cNGzia//woDbYrjHXyVfqdg2+htmoEL86YXZzSKb4dtsHaVIg9afbzn41Wl1QRACJYEvRsI6iKlGWZZIFETykVKCuMfdR2GHsPvImzmUGliQF2sfy3qOXA68wJK/rZGjQtk41tI6hyyGkPAWQAINGPKEC3Z7LmOQ0MKYKVlpRh6bwbsXh2E+S7QFTIy5XwyC5G1rYLsFfWh5QBgD0rMhKi1gtcvuSMpILoLZAqyqowsnYMhtXUwXX9IyCPRUkoxRzg3ehrLNROf5WtIwA8nll7rohob3BDPWKXvMZ2dJ6wm/W0kkvx0Mfvwyjwi974xH0KtVd8DW2JAAg7IFaL0AtcOQpb3ngEdz+0Cr9/YCXu/ONK/C5Pkrl3bloJSw+stOvv/ssqvPj6Q3D4nkEMxEoUba+/Ou0O4M1go0ZE/c9Nw/MbUAHny+rgfNGvCG9KtWPn3s3Y0fIEdrQ+Tp5Gp5C3twTz9pDv4Vqu/1vrkzhwrBUOgZX42L2KsJdHR5aLiV0AMK3ore3rqqJpQVchMkOklIIbd+yHkHwTCJVWxPlxFBC/E04ly/wk5yfLY0hyrnxnxKhPEQCq7oo+gp8BgpbPTmcvZzFGrKUYc6zQs3S6+RZRReWSsvxcdnpAimtBPbz7mPXGfw9g9E9nQzfjx2iVLREA/Dx41/aEqPUil2gJDn7kFIriNE4pVmHpgX2Rr9QVAYATqdeis88zbM9XP+XiK323JQLg7h9v2cN7YFcIrB1l1e9kg13iK12zJQJAJEZ9EynjfPU7WZlN4mtIGQDwfy7recP4t2sYeuEhyaqwLbwPyql2rBezQ8oAYMPVL7Uw4qtJ/jtAeAfwtrV9fV9evaHppZbQeeEZAEjHvdf89QbeBTukLRQGWtq5qK+MM4A7xLdsH04CQCaYlF7Kb/+j8gw14TcCoy8y+/07IpD7yPhRo81S8S2bcgKwftnWv8Po+bwPjtoFYZgtZ8Vycj97bD8rFkr+XSKNDJkCi3RTv2WZnIMsdiAnZydL/uPqKLSeb32yizKrnADIlPXLtm2GMTN5/Hcwfdg0AdEvdnb1farlHTR6pvVFnMpB3QIgcwW1Dcu2TqW/q0UWCsGXttCnVRabxXbxQezsjk4JQLho40+23gDdUccPxluM1rvsPRDcDZSZYYakIXfE/1Smbfzfyy1iq7U5dOAUPC8AZP2Gpldampdtvam56eXxptOpB9QCGHWNgrNcQS1n+3r+h+J6yw18rgP+CcnKcF+YawAsMJ1uvdjW3LT1pg20lX15lbwBSNd23/Ite5qbtj3Eze7d2LT1DqHmn25bd6bJ7tu0/d5m2iI2pduYb7soAPJVfibm9XSP/wIAAP//yrPYHgAAAAZJREFUAwA3w3utLNv8BwAAAABJRU5ErkJggg==",
 }
 CHANGELOG = [
+    ("1.30.0", "2026-11-21 19:34", [
+        ("Нові мови: португальська (Português) і іспанська (Español) - у ⚙ Налаштуваннях. ШІ-тренер відповідає обраною мовою.",
+         "New languages: Portuguese (Português) and Spanish (Español) - in ⚙ Settings. The AI coach answers in the chosen language."),
+    ]),
     ("1.29.4", "2026-11-21 12:09", [
         ("У ⚙ «Статистика» - скільки задач «🧩 Тренування» розв'язали всі гравці.",
          "⚙ «Statistics» now shows how many «🧩 Training» puzzles all players have solved."),
@@ -1643,18 +1647,627 @@ TR_EN.update({"📊  Анонімна статистика": "📊  Anonymous st
               "Так, надсилати": "Yes, send", "Ні, дякую": "No, thanks"})
 
 
+# 1.30.0: португальська й іспанська - переклад англійського тексту: "en": ("pt", "es"). Рядки з підстановками -
+# шаблони з {0}, {1}… (збирає ~/.chess_analyzer_android/i18n/extract.py). Чого немає - лишається англійською.
+LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português"), ("es", "Español")]
+I18N = {
+    'Clear': ('Limpar', 'Borrar'),
+    'Tap: circle, swipe: arrow': ('Toque: círculo, deslize: seta', 'Toque: círculo, deslizar: flecha'),
+    '♞ Chess.com Games': ('♞ Partidas do Chess.com', '♞ Partidas de Chess.com'),
+    '♟ New': ('♟ Nova', '♟ Nueva'),
+    '📋 PGN': ('📋 PGN', '📋 PGN'),
+    '🤖 Bots': ('🤖 Bots', '🤖 Bots'),
+    '🧩 Puzzles': ('🧩 Problemas', '🧩 Problemas'),
+    'pawn': ('peão', 'peón'),
+    'knight': ('cavalo', 'caballo'),
+    'bishop': ('bispo', 'alfil'),
+    'rook': ('torre', 'torre'),
+    'queen': ('dama', 'dama'),
+    'king': ('rei', 'rey'),
+    'pawns': ('peões', 'peones'),
+    'knights': ('cavalos', 'caballos'),
+    'bishops': ('bispos', 'alfiles'),
+    'rooks': ('torres', 'torres'),
+    'queens': ('damas', 'damas'),
+    '  (you have {0})': ('  (você tem {0})', '  (tienes {0})'),
+    '  ·  current': ('  ·  atual', '  ·  actual'),
+    '  — a new record!': ('  — novo recorde!', '  — ¡nuevo récord!'),
+    ' (not on the first try)': (' (não na primeira tentativa)', ' (no al primer intento)'),
+    ' - press «Next».': (' - aperte «Próximo».', ' - pulsa «Siguiente».'),
+    ' min': (' min', ' min'),
+    ' with check': (' com xeque', ' con jaque'),
+    '!  Great': ('!  Ótimo', '!  Gran jugada'),
+    '!!  Brilliant': ('!!  Brilhante', '!!  Brillante'),
+    '+  Good': ('+  Bom', '+  Buena'),
+    ', average accuracy {0}': (', precisão média {0}', ', precisión media {0}'),
+    '; most popular: {0} ({1})': ('; mais popular: {0} ({1})', '; más popular: {0} ({1})'),
+    '?  Mistake': ('?  Erro', '?  Error'),
+    '?!  Inaccuracy': ('?!  Imprecisão', '?!  Imprecisión'),
+    '??  Blunder': ('??  Capivarada', '??  Error grave'),
+    'A new record!': ('Novo recorde!', '¡Nuevo récord!'),
+    'A normal move': ('Um lance normal', 'Una jugada normal'),
+    "A sacrifice that doesn't worsen the position": ('Um sacrifício que não piora a posição', 'Un sacrificio que no empeora la posición'),
+    'AI coach (needs internet)': ('Treinador IA (precisa de internet)', 'Entrenador IA (necesita internet)'),
+    'ANALYSIS': ('ANÁLISE', 'ANÁLISIS'),
+    'APPEARANCE': ('APARÊNCIA', 'APARIENCIA'),
+    'About the last move:': ('Sobre o último lance:', 'Sobre la última jugada:'),
+    'Accuracy': ('Precisão', 'Precisión'),
+    'Add the game to the study to write comments.': ('Adicione a partida ao estudo para escrever comentários.', 'Añade la partida al estudio para escribir comentarios.'),
+    'All': ('Todas', 'Todas'),
+    'All done for today! Next puzzle in {0} day(s).': ('Tudo feito por hoje! Próximo problema em {0} dia(s).', '¡Todo listo por hoy! Próximo problema en {0} día(s).'),
+    'All files': ('Todos os arquivos', 'Todos los archivos'),
+    'All studies': ('Todos os estudos', 'Todos los estudios'),
+    'Almost as good as the best move': ('Quase tão bom quanto o melhor lance', 'Casi tan buena como la mejor jugada'),
+    'An interesting game? Apply with it. Other players will see it in the «🏆 Games of the week» tab (with the player names from the game) and can give it a ❤, and the best ones will be shown in our Telegram channel.': ('Uma partida interessante? Inscreva-a. Outros jogadores a verão na aba «🏆 Partidas da semana» (com os nomes dos jogadores da partida) e poderão dar um ❤; as melhores serão mostradas no nosso canal do Telegram.', '¿Una partida interesante? Preséntala. Otros jugadores la verán en la pestaña «🏆 Partidas de la semana» (con los nombres de los jugadores de la partida) y podrán darle un ❤; las mejores se mostrarán en nuestro canal de Telegram.'),
+    'Analysis error': ('Erro na análise', 'Error de análisis'),
+    'Analysis…': ('Análise…', 'Análisis…'),
+    'Analyze a game first - then you can send it as the game of the week.': ('Analise uma partida primeiro - depois você pode enviá-la como partida da semana.', 'Analiza una partida primero - luego podrás enviarla como partida de la semana.'),
+    'Animation': ('Animação', 'Animación'),
+    'Arrow': ('Seta', 'Flecha'),
+    'Ask the AI coach about the position…': ('Pergunte ao treinador IA sobre a posição…', 'Pregunta al entrenador IA sobre la posición…'),
+    'At this strength you can earn only ★.': ('Nesta força você só ganha ★.', 'Con esta fuerza solo puedes ganar ★.'),
+    'Attach the current game (PGN)': ('Anexar a partida atual (PGN)', 'Adjuntar la partida actual (PGN)'),
+    'Avg rating': ('Rating médio', 'Elo medio'),
+    'Best': ('Melhor', 'Mejor'),
+    'Best move:': ('Melhor lance:', 'Mejor jugada:'),
+    'Best move: {0}': ('Melhor lance: {0}', 'Mejor jugada: {0}'),
+    'Better was': ('Melhor era', 'Mejor era'),
+    'Better was {0}': ('Melhor era {0}', 'Mejor era {0}'),
+    'Black': ('Pretas', 'Negras'),
+    'Black to move': ('Vez das pretas', 'Juegan negras'),
+    'Black: ': ('Pretas: ', 'Negras: '),
+    'Blunder': ('Capivarada', 'Error grave'),
+    'Board': ('Tabuleiro', 'Tablero'),
+    'Book': ('Teoria', 'Teoría'),
+    'Brilliant': ('Brilhante', 'Brillante'),
+    'Browse…': ('Procurar…', 'Buscar…'),
+    'CHAPTERS': ('CAPÍTULOS', 'CAPÍTULOS'),
+    'COMMENT': ('COMENTÁRIO', 'COMENTARIO'),
+    "Can't reach the database.": ('Não foi possível acessar a base.', 'No se puede acceder a la base.'),
+    'Cancel': ('Cancelar', 'Cancelar'),
+    'Cancelled.': ('Cancelado.', 'Cancelado.'),
+    'Chapter': ('Capítulo', 'Capítulo'),
+    'Chapter name': ('Nome do capítulo', 'Nombre del capítulo'),
+    'Checkmate! You beat the {0} bot. 🏆': ('Xeque-mate! Você venceu o bot {0}. 🏆', '¡Jaque mate! Venciste al bot {0}. 🏆'),
+    'Checkmate. The {0} bot wins.': ('Xeque-mate. O bot {0} vence.', 'Jaque mate. Gana el bot {0}.'),
+    'Choose a PGN': ('Escolha um PGN', 'Elige un PGN'),
+    'Choose a game in the list.': ('Escolha uma partida na lista.', 'Elige una partida de la lista.'),
+    'Choose the Stockfish file (.exe)': ('Escolha o arquivo do Stockfish (.exe)', 'Elige el archivo de Stockfish (.exe)'),
+    'Clearly worsened the position': ('Piorou claramente a posição', 'Empeoró claramente la posición'),
+    'Click the number again for the next one.': ('Clique no número de novo para o próximo.', 'Haz clic en el número otra vez para el siguiente.'),
+    'Close': ('Fechar', 'Cerrar'),
+    'Coach': ('Treinador', 'Entrenador'),
+    "Copy a game's PGN and press «PGN from clipboard».": ('Copie o PGN de uma partida e aperte «PGN da área de transferência».', 'Copia el PGN de una partida y pulsa «PGN del portapapeles».'),
+    'Copy the number manually': ('Copie o número manualmente', 'Copia el número manualmente'),
+    'Costliest mistake: ': ('Erro mais caro: ', 'Error más costoso: '),
+    'Could not build the game.': ('Não foi possível montar a partida.', 'No se pudo construir la partida.'),
+    'Could not check for updates. Check your internet connection.': ('Não foi possível verificar atualizações. Verifique sua internet.', 'No se pudieron buscar actualizaciones. Revisa tu conexión a internet.'),
+    'Could not connect to chess.com. Check your internet connection.': ('Não foi possível conectar ao chess.com. Verifique sua internet.', 'No se pudo conectar con chess.com. Revisa tu conexión a internet.'),
+    'Could not download the engine: ': ('Não foi possível baixar o motor: ', 'No se pudo descargar el motor: '),
+    'Could not get the statistics. Check your internet connection.': ('Não foi possível obter as estatísticas. Verifique sua internet.', 'No se pudieron obtener las estadísticas. Revisa tu conexión a internet.'),
+    'Could not load the game.': ('Não foi possível carregar a partida.', 'No se pudo cargar la partida.'),
+    'Could not open the study.': ('Não foi possível abrir o estudo.', 'No se pudo abrir el estudio.'),
+    'Could not read the PGN or it has no moves.': ('Não foi possível ler o PGN ou ele não tem lances.', 'No se pudo leer el PGN o no tiene jugadas.'),
+    'Could not save the study:': ('Não foi possível salvar o estudo:', 'No se pudo guardar el estudio:'),
+    'Could not send. Try later.': ('Não foi possível enviar. Tente mais tarde.', 'No se pudo enviar. Inténtalo más tarde.'),
+    'Could not send. Try via GitHub.': ('Não foi possível enviar. Tente pelo GitHub.', 'No se pudo enviar. Inténtalo por GitHub.'),
+    'Create': ('Criar', 'Crear'),
+    'Date': ('Data', 'Fecha'),
+    'Defeat': ('Derrota', 'Derrota'),
+    'Delete': ('Excluir', 'Eliminar'),
+    'Delete chapter': ('Excluir capítulo', 'Eliminar capítulo'),
+    'Delete study': ('Excluir estudo', 'Eliminar estudio'),
+    'Delete the chapter "{0}"?': ('Excluir o capítulo "{0}"?', '¿Eliminar el capítulo "{0}"?'),
+    'Delete the chapter “{0}” from the study? The game stays on the board.': ('Excluir o capítulo “{0}” do estudo? A partida continua no tabuleiro.', '¿Eliminar el capítulo “{0}” del estudio? La partida sigue en el tablero.'),
+    'Delete the study "{0}"? It cannot be restored.': ('Excluir o estudo "{0}"? Não será possível recuperá-lo.', '¿Eliminar el estudio "{0}"? No se podrá recuperar.'),
+    "Delete the study “{0}” for good? This can't be undone.": ('Excluir o estudo “{0}” para sempre? Isso não pode ser desfeito.', '¿Eliminar el estudio “{0}” para siempre? No se puede deshacer.'),
+    'Depth': ('Profundidade', 'Profundidad'),
+    'Describe what happened and what you did before it. The report goes to the author of the app.': ('Descreva o que aconteceu e o que você fez antes. O relato vai para o autor do app.', 'Describe qué pasó y qué hiciste antes. El informe llega al autor de la app.'),
+    'Done': ('Pronto', 'Listo'),
+    'Download and install': ('Baixar e instalar', 'Descargar e instalar'),
+    'Download error:': ('Erro no download:', 'Error de descarga:'),
+    'Download error: ': ('Erro no download: ', 'Error de descarga: '),
+    'Download the archive from the release page and unpack it over the app folder.': ('Baixe o arquivo na página da versão e descompacte por cima da pasta do app.', 'Descarga el archivo desde la página de la versión y descomprímelo sobre la carpeta de la app.'),
+    'Downloading opening database…': ('Baixando a base de aberturas…', 'Descargando la base de aperturas…'),
+    'Downloading the "all cores" engine…': ('Baixando o motor "todos os núcleos"…', 'Descargando el motor "todos los núcleos"…'),
+    'Downloading…': ('Baixando…', 'Descargando…'),
+    'Downloading… ': ('Baixando… ', 'Descargando… '),
+    'Drag a piece or click it and a square to explore your own variation.': ('Arraste uma peça ou clique nela e numa casa para explorar sua própria variante.', 'Arrastra una pieza o haz clic en ella y en una casilla para explorar tu propia variante.'),
+    'Drag a piece or click it to explore your own variation.': ('Arraste uma peça ou clique nela para explorar sua própria variante.', 'Arrastra una pieza o haz clic en ella para explorar tu propia variante.'),
+    'Draw': ('Empate', 'Tablas'),
+    'ERROR': ('ERRO', 'ERROR'),
+    'Engine': ('Motor', 'Motor'),
+    'Engine error': ('Erro do motor', 'Error del motor'),
+    'Engine file': ('Arquivo do motor', 'Archivo del motor'),
+    'Enter your chess.com username and press «Find».': ('Digite seu usuário do chess.com e aperte «Buscar».', 'Escribe tu usuario de chess.com y pulsa «Buscar».'),
+    'Enter your chess.com username.': ('Digite seu usuário do chess.com.', 'Escribe tu usuario de chess.com.'),
+    'Error': ('Erro', 'Error'),
+    'Eval': ('Aval.', 'Eval.'),
+    'Eval bar': ('Barra de avaliação', 'Barra de evaluación'),
+    'Excellent': ('Excelente', 'Excelente'),
+    'FAMOUS GAMES (double-click to open)': ('PARTIDAS FAMOSAS (clique duplo para abrir)', 'PARTIDAS FAMOSAS (doble clic para abrir)'),
+    'Failed - no connection?': ('Falhou - sem conexão?', 'Falló - ¿sin conexión?'),
+    "Failed to exploit the opponent's mistake": ('Não aproveitou o erro do adversário', 'No aprovechó el error del rival'),
+    'Famous games (tap to open)': ('Partidas famosas (toque para abrir)', 'Partidas famosas (toca para abrir)'),
+    'Find the best move for {0}.': ('Encontre o melhor lance para as {0}.', 'Encuentra la mejor jugada para las {0}.'),
+    'Finish the game with the bot first.': ('Termine a partida contra o bot primeiro.', 'Termina primero la partida contra el bot.'),
+    'Follow us': ('Siga-nos', 'Síguenos'),
+    'For ★★★: ': ('Para ★★★: ', 'Para ★★★: '),
+    'GAME EVALUATION': ('AVALIAÇÃO DA PARTIDA', 'EVALUACIÓN DE LA PARTIDA'),
+    'Game against a bot': ('Partida contra um bot', 'Partida contra un bot'),
+    'Game against the {0} bot ({1}).': ('Partida contra o bot {0} ({1}).', 'Partida contra el bot {0} ({1}).'),
+    'Game {0}, move {1} - {2} was played ({3}).': ('Partida {0}, lance {1} - foi jogado {2} ({3}).', 'Partida {0}, jugada {1} - se jugó {2} ({3}).'),
+    'Games': ('Partidas', 'Partidas'),
+    'Games sent by players. Double-click to open and analyze.': ('Partidas enviadas por jogadores. Clique duplo para abrir e analisar.', 'Partidas enviadas por jugadores. Doble clic para abrir y analizar.'),
+    'Games sent by players. Tap a game to open it, or ♡ to like it.': ('Partidas enviadas por jogadores. Toque numa partida para abri-la, ou em ♡ para curtir.', 'Partidas enviadas por jugadores. Toca una partida para abrirla, o ♡ para darle me gusta.'),
+    'Games with this position: {0}': ('Partidas com esta posição: {0}', 'Partidas con esta posición: {0}'),
+    'Games: {0}': ('Partidas: {0}', 'Partidas: {0}'),
+    'Good': ('Bom', 'Buena'),
+    'Grandmasters:': ('Grandes mestres:', 'Grandes maestros:'),
+    'Great': ('Ótimo', 'Gran jugada'),
+    'How to contact you (optional): Telegram, email…': ('Como falar com você (opcional): Telegram, e-mail…', 'Cómo contactarte (opcional): Telegram, correo…'),
+    'How to credit you (optional):': ('Como creditar você (opcional):', 'Cómo acreditarte (opcional):'),
+    'In this line ': ('Nesta linha ', 'En esta línea '),
+    'Inaccuracy': ('Imprecisão', 'Imprecisión'),
+    'Installing the update…': ('Instalando a atualização…', 'Instalando la actualización…'),
+    'LEGENDS': ('LENDAS', 'LEYENDAS'),
+    'Language': ('Idioma', 'Idioma'),
+    'Later': ('Depois', 'Más tarde'),
+    'Like the player ({0})': ('Como o jogador ({0})', 'Como el jugador ({0})'),
+    'Load a game first (PGN from clipboard or file).': ('Carregue uma partida primeiro (PGN da área de transferência ou arquivo).', 'Carga una partida primero (PGN del portapapeles o archivo).'),
+    'Loaded:': ('Carregado:', 'Cargado:'),
+    'Loading games…': ('Carregando partidas…', 'Cargando partidas…'),
+    'Loading the game…': ('Carregando a partida…', 'Cargando la partida…'),
+    'Loading…': ('Carregando…', 'Cargando…'),
+    'Looking for games on chess.com…': ('Procurando partidas no chess.com…', 'Buscando partidas en chess.com…'),
+    'Loss': ('Derrota', 'Derrota'),
+    'Marks': ('Marcas', 'Marcas'),
+    'Mate threat: {0}': ('Ameaça de mate: {0}', 'Amenaza de mate: {0}'),
+    'Material is equal.': ('O material está igual.', 'El material está igualado.'),
+    'Material: you are {0} {1}.': ('Material: você está {0} {1}.', 'Material: estás {0} {1}.'),
+    'Message {0}…': ('Mensagem para {0}…', 'Mensaje para {0}…'),
+    'Miss': ('Chance perdida', 'Oportunidad perdida'),
+    'Missed brilliants': ('Brilhantes perdidos', 'Brillantes perdidas'),
+    'Mistake': ('Erro', 'Error'),
+    'Month': ('Mês', 'Mes'),
+    'Move': ('Lance', 'Jugada'),
+    'Move animation': ('Animação dos lances', 'Animación de jugadas'),
+    'Move {0}.': ('Lance {0}.', 'Jugada {0}.'),
+    'Moves: ': ('Lances: ', 'Jugadas: '),
+    'My study': ('Meu estudo', 'Mi estudio'),
+    'New study': ('Novo estudo', 'Nuevo estudio'),
+    'New version {0} is available': ('Nova versão {0} disponível', 'Nueva versión {0} disponible'),
+    'No applications yet - be the first!': ('Ainda não há inscrições - seja o primeiro!', 'Aún no hay solicitudes - ¡sé el primero!'),
+    'No internet connection.': ('Sem conexão com a internet.', 'Sin conexión a internet.'),
+    'No internet connection. Try later or via GitHub.': ('Sem conexão com a internet. Tente mais tarde ou pelo GitHub.', 'Sin conexión a internet. Inténtalo más tarde o por GitHub.'),
+    'No internet connection. Try later.': ('Sem conexão com a internet. Tente mais tarde.', 'Sin conexión a internet. Inténtalo más tarde.'),
+    'No moves yet.': ('Ainda sem lances.', 'Aún no hay jugadas.'),
+    'No puzzles yet. Analyze your games - positions with mistakes become puzzles.': ('Ainda não há problemas. Analise suas partidas - posições com erros viram problemas.', 'Aún no hay problemas. Analiza tus partidas - las posiciones con errores se convierten en problemas.'),
+    'No saved studies yet.': ('Ainda não há estudos salvos.', 'Aún no hay estudios guardados.'),
+    'No studies yet.': ('Ainda não há estudos.', 'Aún no hay estudios.'),
+    'No, thanks': ('Não, obrigado', 'No, gracias'),
+    'No.': ('Não.', 'No.'),
+    'Number copied ✓': ('Número copiado ✓', 'Número copiado ✓'),
+    'OTHER PLAYERS': ('OUTROS JOGADORES', 'OTROS JUGADORES'),
+    'Open': ('Abrir', 'Abrir'),
+    'Opening': ('Abertura', 'Apertura'),
+    'Opening theory': ('Teoria de aberturas', 'Teoría de aperturas'),
+    'Openings: ': ('Aberturas: ', 'Aperturas: '),
+    'Opponent': ('Adversário', 'Rival'),
+    'Opponent: ': ('Adversário: ', 'Rival: '),
+    'Paste a game PGN (📋 PGN) or open a file. You can also just play on the board.': ('Cole o PGN de uma partida (📋 PGN) ou abra um arquivo. Você também pode só jogar no tabuleiro.', 'Pega el PGN de una partida (📋 PGN) o abre un archivo. También puedes simplemente jugar en el tablero.'),
+    'Paste the game PGN (for example, copied from chess.com or lichess).': ('Cole o PGN da partida (por exemplo, copiado do chess.com ou lichess).', 'Pega el PGN de la partida (por ejemplo, copiado de chess.com o lichess).'),
+    'Photo license': ('Licença das fotos', 'Licencia de las fotos'),
+    'Play from the starting position: drag a piece or click it.': ('Jogue a partir da posição inicial: arraste uma peça ou clique nela.', 'Juega desde la posición inicial: arrastra una pieza o haz clic en ella.'),
+    'Play from the starting position: drag a piece or tap it.': ('Jogue a partir da posição inicial: arraste uma peça ou toque nela.', 'Juega desde la posición inicial: arrastra una pieza o tócala.'),
+    'Player photos are from Wikimedia Commons under free licenses. The images were cropped and resized. CC BY-SA licenses allow sharing with credit to the author and the license.': ('As fotos dos jogadores são do Wikimedia Commons, com licenças livres. As imagens foram cortadas e reduzidas. As licenças CC BY-SA permitem compartilhar com crédito ao autor e à licença.', 'Las fotos de los jugadores son de Wikimedia Commons, con licencias libres. Las imágenes se recortaron y redujeron. Las licencias CC BY-SA permiten compartir citando al autor y la licencia.'),
+    'Player «{0}» has no games yet.': ('O jogador «{0}» ainda não tem partidas.', 'El jugador «{0}» aún no tiene partidas.'),
+    'Player «{0}» was not found on chess.com.': ('O jogador «{0}» não foi encontrado no chess.com.', 'No se encontró al jugador «{0}» en chess.com.'),
+    'Please wait until Stockfish evaluates the variation moves.': ('Aguarde até o Stockfish avaliar os lances da variante.', 'Espera a que Stockfish evalúe las jugadas de la variante.'),
+    'Please wait until the game analysis finishes.': ('Aguarde até terminar a análise da partida.', 'Espera a que termine el análisis de la partida.'),
+    'Preparing opening database…': ('Preparando a base de aberturas…', 'Preparando la base de aperturas…'),
+    'Programs': ('Programas', 'Programas'),
+    'Quality': ('Qualidade', 'Calidad'),
+    'Release page': ('Página da versão', 'Página de la versión'),
+    'Released': ('Lançado', 'Publicado'),
+    'Released ': ('Lançado ', 'Publicado '),
+    'Res.': ('Res.', 'Res.'),
+    'Reset settings': ('Restaurar configurações', 'Restablecer ajustes'),
+    'Result': ('Resultado', 'Resultado'),
+    'Right mouse button on the board draws an arrow or a circle. Shift - red, Ctrl - blue, Shift+Ctrl - yellow. Draw the same mark again to erase it. Left click erases all.': ('O botão direito do mouse no tabuleiro desenha uma seta ou um círculo. Shift - vermelho, Ctrl - azul, Shift+Ctrl - amarelo. Desenhe a mesma marca de novo para apagá-la. Clique esquerdo apaga tudo.', 'El botón derecho del ratón en el tablero dibuja una flecha o un círculo. Shift - rojo, Ctrl - azul, Shift+Ctrl - amarillo. Dibuja la misma marca otra vez para borrarla. Clic izquierdo borra todo.'),
+    'STATISTICS': ('ESTATÍSTICAS', 'ESTADÍSTICAS'),
+    'STREAMERS': ('STREAMERS', 'STREAMERS'),
+    'STRENGTH': ('FORÇA', 'FUERZA'),
+    'Sacrifice: after {0} the opponent is up material, but the engine considers the move good': ('Sacrifício: depois de {0} o adversário fica com mais material, mas o motor considera o lance bom', 'Sacrificio: después de {0} el rival tiene más material, pero el motor considera buena la jugada'),
+    'Save': ('Salvar', 'Guardar'),
+    'Save the study as PGN': ('Salvar o estudo como PGN', 'Guardar el estudio como PGN'),
+    'Saved studies': ('Estudos salvos', 'Estudios guardados'),
+    'Saved:': ('Salvo:', 'Guardado:'),
+    'Send': ('Enviar', 'Enviar'),
+    'Send anonymous statistics': ('Enviar estatísticas anônimas', 'Enviar estadísticas anónimas'),
+    'Sending…': ('Enviando…', 'Enviando…'),
+    'Sent by': ('Enviado por', 'Enviado por'),
+    'Seriously worsened the position': ('Piorou seriamente a posição', 'Empeoró seriamente la posición'),
+    'Size': ('Tamanho', 'Tamaño'),
+    'Size: {0} MB. The app will close, update and open again.': ('Tamanho: {0} MB. O app vai fechar, atualizar e abrir de novo.', 'Tamaño: {0} MB. La app se cerrará, se actualizará y se abrirá de nuevo.'),
+    'Slightly worsened the position': ('Piorou um pouco a posição', 'Empeoró un poco la posición'),
+    'Solution: {0}. The puzzle will come back later.': ('Solução: {0}. O problema voltará mais tarde.', 'Solución: {0}. El problema volverá más tarde.'),
+    'Specify the path to the Stockfish file (.exe).': ('Indique o caminho para o arquivo do Stockfish (.exe).', 'Indica la ruta del archivo de Stockfish (.exe).'),
+    'Speed test finished.': ('Teste de velocidade concluído.', 'Prueba de velocidad terminada.'),
+    'Stars: ': ('Estrelas: ', 'Estrellas: '),
+    'Start the game: drag a piece or click it.': ('Comece a partida: arraste uma peça ou clique nela.', 'Empieza la partida: arrastra una pieza o haz clic en ella.'),
+    'Start the game: drag a piece or tap it.': ('Comece a partida: arraste uma peça ou toque nela.', 'Empieza la partida: arrastra una pieza o tócala.'),
+    'Starting Stockfish…': ('Iniciando o Stockfish…', 'Iniciando Stockfish…'),
+    'Starting position': ('Posição inicial', 'Posición inicial'),
+    'Statistics': ('Estatísticas', 'Estadísticas'),
+    'Stockfish 19 lite — faster, weaker': ('Stockfish 19 lite — mais rápido, mais fraco', 'Stockfish 19 lite — más rápido, más débil'),
+    'Stockfish 19 — fast (for Android)': ('Stockfish 19 — rápido (para Android)', 'Stockfish 19 — rápido (para Android)'),
+    'Stockfish error': ('Erro do Stockfish', 'Error de Stockfish'),
+    'Stockfish evaluation: ': ('Avaliação do Stockfish: ', 'Evaluación de Stockfish: '),
+    'Stockfish is evaluating moves': ('O Stockfish está avaliando os lances', 'Stockfish está evaluando las jugadas'),
+    'Stockfish is evaluating this move…': ('O Stockfish está avaliando este lance…', 'Stockfish está evaluando esta jugada…'),
+    'Stockfish is evaluating your move': ('O Stockfish está avaliando seu lance', 'Stockfish está evaluando tu jugada'),
+    'Stockfish suggests next:': ('O Stockfish sugere a seguir:', 'Stockfish sugiere a continuación:'),
+    'Stockfish suggests:': ('O Stockfish sugere:', 'Stockfish sugiere:'),
+    "Stockfish's best move: ": ('Melhor lance do Stockfish: ', 'Mejor jugada de Stockfish: '),
+    "Stockfish's first choice": ('Primeira escolha do Stockfish', 'Primera opción de Stockfish'),
+    'Strength': ('Força', 'Fuerza'),
+    "TODAY'S STARS": ('ESTRELAS DE HOJE', 'ESTRELLAS DE HOY'),
+    'Tap the number again for the next one.': ('Toque no número de novo para o próximo.', 'Toca el número otra vez para el siguiente.'),
+    'Testing the engine speed…': ('Testando a velocidade do motor…', 'Probando la velocidad del motor…'),
+    'The "all cores" engine is downloading…': ('O motor "todos os núcleos" está baixando…', 'El motor "todos los núcleos" se está descargando…'),
+    'The "all cores" engine is ready.': ('O motor "todos os núcleos" está pronto.', 'El motor "todos los núcleos" está listo.'),
+    'The "all cores" engine needs a one-time ~90 MB download. Download it?': ('O motor "todos os núcleos" precisa de um download único de ~90 MB. Baixar?', 'El motor "todos los núcleos" necesita una descarga única de ~90 MB. ¿Descargarlo?'),
+    'The app is free. If you like it, you can treat the author to a coffee - a transfer to the card:': ('O app é gratuito. Se você gostar, pode pagar um café ao autor - uma transferência para o cartão:', 'La app es gratuita. Si te gusta, puedes invitar un café al autor - una transferencia a la tarjeta:'),
+    'The app is free. If you like it, you can treat the author to a coffee — a transfer to the card:': ('O app é gratuito. Se você gostar, pode pagar um café ao autor — uma transferência para o cartão:', 'La app es gratuita. Si te gusta, puedes invitar un café al autor — una transferencia a la tarjeta:'),
+    'The bot could not move: ': ('O bot não conseguiu jogar: ', 'El bot no pudo mover: '),
+    "The bot plays this player's openings and imitates the style, while the strength comes from Stockfish; the lines are written by AI. It is an imitation and is not affiliated with the players. No analysis during the game; afterwards you see the grade of every move.": ('O bot joga as aberturas deste jogador e imita o estilo; a força vem do Stockfish e as falas são escritas por IA. É uma imitação, sem ligação com os jogadores. Sem análise durante a partida; depois você vê a avaliação de cada lance.', 'El bot juega las aperturas de este jugador e imita su estilo; la fuerza viene de Stockfish y las frases las escribe una IA. Es una imitación, sin relación con los jugadores. Sin análisis durante la partida; después ves la valoración de cada jugada.'),
+    'The chapter is damaged and could not be opened.': ('O capítulo está danificado e não pôde ser aberto.', 'El capítulo está dañado y no se pudo abrir.'),
+    "The clipboard is empty. Copy a game's PGN.": ('A área de transferência está vazia. Copie o PGN de uma partida.', 'El portapapeles está vacío. Copia el PGN de una partida.'),
+    'The coach will explain the move once Stockfish has evaluated it.': ('O treinador explicará o lance quando o Stockfish o avaliar.', 'El entrenador explicará la jugada cuando Stockfish la evalúe.'),
+    'The database asks to wait a minute.': ('A base pede para esperar um minuto.', 'La base pide esperar un minuto.'),
+    'The database is unavailable right now.': ('A base está indisponível agora.', 'La base no está disponible ahora.'),
+    "The engine's best move was {0} (line: {1}).": ('O melhor lance do motor era {0} (linha: {1}).', 'La mejor jugada del motor era {0} (línea: {1}).'),
+    'The evaluation graph appears after analysis': ('O gráfico de avaliação aparece após a análise', 'El gráfico de evaluación aparece tras el análisis'),
+    'The fast Stockfish 19 could not start on this phone, so Stockfish 19 lite is used.': ('O Stockfish 19 rápido não iniciou neste celular, então é usado o Stockfish 19 lite.', 'El Stockfish 19 rápido no pudo iniciarse en este teléfono, así que se usa Stockfish 19 lite.'),
+    'The first chapter is the game currently on the board.': ('O primeiro capítulo é a partida que está no tabuleiro.', 'El primer capítulo es la partida que está en el tablero.'),
+    'The game has no moves.': ('A partida não tem lances.', 'La partida no tiene jugadas.'),
+    'The game is in progress.': ('A partida está em andamento.', 'La partida está en curso.'),
+    'The game moves will appear here.': ('Os lances da partida aparecerão aqui.', 'Las jugadas de la partida aparecerán aquí.'),
+    "The game on the board isn't in the study. “Add current game” makes it a new chapter.": ('A partida do tabuleiro não está no estudo. “Adicionar partida atual” a torna um novo capítulo.', 'La partida del tablero no está en el estudio. “Añadir partida actual” la convierte en un capítulo nuevo.'),
+    'The hint failed: ': ('A dica falhou: ', 'La pista falló: '),
+    'The king is in check.': ('O rei está em xeque.', 'El rey está en jaque.'),
+    'The move gives checkmate.': ('O lance dá xeque-mate.', 'La jugada da jaque mate.'),
+    'The only strong move in the position': ('O único lance forte na posição', 'La única jugada fuerte de la posición'),
+    'The opponent will likely reply {0}': ('O adversário provavelmente responderá {0}', 'El rival probablemente responderá {0}'),
+    'The server is unavailable right now.': ('O servidor está indisponível agora.', 'El servidor no está disponible ahora.'),
+    'The speed test failed.': ('O teste de velocidade falhou.', 'La prueba de velocidad falló.'),
+    'The study has no chapters yet.': ('O estudo ainda não tem capítulos.', 'El estudio aún no tiene capítulos.'),
+    'The update is installed — it will apply after a restart.': ('A atualização foi instalada — vale após reiniciar.', 'La actualización está instalada — se aplicará al reiniciar.'),
+    'The update is installed, restarting…': ('A atualização foi instalada, reiniciando…', 'La actualización está instalada, reiniciando…'),
+    'Theory': ('Teoria', 'Teoría'),
+    'Thinking about the move…': ('Pensando no lance…', 'Pensando la jugada…'),
+    'Thinking…': ('Pensando…', 'Pensando…'),
+    'This game move is still being analysed — wait a moment.': ('Este lance da partida ainda está sendo analisado — aguarde um momento.', 'Esta jugada de la partida aún se está analizando — espera un momento.'),
+    'This is a Python script, not an engine. Choose the Stockfish .exe file.': ('Isto é um script Python, não um motor. Escolha o arquivo .exe do Stockfish.', 'Esto es un script de Python, no un motor. Elige el archivo .exe de Stockfish.'),
+    'This is checkmate.': ('Isto é xeque-mate.', 'Esto es jaque mate.'),
+    'This is stalemate (a draw).': ('Isto é afogamento (empate).', 'Esto es ahogado (tablas).'),
+    'This position is not in the masters database.': ('Esta posição não está na base de mestres.', 'Esta posición no está en la base de maestros.'),
+    'Time control': ('Ritmo', 'Ritmo'),
+    'Tip': ('Dica', 'Consejo'),
+    'Too many attempts. Try again in a minute.': ('Tentativas demais. Tente de novo em um minuto.', 'Demasiados intentos. Inténtalo de nuevo en un minuto.'),
+    'Too many reports. Try again in a minute.': ('Relatos demais. Tente de novo em um minuto.', 'Demasiados informes. Inténtalo de nuevo en un minuto.'),
+    'Too many requests - try in a minute.': ('Pedidos demais - tente em um minuto.', 'Demasiadas solicitudes - inténtalo en un minuto.'),
+    'Type': ('Tipo', 'Tipo'),
+    'Typing…': ('Digitando…', 'Escribiendo…'),
+    'UPDATES': ('ATUALIZAÇÕES', 'ACTUALIZACIONES'),
+    'Untitled': ('Sem título', 'Sin título'),
+    'Update': ('Atualização', 'Actualización'),
+    'Variation start: the game position.': ('Início da variante: a posição da partida.', 'Inicio de la variante: la posición de la partida.'),
+    'Variations, comments and arrows are saved automatically.': ('Variantes, comentários e setas são salvos automaticamente.', 'Las variantes, comentarios y flechas se guardan automáticamente.'),
+    'Version': ('Versão', 'Versión'),
+    'Version {0}': ('Versão {0}', 'Versión {0}'),
+    'Victory! 🏆': ('Vitória! 🏆', '¡Victoria! 🏆'),
+    'Wait until the analysis finishes.': ('Aguarde o fim da análise.', 'Espera a que termine el análisis.'),
+    'Warning': ('Aviso', 'Aviso'),
+    'What makes it interesting (optional):': ('O que a torna interessante (opcional):', 'Qué la hace interesante (opcional):'),
+    'What the coach noticed:': ('O que o treinador notou:', 'Lo que notó el entrenador:'),
+    'White': ('Brancas', 'Blancas'),
+    'White to move': ('Vez das brancas', 'Juegan blancas'),
+    'White won {0}, draws {1}, Black {2}. Tournament games of FIDE 2200+ players (lichess Masters database). Double-click a move to play it.': ('Brancas venceram {0}, empates {1}, pretas {2}. Partidas de torneio de jogadores FIDE 2200+ (base Masters do lichess). Clique duplo num lance para jogá-lo.', 'Blancas ganaron {0}, tablas {1}, negras {2}. Partidas de torneo de jugadores FIDE 2200+ (base Masters de lichess). Doble clic en una jugada para jugarla.'),
+    'White {0} · draw {1} · Black {2}. Games of FIDE 2200+ players (lichess Masters). Tap a move to play it.': ('Brancas {0} · empate {1} · pretas {2}. Partidas de jogadores FIDE 2200+ (lichess Masters). Toque num lance para jogá-lo.', 'Blancas {0} · tablas {1} · negras {2}. Partidas de jugadores FIDE 2200+ (lichess Masters). Toca una jugada para jugarla.'),
+    'White: ': ('Brancas: ', 'Blancas: '),
+    "Why it's bad": ('Por que é ruim', 'Por qué es mala'),
+    "Why it's inaccurate": ('Por que é imprecisa', 'Por qué es imprecisa'),
+    'Win': ('Vitória', 'Victoria'),
+    'Windows did not allow the new version to start (Smart App Control). The app is unchanged. You can download the archive from the release page manually.': ('O Windows não permitiu iniciar a nova versão (Smart App Control). O app não mudou. Você pode baixar o arquivo da página da versão manualmente.', 'Windows no permitió iniciar la nueva versión (Smart App Control). La app no cambió. Puedes descargar el archivo desde la página de la versión manualmente.'),
+    'Write a few words about the problem.': ('Escreva algumas palavras sobre o problema.', 'Escribe unas palabras sobre el problema.'),
+    'YOUR COLOUR': ('SUA COR', 'TU COLOR'),
+    'YOUR VARIATION': ('SUA VARIANTE', 'TU VARIANTE'),
+    'Year': ('Ano', 'Año'),
+    'Yes': ('Sim', 'Sí'),
+    'Yes, send': ('Sim, enviar', 'Sí, enviar'),
+    'You': ('Você', 'Tú'),
+    'You can help make the app better by sending anonymous statistics: how many games were analyzed, move grades, which bots people play, which features are used, the app version, language and country.\n\nNot sent: games, usernames, message texts, IP address. The totals are visible to everyone in ⚙ Statistics. You can turn it off any time in ⚙.': ('Você pode ajudar a melhorar o app enviando estatísticas anônimas: quantas partidas foram analisadas, avaliações dos lances, contra quais bots se joga, quais funções são usadas, a versão do app, o idioma e o país.\n\nNão é enviado: partidas, nomes de usuário, textos de mensagens, endereço IP. Os totais ficam visíveis para todos em ⚙ Estatísticas. Você pode desligar a qualquer momento em ⚙.', 'Puedes ayudar a mejorar la app enviando estadísticas anónimas: cuántas partidas se analizaron, las valoraciones de las jugadas, contra qué bots se juega, qué funciones se usan, la versión de la app, el idioma y el país.\n\nNo se envía: partidas, nombres de usuario, textos de mensajes, dirección IP. Los totales los ve todo el mundo en ⚙ Estadísticas. Puedes desactivarlo en cualquier momento en ⚙.'),
+    "You can now browse the moves: every move's grade, hints and the coach are shown.": ('Agora você pode ver os lances: a avaliação de cada lance, as dicas e o treinador são mostrados.', 'Ahora puedes revisar las jugadas: se muestran la valoración de cada jugada, las pistas y el entrenador.'),
+    'You have the latest version ({0}).': ('Você tem a versão mais recente ({0}).', 'Tienes la versión más reciente ({0}).'),
+    'You resigned. The {0} bot wins.': ('Você abandonou. O bot {0} vence.', 'Abandonaste. Gana el bot {0}.'),
+    'Your best move: ': ('Seu melhor lance: ', 'Tu mejor jugada: '),
+    'Your colour': ('Sua cor', 'Tu color'),
+    'Your comment on this position…': ('Seu comentário sobre esta posição…', 'Tu comentario sobre esta posición…'),
+    'Your move.': ('Sua vez.', 'Te toca.'),
+    'Your record: ': ('Seu recorde: ', 'Tu récord: '),
+    'a clear': ('clara', 'clara'),
+    'a decisive': ('decisiva', 'decisiva'),
+    'a draw': ('empate', 'tablas'),
+    'a pawn': ('um peão', 'un peón'),
+    'a piece': ('uma peça', 'una pieza'),
+    'a rook': ('uma torre', 'una torre'),
+    'a small': ('pequena', 'pequeña'),
+    'attacks the {0} on {1}': ('ataca {0} em {1}', 'ataca {0} en {1}'),
+    'castling: the king gets safety, the rook gets active': ('roque: o rei fica seguro, a torre fica ativa', 'enroque: el rey queda seguro, la torre se activa'),
+    'check': ('xeque', 'jaque'),
+    'checkmate!': ('xeque-mate!', '¡jaque mate!'),
+    'chess.com asks to wait a minute — please try again.': ('o chess.com pede para esperar um minuto — tente de novo.', 'chess.com pide esperar un minuto — inténtalo de nuevo.'),
+    'chess.com username': ('usuário do chess.com', 'usuario de chess.com'),
+    'defends the {0} on {1}': ('defende {0} em {1}', 'defiende {0} en {1}'),
+    'depth': ('profundidade', 'profundidad'),
+    'develops a piece': ('desenvolve uma peça', 'desarrolla una pieza'),
+    'early queen move: enemy pieces can chase it': ('dama cedo demais: as peças adversárias podem persegui-la', 'dama demasiado pronto: las piezas rivales pueden perseguirla'),
+    'empty database': ('base vazia', 'base vacía'),
+    'engine': ('motor', 'motor'),
+    'finished moves can be viewed already': ('os lances prontos já podem ser vistos', 'las jugadas terminadas ya se pueden ver'),
+    'fork: attacks the {0} and the {1}': ('garfo: ataca {0} e {1}', 'horquilla: ataca {0} y {1}'),
+    'free play': ('jogo livre', 'juego libre'),
+    'in': ('em', 'en'),
+    'insufficient material': ('material insuficiente', 'material insuficiente'),
+    'k pos/s': ('mil pos/s', 'mil pos/s'),
+    'king move': ('lance de rei', 'jugada de rey'),
+    'leads to mate': ('leva ao mate', 'lleva al mate'),
+    'legend': ('lenda', 'leyenda'),
+    'loss': ('derrota', 'derrota'),
+    'missed brilliant': ('brilhante perdido', 'brillante perdida'),
+    'monobank, Ukraine': ('monobank, Ucrânia', 'monobank, Ucrania'),
+    'move': ('lance', 'jugada'),
+    'moves': ('lances', 'jugadas'),
+    'moves the {0} out of danger': ('tira {0} do perigo', 'saca {0} del peligro'),
+    'no hint': ('sem dica', 'sin pista'),
+    'no takebacks': ('sem voltar lances', 'sin deshacer jugadas'),
+    'no theory (opening database not loaded)': ('sem teoria (base de aberturas não carregada)', 'sin teoría (base de aperturas no cargada)'),
+    'not enough storage for the app data.': ('não há espaço suficiente para os dados do app.', 'no hay espacio suficiente para los datos de la app.'),
+    'of': ('de', 'de'),
+    'pawn promotion': ('promoção de peão', 'coronación de peón'),
+    'plays': ('joga', 'juega'),
+    'quiet move': ('lance tranquilo', 'jugada tranquila'),
+    'rating': ('rating', 'elo'),
+    'result': ('resultado', 'resultado'),
+    'roughly equal': ('mais ou menos igual', 'más o menos igualada'),
+    'slowest move': ('lance mais lento', 'jugada más lenta'),
+    'stalemate': ('afogamento', 'ahogado'),
+    'still grading moves…': ('ainda avaliando lances…', 'aún valorando jugadas…'),
+    'streamer': ('streamer', 'streamer'),
+    'strength': ('força', 'fuerza'),
+    'study created': ('estudo criado', 'estudio creado'),
+    'takes the center': ('ocupa o centro', 'ocupa el centro'),
+    'takes the {0}': ('captura {0}', 'captura {0}'),
+    'tap a game to analyze': ('toque numa partida para analisar', 'toca una partida para analizarla'),
+    'the 50-move rule': ('a regra dos 50 lances', 'la regla de las 50 jugadas'),
+    'the advantage slips away': ('a vantagem escapa', 'la ventaja se escapa'),
+    'the game on the board is not in the study': ('a partida do tabuleiro não está no estudo', 'la partida del tablero no está en el estudio'),
+    'the king becomes exposed': ('o rei fica exposto', 'el rey queda expuesto'),
+    'the move gives up {0} for just {1}': ('o lance entrega {0} por apenas {1}', 'la jugada entrega {0} por solo {1}'),
+    'the opponent': ('o adversário', 'el rival'),
+    'the opponent can force mate in {0}': ('o adversário pode forçar mate em {0}', 'el rival puede forzar mate en {0}'),
+    'the opponent gets the better game': ('o adversário fica com o melhor jogo', 'el rival queda mejor'),
+    'the opponent has a forced mate': ('o adversário tem mate forçado', 'el rival tiene mate forzado'),
+    'the opponent takes {0}': ('o adversário captura {0}', 'el rival captura {0}'),
+    'the opponent wins {0}': ('o adversário ganha {0}', 'el rival gana {0}'),
+    'the queen': ('a dama', 'la dama'),
+    'threefold repetition': ('repetição tripla', 'triple repetición'),
+    "today's star": ('estrela de hoje', 'estrella de hoy'),
+    'two pawns': ('dois peões', 'dos peones'),
+    'vs 1.{0}: ': ('contra 1.{0}: ', 'contra 1.{0}: '),
+    "weakens the king's shelter": ('enfraquece a proteção do rei', 'debilita el refugio del rey'),
+    'wins {0}': ('ganha {0}', 'gana {0}'),
+    'you won': ('você venceu', 'ganaste'),
+    'your accuracy ': ('sua precisão ', 'tu precisión '),
+    'your record': ('seu recorde', 'tu récord'),
+    '{0} advantage for {1}': ('vantagem {0} para as {1}', 'ventaja {0} para las {1}'),
+    '{0} can force mate in {1}': ('{0} podem forçar mate em {1}', '{0} pueden forzar mate en {1}'),
+    '{0} take {1}': ('{0} capturam {1}', '{0} capturan {1}'),
+    '{0} to move. Move played: {1}.': ('Vez das {0}. Lance jogado: {1}.', 'Juegan {0}. Jugada realizada: {1}.'),
+    '{0} · double-click to analyze': ('{0} · clique duplo para analisar', '{0} · doble clic para analizar'),
+    'Т  Book': ('Т  Teoria', 'Т  Teoría'),
+    '↩ Back to game': ('↩ Voltar à partida', '↩ Volver a la partida'),
+    '↶  Take back': ('↶  Voltar lance', '↶  Deshacer'),
+    '↶ Take back': ('↶ Voltar lance', '↶ Deshacer'),
+    '⏭  Next': ('⏭  Próximo', '⏭  Siguiente'),
+    '⏭ Next': ('⏭ Próximo', '⏭ Siguiente'),
+    '⏸ Pause': ('⏸ Pausar', '⏸ Pausa'),
+    'ⓘ  Photo license': ('ⓘ  Licença das fotos', 'ⓘ  Licencia de las fotos'),
+    '■ Stop': ('■ Parar', '■ Detener'),
+    '▶  Analyze': ('▶  Analisar', '▶  Analizar'),
+    '▶  Open': ('▶  Abrir', '▶  Abrir'),
+    '▶ Analyze': ('▶ Analisar', '▶ Analizar'),
+    '▶ Play': ('▶ Reproduzir', '▶ Reproducir'),
+    '○  Black': ('○  Pretas', '○  Negras'),
+    '●  White': ('●  Brancas', '●  Blancas'),
+    '★  Best': ('★  Melhor', '★  Mejor'),
+    "★  win at any strength\n★★  win at the player's strength ({0})\n★★★  the same — without a single takeback and without the hint": ('★  vencer em qualquer força\n★★  vencer na força do jogador ({0})\n★★★  o mesmo — sem voltar nenhum lance e sem a dica', '★  ganar con cualquier fuerza\n★★  ganar con la fuerza del jugador ({0})\n★★★  lo mismo — sin deshacer ninguna jugada y sin la pista'),
+    '☕  Buy me a coffee': ('☕  Me pague um café', '☕  Invítame un café'),
+    '♔  White': ('♔  Brancas', '♔  Blancas'),
+    '♔ White': ('♔ Brancas', '♔ Blancas'),
+    '♚  Black': ('♚  Pretas', '♚  Negras'),
+    '♚ Black': ('♚ Pretas', '♚ Negras'),
+    '♞  Chess.com Games': ('♞  Partidas do Chess.com', '♞  Partidas de Chess.com'),
+    '♞  Games from chess.com': ('♞  Partidas do chess.com', '♞  Partidas de chess.com'),
+    '♟  New game': ('♟  Nova partida', '♟  Nueva partida'),
+    '♟ Games analyzed: {0} ({1} moves)': ('♟ Partidas analisadas: {0} ({1} lances)', '♟ Partidas analizadas: {0} ({1} jugadas)'),
+    '⚔  Start game': ('⚔  Começar partida', '⚔  Empezar partida'),
+    '⚔ Start game': ('⚔ Começar partida', '⚔ Empezar partida'),
+    '⚙  Settings': ('⚙  Configurações', '⚙  Ajustes'),
+    '✂ Delete from here': ('✂ Excluir a partir daqui', '✂ Eliminar desde aquí'),
+    '✓  Excellent': ('✓  Excelente', '✓  Excelente'),
+    '✓ Correct! {0}': ('✓ Correto! {0}', '✓ ¡Correcto! {0}'),
+    '✓ Correct! {0}{1} - press «Next».': ('✓ Correto! {0}{1} - aperte «Próximo».', '✓ ¡Correcto! {0}{1} - pulsa «Siguiente».'),
+    '✓ Thank you! Applied - the game is in «🏆 Games of the week».': ('✓ Obrigado! Inscrita - a partida está em «🏆 Partidas da semana».', '✓ ¡Gracias! Presentada - la partida está en «🏆 Partidas de la semana».'),
+    '✓ Thank you! The report was sent.': ('✓ Obrigado! O relato foi enviado.', '✓ ¡Gracias! El informe fue enviado.'),
+    '✔  Solution': ('✔  Solução', '✔  Solución'),
+    '✔ Solution': ('✔ Solução', '✔ Solución'),
+    '✕  Exit': ('✕  Sair', '✕  Salir'),
+    '✕  Miss': ('✕  Chance perdida', '✕  Oportunidad perdida'),
+    '✕ Exit': ('✕ Sair', '✕ Salir'),
+    '✗ {0} - {1}. Take the move back (↶) and try again, or see the solution.': ('✗ {0} - {1}. Volte o lance (↶) e tente de novo, ou veja a solução.', '✗ {0} - {1}. Deshaz la jugada (↶) e inténtalo de nuevo, o mira la solución.'),
+    "✨  What's new": ('✨  Novidades', '✨  Novedades'),
+    '❤  Best': ('❤  Melhores', '❤  Mejores'),
+    '❤  Like': ('❤  Curtir', '❤  Me gusta'),
+    '❤ Best': ('❤ Melhores', '❤ Mejores'),
+    '➕ Add current game': ('➕ Adicionar partida atual', '➕ Añadir partida actual'),
+    '➕ New chapter': ('➕ Novo capítulo', '➕ Nuevo capítulo'),
+    '⟲ Undo move': ('⟲ Desfazer lance', '⟲ Deshacer jugada'),
+    '⤓ Export PGN': ('⤓ Exportar PGN', '⤓ Exportar PGN'),
+    '⬆  Update': ('⬆  Atualizar', '⬆  Actualizar'),
+    '⬆  Update {0}': ('⬆  Atualização {0}', '⬆  Actualización {0}'),
+    '⬆ Check for updates': ('⬆ Verificar atualizações', '⬆ Buscar actualizaciones'),
+    '⬆ Make main line': ('⬆ Tornar linha principal', '⬆ Convertir en línea principal'),
+    '⬇ Download ({0} MB)': ('⬇ Baixar ({0} MB)', '⬇ Descargar ({0} MB)'),
+    '🆕  Newest': ('🆕  Mais novas', '🆕  Más nuevas'),
+    '🆕 Newest': ('🆕 Mais novas', '🆕 Más nuevas'),
+    '🌍 Countries: ': ('🌍 Países: ', '🌍 Países: '),
+    '🎓 Coach': ('🎓 Treinador', '🎓 Entrenador'),
+    '🎲  Random': ('🎲  Aleatório', '🎲  Aleatorio'),
+    '🎲 Random': ('🎲 Aleatório', '🎲 Aleatorio'),
+    '🏁  Game over': ('🏁  Fim de jogo', '🏁  Fin de la partida'),
+    '🏆  Apply for game of the week': ('🏆  Inscrever como partida da semana', '🏆  Presentar como partida de la semana'),
+    '🏆  Games of the week': ('🏆  Partidas da semana', '🏆  Partidas de la semana'),
+    '🏆 Apply for game of the week': ('🏆 Inscrever como partida da semana', '🏆 Presentar como partida de la semana'),
+    '🏳  Resign': ('🏳  Abandonar', '🏳  Abandonar'),
+    '🏳 Resign': ('🏳 Abandonar', '🏳 Abandonar'),
+    '🐙 GitHub: {0} of the page, {1}\n✈ Telegram (t.me/chessanalyser): {2}, {3} of posts\n(updated {4})': ('🐙 GitHub: {0} da página, {1}\n✈ Telegram (t.me/chessanalyser): {2}, {3} das publicações\n(atualizado {4})', '🐙 GitHub: {0} de la página, {1}\n✈ Telegram (t.me/chessanalyser): {2}, {3} de las publicaciones\n(actualizado {4})'),
+    '🐙 Via GitHub': ('🐙 Pelo GitHub', '🐙 Por GitHub'),
+    '🐞  Report a bug': ('🐞  Relatar um erro', '🐞  Informar de un error'),
+    '🐞 Report a bug': ('🐞 Relatar um erro', '🐞 Informar de un error'),
+    '👽 Alien mode: {0}, 💬 messages to bots: {1}, 🧠 AI coach explanations: {2}': ('👽 Modo alienígena: {0}, 💬 mensagens aos bots: {1}, 🧠 explicações do treinador IA: {2}', '👽 Modo alienígena: {0}, 💬 mensajes a los bots: {1}, 🧠 explicaciones del entrenador IA: {2}'),
+    '👽 Knight on f7. He did it.': ('👽 Cavalo em f7. Ele fez isso.', '👽 Caballo en f7. Lo hizo.'),
+    '👽 Signal intercepted. The Caro-Kann… He was waiting for this.': ('👽 Sinal interceptado. A Caro-Kann… Ele estava esperando por isso.', '👽 Señal interceptada. La Caro-Kann… Él esperaba esto.'),
+    '👽 c6?? He will remember that.': ('👽 c6?? Ele vai lembrar disso.', '👽 c6?? Lo recordará.'),
+    '💎 Brilliant moves: {0}, ❗ Great: {1}, ⁇ Blunders: {2}': ('💎 Lances brilhantes: {0}, ❗ Ótimos: {1}, ⁇ Capivaradas: {2}', '💎 Jugadas brillantes: {0}, ❗ Grandes jugadas: {1}, ⁇ Errores graves: {2}'),
+    '💎 Missed brilliant move {0} of {1}: {2} {3} ({4} was played).': ('💎 Lance brilhante perdido {0} de {1}: {2} {3} (foi jogado {4}).', '💎 Jugada brillante perdida {0} de {1}: {2} {3} (se jugó {4}).'),
+    '💔  Unlike': ('💔  Descurtir', '💔  Quitar me gusta'),
+    '💡  Hint': ('💡  Dica', '💡  Pista'),
+    '💡 Hint': ('💡 Dica', '💡 Pista'),
+    '💡 Move the {0} on {1}.': ('💡 Mova {0} de {1}.', '💡 Mueve {0} de {1}.'),
+    '💬  Comment': ('💬  Comentário', '💬  Comentario'),
+    '💬 Comment…': ('💬 Comentar…', '💬 Comentar…'),
+    '💬 Edit comment…': ('💬 Editar comentário…', '💬 Editar comentario…'),
+    '📂  Open file': ('📂  Abrir arquivo', '📂  Abrir archivo'),
+    '📊  Analyze the game': ('📊  Analisar a partida', '📊  Analizar la partida'),
+    '📊  Anonymous statistics': ('📊  Estatísticas anônimas', '📊  Estadísticas anónimas'),
+    '📊 Analyze the game': ('📊 Analisar a partida', '📊 Analizar la partida'),
+    '📊 Players: {0} (💻 PC {1}, 📱 phone {2}); today {3}, last 7 days {4}, last 30 days {5}': ('📊 Jogadores: {0} (💻 PC {1}, 📱 celular {2}); hoje {3}, últimos 7 dias {4}, últimos 30 dias {5}', '📊 Jugadores: {0} (💻 PC {1}, 📱 móvil {2}); hoy {3}, últimos 7 días {4}, últimos 30 días {5}'),
+    '📋  PGN from clipboard': ('📋  PGN da área de transferência', '📋  PGN del portapapeles'),
+    '📋 Copy number': ('📋 Copiar número', '📋 Copiar número'),
+    '📋 Game PGN': ('📋 PGN da partida', '📋 PGN de la partida'),
+    '📋 Paste': ('📋 Colar', '📋 Pegar'),
+    '📖  Games database': ('📖  Base de partidas', '📖  Base de partidas'),
+    '📖  Masters games database': ('📖  Base de partidas de mestres', '📖  Base de partidas de maestros'),
+    '📖 Opening theory: {0}': ('📖 Teoria de aberturas: {0}', '📖 Teoría de aperturas: {0}'),
+    '📖 This move is in opening theory ({0}), but the engine considers it weak': ('📖 Este lance está na teoria de aberturas ({0}), mas o motor o considera fraco', '📖 Esta jugada está en la teoría de aperturas ({0}), pero el motor la considera débil'),
+    '📚  STUDY': ('📚  ESTUDO', '📚  ESTUDIO'),
+    '📚  Studies': ('📚  Estudos', '📚  Estudios'),
+    '📲 Install': ('📲 Instalar', '📲 Instalar'),
+    '🔁  Rematch': ('🔁  Revanche', '🔁  Revancha'),
+    '🔁 Rematch': ('🔁 Revanche', '🔁 Revancha'),
+    '🔄 Restart': ('🔄 Reiniciar', '🔄 Reiniciar'),
+    '🔍 Find': ('🔍 Buscar', '🔍 Buscar'),
+    '🔍 Test engine speed': ('🔍 Testar velocidade do motor', '🔍 Probar velocidad del motor'),
+    '🗑 Clear': ('🗑 Limpar', '🗑 Borrar'),
+    '🗑 Delete': ('🗑 Excluir', '🗑 Eliminar'),
+    '🗑 Delete comment': ('🗑 Excluir comentário', '🗑 Eliminar comentario'),
+    '🗑 Delete variation': ('🗑 Excluir variante', '🗑 Eliminar variante'),
+    '🤖  AI limit for today is used up ({0})': ('🤖  Limite de IA de hoje esgotado ({0})', '🤖  Límite de IA de hoy agotado ({0})'),
+    '🤖  Another bot': ('🤖  Outro bot', '🤖  Otro bot'),
+    '🤖  Bots': ('🤖  Bots', '🤖  Bots'),
+    '🤖  Explain (AI) · {0} of {1} left today': ('🤖  Explicar (IA) · restam {0} de {1} hoje', '🤖  Explicar (IA) · quedan {0} de {1} hoy'),
+    '🤖  Play a bot': ('🤖  Jogar contra um bot', '🤖  Jugar contra un bot'),
+    '🤖 AI coach': ('🤖 Treinador IA', '🤖 Entrenador IA'),
+    '🤖 AI limit for today is used up ({0})': ('🤖 Limite de IA de hoje esgotado ({0})', '🤖 Límite de IA de hoy agotado ({0})'),
+    '🤖 Another bot': ('🤖 Outro bot', '🤖 Otro bot'),
+    "🤖 Can't reach the AI coach (no internet?).": ('🤖 Não foi possível falar com o treinador IA (sem internet?).', '🤖 No se puede contactar con el entrenador IA (¿sin internet?).'),
+    '🤖 Explain (AI) · {0} of {1} left today': ('🤖 Explicar (IA) · restam {0} de {1} hoje', '🤖 Explicar (IA) · quedan {0} de {1} hoy'),
+    '🤖 Games vs bots: {0} — {1} won, {2} drawn, {3} lost{4}; ⭐ {5} stars': ('🤖 Partidas contra bots: {0} — {1} vitórias, {2} empates, {3} derrotas{4}; ⭐ {5} estrelas', '🤖 Partidas contra bots: {0} — {1} ganadas, {2} tablas, {3} perdidas{4}; ⭐ {5} estrellas'),
+    '🤖 The AI coach did not answer — the regular coach is shown.': ('🤖 O treinador IA não respondeu — é mostrado o treinador comum.', '🤖 El entrenador IA no respondió — se muestra el entrenador normal.'),
+    '🤖 The AI coach did not answer — try again.': ('🤖 O treinador IA não respondeu — tente de novo.', '🤖 El entrenador IA no respondió — inténtalo de nuevo.'),
+    "🤖 The AI coach has used up today's free limit — the regular coach is shown.": ('🤖 O treinador IA esgotou o limite grátis de hoje — é mostrado o treinador comum.', '🤖 El entrenador IA agotó el límite gratis de hoy — se muestra el entrenador normal.'),
+    "🤖 The AI coach has used up today's free limit.": ('🤖 O treinador IA esgotou o limite grátis de hoje.', '🤖 El entrenador IA agotó el límite gratis de hoy.'),
+    '🤖 The AI coach is unavailable (no internet?) — the regular coach is shown.': ('🤖 O treinador IA está indisponível (sem internet?) — é mostrado o treinador comum.', '🤖 El entrenador IA no está disponible (¿sin internet?) — se muestra el entrenador normal.'),
+    "🤖 Today's AI limit is used up ({0} explanations and questions). Back tomorrow.": ('🤖 O limite de IA de hoje acabou ({0} explicações e perguntas). Volta amanhã.', '🤖 Se agotó el límite de IA de hoy ({0} explicaciones y preguntas). Vuelve mañana.'),
+    '🤖 Too many AI coach requests — try again in a minute.': ('🤖 Pedidos demais ao treinador IA — tente de novo em um minuto.', '🤖 Demasiadas solicitudes al entrenador IA — inténtalo en un minuto.'),
+    '🤖 Too many requests — try again in a minute.': ('🤖 Pedidos demais — tente de novo em um minuto.', '🤖 Demasiadas solicitudes — inténtalo en un minuto.'),
+    '🧩  TRAINING  ·  in queue: {0}': ('🧩  TREINO  ·  na fila: {0}', '🧩  ENTRENAMIENTO  ·  en cola: {0}'),
+    '🧩  Training': ('🧩  Treino', '🧩  Entrenamiento'),
+    '🧩 Puzzles solved: {0} (on the first try), missed on the first try: {1}, puzzles opened: {2}': ('🧩 Problemas resolvidos: {0} (na primeira tentativa), errados na primeira: {1}, problemas abertos: {2}', '🧩 Problemas resueltos: {0} (al primer intento), fallados al primero: {1}, problemas abiertos: {2}'),
+    '🧩 TRAINING · in queue: {0}': ('🧩 TREINO · na fila: {0}', '🧩 ENTRENAMIENTO · en cola: {0}'),
+    '🧩 new puzzles: {0}': ('🧩 novos problemas: {0}', '🧩 problemas nuevos: {0}'),
+}
+_XL_TPL, _XL_CACHE = None, {}
+
+
+def _xl_templates():
+    global _XL_TPL
+    if _XL_TPL is None:
+        _XL_TPL = []
+        for en, tgt in I18N.items():
+            if "{0}" not in en:
+                continue
+            parts = re.split(r"(\{\d\})", en)
+            rx = "".join("(.*?)" if re.fullmatch(r"\{\d\}", p) else re.escape(p) for p in parts)
+            _XL_TPL.append((re.compile(rx + "$", re.S), tgt))
+    return _XL_TPL
+
+
+def xl(en):
+    """Англійський текст -> португальська / іспанська, якщо вибрана (інакше як є)."""
+    lang = STATE.get("xl")
+    if not lang or not isinstance(en, str) or not en:
+        return en
+    i = 0 if lang == "pt" else 1
+    t = I18N.get(en)
+    if t:
+        return t[i]
+    key = (lang, en)
+    if key in _XL_CACHE:
+        return _XL_CACHE[key]
+    out = en
+    for rx, tgt in _xl_templates():
+        m = rx.match(en)
+        if m:
+            g = m.groups()
+            g = [I18N[x][i] if x in I18N else x for x in g]     # підставлені слова теж (назви фігур)
+            out = re.sub(r"\{(\d)\}", lambda mm: g[int(mm.group(1))] if int(mm.group(1)) < len(g) else mm.group(0), tgt[i])
+            break
+    if len(_XL_CACHE) < 5000:
+        _XL_CACHE[key] = out
+    return out
+
+
+def ui_lang():
+    """Мова інтерфейсу: uk / en / pt / es (для ШІ-тренера й налаштувань)."""
+    return STATE.get("xl") or STATE["lang"]
+
+
 def tr(uk):
     """Переклад рядка з українського оригіналу (для динамічних текстів)."""
-    return TR_EN.get(uk, uk) if STATE["lang"] == "en" else uk
+    return xl(TR_EN.get(uk, uk)) if STATE["lang"] == "en" else uk
 
 
 def trd(uk, en):
     """Переклад для заголовків діалогів (без спільного словника)."""
-    return en if STATE["lang"] == "en" else uk
+    return xl(en) if STATE["lang"] == "en" else uk
 
 
 def pick(uk, en):
-    return en if STATE["lang"] == "en" else uk
+    return xl(en) if STATE["lang"] == "en" else uk
 
 
 def changelog_view(cl=None):
@@ -1686,7 +2299,7 @@ def ymd_to_ydm(s):
 
 
 def qname(q):
-    return QUALITY_EN.get(q, q) if STATE["lang"] == "en" else q
+    return xl(QUALITY_EN.get(q, q)) if STATE["lang"] == "en" else q
 
 
 PNAME = {chess.PAWN: ("пішак", "pawn"), chess.KNIGHT: ("кінь", "knight"),
@@ -6689,7 +7302,7 @@ class App(tk.Tk):
 
         self.engine_var = tk.StringVar()
         self.depth_var = tk.IntVar(value=DEFAULTS["depth"])
-        self.lang_var = tk.StringVar(value="English" if STATE["lang"] == "en" else "Українська")
+        self.lang_var = tk.StringVar(value=dict(LANGS)[ui_lang()])
         self.anim_var = tk.BooleanVar(value=DEFAULTS["anim"])
         self.arrow_var = tk.StringVar(value=DEFAULTS["arrow"])      # стрілка найкращого ходу: ARROW_MODES
         self.coach_var = tk.BooleanVar(value=DEFAULTS["coach"])     # показувати панель тренера
@@ -6957,7 +7570,7 @@ class App(tk.Tk):
             r += 1
 
         section("ВИГЛЯД")
-        for label, var, values, width in (("Мова", self.lang_var, ["Українська", "English"], 14),
+        for label, var, values, width in (("Мова", self.lang_var, [n for _c, n in LANGS], 14),
                                           ("Дошка", self.board_var, list(BOARD_THEMES), 14),
                                           ("Розмір", self.size_var, SIZE_CHOICES, 14)):
             ttk.Label(sf, text=label, style="Panel.TLabel").grid(row=r, column=0, sticky="w",
@@ -7124,8 +7737,9 @@ class App(tk.Tk):
             self.depth_var.set(int(cfg.get("depth", DEFAULTS["depth"])))
             if cfg.get("board") in BOARD_THEMES:
                 self.board_var.set(cfg["board"])
-            if cfg.get("lang") in ("uk", "en"):
-                STATE["lang"] = cfg["lang"]
+            if cfg.get("lang") in dict(LANGS):
+                STATE["lang"] = "uk" if cfg["lang"] == "uk" else "en"
+                STATE["xl"] = cfg["lang"] if cfg["lang"] in ("pt", "es") else None
             # до 1.14.0 розмір за замовчуванням був Large; тепер - Auto (старе «Large» не переносимо)
             if cfg.get("size_v") == 2 and cfg.get("size") in SIZE_CHOICES:
                 self.size_var.set(cfg["size"])
@@ -7148,7 +7762,7 @@ class App(tk.Tk):
                     var.set(cfg[key])
         except Exception:
             pass
-        self.lang_var.set("English" if STATE["lang"] == "en" else "Українська")
+        self.lang_var.set(dict(LANGS)[ui_lang()])
         if not path or not os.path.exists(path):
             path = bundled_engine() or shutil.which("stockfish") or ""
         self.engine_var.set(path)
@@ -7159,7 +7773,7 @@ class App(tk.Tk):
                 json.dump({"engine": self.engine_var.get().strip().strip('"'),
                            "depth": self._depth(),
                            "board": self.board_var.get(),
-                           "size": self.size_var.get(), "size_v": 2, "lang": STATE["lang"],
+                           "size": self.size_var.get(), "size_v": 2, "lang": ui_lang(),
                            "arrow": self.arrow_var.get(), "anim": bool(self.anim_var.get()),
                            "coach": bool(self.coach_var.get()),
                            "ai_coach": bool(self.ai_var.get()),
@@ -7558,7 +8172,7 @@ class App(tk.Tk):
             self._bot_coach_render()
             return
         if ai and self.ai_var.get() and not self._ai_off:
-            key = (ai[0], ai[1], STATE["lang"], ai[2])      # з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
+            key = (ai[0], ai[1], ui_lang(), ai[2])      # з 1.23.7 - і якість (рання відповідь за швидкою оцінкою)
             self._ai_cur, self._ai_cur_args = key, ai
             if key in self._ai_cache:
                 self._coach_render(lines, ai_text=self._ai_cache[key])
@@ -7807,7 +8421,7 @@ class App(tk.Tk):
             self._coach_render(*self._coach_last)
             return
         self._coach_render(*self._coach_last)
-        lang = STATE["lang"]
+        lang = ui_lang()
         try:
             facts = ask_facts(ctx["fen"], ctx["pe"], ctx["sans"], ctx["last"])
         except Exception:  # noqa: BLE001
@@ -7876,10 +8490,11 @@ class App(tk.Tk):
         return lines + _book_note(row)
 
     def _on_lang_change(self):
-        new = "en" if self.lang_var.get() == "English" else "uk"
-        if new == STATE["lang"]:
+        new = next((c for c, n in LANGS if n == self.lang_var.get()), "en")
+        if new == ui_lang():
             return
-        STATE["lang"] = new
+        STATE["lang"] = "uk" if new == "uk" else "en"
+        STATE["xl"] = new if new in ("pt", "es") else None
         self._apply_lang()
         self._save_config()
 
@@ -7992,7 +8607,11 @@ class App(tk.Tk):
             self._ask_hint_on = False
             self.ask_entry.delete(0, "end")
             self._ask_hint(True)
-        mp = TR_EN if STATE["lang"] == "en" else {v: k for k, v in TR_EN.items()}
+        mp = {}                       # 1.30.0: будь-який відомий варіант напису (uk/en/pt/es) -> поточна мова
+        for uk, en in TR_EN.items():
+            target = xl(en) if STATE["lang"] == "en" else uk
+            for k in (uk, en) + tuple(I18N.get(en, ())):
+                mp[k] = target
         stack = [self]
         while stack:
             w = stack.pop()
@@ -11033,7 +11652,7 @@ class App(tk.Tk):
         except Exception:  # noqa: BLE001
             self._bot_said(b, bot_canned(event, self._bot_rng, alien), event)
             return
-        spec, lang = b["spec"], STATE["lang"]
+        spec, lang = b["spec"], ui_lang()
         persona = {"name": bot_name(spec), "style": pick(spec["d_uk"], spec["d_en"])}
         if alien:
             persona["mood"] = "alien"
@@ -11082,7 +11701,7 @@ class App(tk.Tk):
             facts = bot_chat_facts("chat", self._bot_board() or chess.Board(), b["color"], b["result"])
         except Exception:  # noqa: BLE001
             facts = pick("Партія триває.", "The game is in progress.")
-        spec, lang = b["spec"], STATE["lang"]
+        spec, lang = b["spec"], ui_lang()
         persona = {"name": bot_name(spec), "style": pick(spec["d_uk"], spec["d_en"]), "message": q, "history": history}
         if alien:
             persona["mood"] = "alien"
@@ -11597,7 +12216,7 @@ class App(tk.Tk):
         if self._cc_months:
             self.cc_month_cb.current(max(0, i))
         self._cc_fill()
-        if not self._cc_months and not self.cc_status.cget("text"):
+        if not self._cc_months:
             self.cc_status.configure(text=pick("Введіть свій нік на chess.com і натисніть «Знайти».",
                                                "Enter your chess.com username and press «Find»."))
 

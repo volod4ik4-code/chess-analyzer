@@ -27,7 +27,7 @@ data = {
     # палітра телефона - своя (ПК з 1.18.0 має іншу); змінювати лише свідомо
     "COLORS": {"BG": "#1f1d1b", "PANEL": "#2b2927", "PANEL2": "#383532", "FG": "#ecebe9",
                "MUTED": "#9d9a95", "ACCENT": "#81b64c"},
-    "MATE_SCORE": ca.MATE_SCORE, "BOOK_MAX_DEFICIT": ca.BOOK_MAX_DEFICIT, "WIN_K": ca.WIN_K, "RATING_K": list(ca.RATING_K),
+    "MATE_SCORE": ca.MATE_SCORE, "BOOK_MAX_DEFICIT": ca.BOOK_MAX_DEFICIT, "WIN_K": ca.WIN_K, "I18N": ca.I18N, "RATING_K": list(ca.RATING_K),
     "ACC_K": ca.ACC_K, "ACC_DECAY": ca.ACC_DECAY, "ACC_POWER": ca.ACC_POWER, "WON_ANYWAY": ca.WON_ANYWAY,
     "BRILLIANT_LIMIT": list(ca.BRILLIANT_LIMIT), "BEST_TOLERANCE": ca.BEST_TOLERANCE, "GREAT_GAP": ca.GREAT_GAP, "BLUNDER_SURE": ca.BLUNDER_SURE, "MISS_MATERIAL": ca.MISS_MATERIAL, "HARD_DEPTHS": list(ca.HARD_DEPTHS),
     "AI_COACH_URL": ca.AI_COACH_URL,

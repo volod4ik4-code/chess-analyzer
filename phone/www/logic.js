@@ -3,15 +3,41 @@
 import { Chess } from './chess.js';
 import { D } from './data.js';
 
-export const S = { lang: 'en' };
+export const S = { lang: 'en', xl: null };   // 1.30.0: xl - 'pt'/'es' поверх англійської
 export const MATE = D.MATE_SCORE;
 export const QUALITY = D.QUALITY;              // назва -> [колір, значок, пояснення]
 export const BAD = new Set(D.BAD);
 export const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-export const pick = (uk, en) => (S.lang === 'en' ? en : uk);
-export const tr = uk => (S.lang === 'en' ? (D.TR_EN[uk] ?? uk) : uk);
-export const qname = q => (S.lang === 'en' ? (D.QUALITY_EN[q] ?? q) : q);
+// 1.30.0: португальська / іспанська - переклад англійського тексту (D.I18N: en -> [pt, es]; шаблони з {0}…)
+let _xlTpl = null;
+const _xlCache = new Map();
+export function xl(en) {
+  if (!S.xl || typeof en !== 'string' || !en) return en;
+  const i = S.xl === 'pt' ? 0 : 1, t = D.I18N[en];
+  if (t) return t[i];
+  const key = S.xl + '|' + en;
+  if (_xlCache.has(key)) return _xlCache.get(key);
+  if (!_xlTpl) {
+    _xlTpl = [];
+    for (const k of Object.keys(D.I18N)) {
+      if (!k.includes('{0}')) continue;
+      const rx = k.split(/(\{\d\})/).map(p => (/^\{\d\}$/.test(p) ? '([\\s\\S]*?)' : p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('');
+      _xlTpl.push([new RegExp('^' + rx + '$'), D.I18N[k]]);
+    }
+  }
+  let out = en;
+  for (const [rx, tgt] of _xlTpl) {
+    const m = rx.exec(en);
+    if (m) { out = tgt[i].replace(/\{(\d)\}/g, (a, d) => { const g = m[+d + 1]; return g == null ? a : (D.I18N[g] ? D.I18N[g][i] : g); }); break; }
+  }
+  if (_xlCache.size < 5000) _xlCache.set(key, out);
+  return out;
+}
+export const pick = (uk, en) => (S.lang === 'en' ? xl(en) : uk);
+export const tr = uk => (S.lang === 'en' ? xl(D.TR_EN[uk] ?? uk) : uk);
+export const qname = q => (S.lang === 'en' ? xl(D.QUALITY_EN[q] ?? q) : q);
+export const uiLang = () => S.xl || S.lang;
 
 // ------------------------------------------------------------- позиція ---
 const VAL = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
