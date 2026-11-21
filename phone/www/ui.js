@@ -98,6 +98,8 @@ function appStatsText(a) {
     `🤖 Games vs bots: ${n('bot.games')} — ${n('bot.win')} won, ${n('bot.draw')} drawn, ${n('bot.loss')} lost${top}; ⭐ ${n('bot.stars')} stars`));
   lines.push(pick(`👽 Режим прибульця: ${n('alien.on')}, 💬 повідомлень ботам: ${n('bot.chat')}, 🧠 пояснень ШІ-тренера: ${n('f.ai')}`,
     `👽 Alien mode: ${n('alien.on')}, 💬 messages to bots: ${n('bot.chat')}, 🧠 AI coach explanations: ${n('f.ai')}`));
+  lines.push(pick(`🧩 Задач розв'язано: ${n('pz.ok')} (з першої спроби), не вийшло з першої: ${n('pz.fail')}, відкрито задач: ${n('f.puzzle')}`,
+    `🧩 Puzzles solved: ${n('pz.ok')} (on the first try), missed on the first try: ${n('pz.fail')}, puzzles opened: ${n('f.puzzle')}`));   // 1.29.4
   return lines.join('\n');
 }
 const DEPTHS = [8, 10, 12, 14, 16, 18, 20, 22, 24];
