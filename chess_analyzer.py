@@ -20,6 +20,8 @@ import copy
 import datetime
 import glob
 import io
+import base64
+import hashlib
 import json
 import math
 import os
@@ -794,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.30.1"
+APP_VERSION = "1.31.0"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -806,6 +808,14 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.0", "2026-11-22 22:51", [
+        ("Акаунти: кнопка «👤 Увійти» — нік і пароль (пароль ми не зберігаємо). Без акаунта — 5 пробних аналізів партії.",
+         "Accounts: the «👤 Sign in» button — nickname and password (we never store the password). Without an account — 5 trial game analyses."),
+        ("До акаунта можна прив'язати chess.com і lichess (lichess — справжнім входом). Заявки «Партія тижня» — під ніком акаунта.",
+         "Link chess.com and lichess to your account (lichess with a real sign-in). Game of the week submissions use your account nickname."),
+        ("ШІ-тренер: 5 пояснень на день тепер на акаунт, а не на пристрій.",
+         "AI coach: the 5 explanations a day now belong to your account, not to the device."),
+    ]),
     ("1.30.1", "2026-11-22 21:35", [
         ("Твій хід у варіанті: поки дивишся на дошку, Stockfish думає глибше (+2, +4 … до +10) - оцінка ходу й шкала оновлюються наживо.",
          "Your move in a variation: while you look at the board, Stockfish keeps thinking deeper (+2, +4 … up to +10) - the move rating and eval bar update live."),
@@ -1655,6 +1665,40 @@ TR_EN.update({"📊  Анонімна статистика": "📊  Anonymous st
 # шаблони з {0}, {1}… (збирає ~/.chess_analyzer_android/i18n/extract.py). Чого немає - лишається англійською.
 LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português"), ("es", "Español")]
 I18N = {
+    '👤  Sign in': ('👤  Entrar', '👤  Iniciar sesión'),
+    '👤  Account': ('👤  Conta', '👤  Cuenta'),
+    'Nickname:': ('Apelido:', 'Apodo:'),
+    'Password (6+ characters):': ('Senha (6+ caracteres):', 'Contraseña (6+ caracteres):'),
+    'Code for this nickname:': ('Código para este apelido:', 'Código para este apodo:'),
+    'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered, remember it.': ('Apelido: 3–20 letras latinas, dígitos, _ ou -. Nunca guardamos sua senha, só uma impressão protegida — ela não pode ser recuperada, lembre-se dela.', 'Apodo: 3–20 letras latinas, dígitos, _ o -. Nunca guardamos tu contraseña, solo una huella protegida — no se puede recuperar, recuérdala.'),
+    'Sign in': ('Entrar', 'Iniciar sesión'),
+    'Create account': ('Criar conta', 'Crear cuenta'),
+    'Sign out': ('Sair', 'Cerrar sesión'),
+    'Connect': ('Conectar', 'Conectar'),
+    'Disconnect': ('Desconectar', 'Desconectar'),
+    'not connected': ('não conectado', 'no conectado'),
+    '🤖 AI coach: unlimited': ('🤖 Treinador IA: sem limite', '🤖 Entrenador IA: sin límite'),
+    '🤖 AI coach today: {0} of {1} left': ('🤖 Treinador IA hoje: restam {0} de {1}', '🤖 Entrenador IA hoy: quedan {0} de {1}'),
+    '🤖  Explain (AI) · sign in': ('🤖  Explicar (IA) · entre na conta', '🤖  Explicar (IA) · inicia sesión'),
+    '🤖 Explain (AI) · sign in': ('🤖 Explicar (IA) · entre na conta', '🤖 Explicar (IA) · inicia sesión'),
+    '🤖  Explain (AI)': ('🤖  Explicar (IA)', '🤖  Explicar (IA)'),
+    '🤖 Explain (AI)': ('🤖 Explicar (IA)', '🤖 Explicar (IA)'),
+    'The AI coach needs a free account: sign in or create one.': ('O treinador IA precisa de uma conta gratuita: entre ou crie uma.', 'El entrenador IA necesita una cuenta gratuita: inicia sesión o crea una.'),
+    'You have used {0} trial analyses. Sign in or create a free account to keep analyzing.': ('Você usou {0} análises de teste. Entre ou crie uma conta gratuita para continuar analisando.', 'Has usado {0} análisis de prueba. Inicia sesión o crea una cuenta gratuita para seguir analizando.'),
+    'Nickname: 3–20 Latin letters, digits, _ or -.': ('Apelido: 3–20 letras latinas, dígitos, _ ou -.', 'Apodo: 3–20 letras latinas, dígitos, _ o -.'),
+    'Password must be 6+ characters.': ('A senha deve ter 6+ caracteres.', 'La contraseña debe tener 6+ caracteres.'),
+    'This nickname is taken.': ('Este apelido já está em uso.', 'Este apodo ya está en uso.'),
+    'Wrong nickname or password.': ('Apelido ou senha incorretos.', 'Apodo o contraseña incorrectos.'),
+    'This account is banned.': ('Esta conta está bloqueada.', 'Esta cuenta está bloqueada.'),
+    'This nickname is reserved — the correct code is needed.': ('Este apelido é reservado — é preciso o código correto.', 'Este apodo está reservado — se necesita el código correcto.'),
+    'Session expired — sign in again.': ('Sessão expirada — entre novamente.', 'Sesión caducada — inicia sesión de nuevo.'),
+    'lichess did not answer. Try again.': ('O lichess não respondeu. Tente novamente.', 'lichess no respondió. Inténtalo de nuevo.'),
+    'Failed. Try later.': ('Falhou. Tente mais tarde.', 'Falló. Inténtalo más tarde.'),
+    'Please wait…': ('Aguarde…', 'Espera…'),
+    '✓ Done!': ('✓ Pronto!', '✓ ¡Listo!'),
+    '✓ chess.com saved.': ('✓ chess.com salvo.', '✓ chess.com guardado.'),
+    '✓ lichess connected.': ('✓ lichess conectado.', '✓ lichess conectado.'),
+    'Confirm sign-in in the browser (lichess)…': ('Confirme o acesso no navegador (lichess)…', 'Confirma el acceso en el navegador (lichess)…'),
     'Stockfish is thinking deeper': ('Stockfish está pensando mais fundo', 'Stockfish está pensando más a fondo'),
     'Clear': ('Limpar', 'Borrar'),
     'Tap: circle, swipe: arrow': ('Toque: círculo, deslize: seta', 'Toque: círculo, deslizar: flecha'),
@@ -3535,6 +3579,8 @@ def fetch_ai_coach(facts, lang, timeout=40, question=None, history=None, bot=Non
         d["question"], d["history"] = question, list(history or [])[-3:]
     if bot:                                  # 1.25.0: репліка бота-суперника (ім'я і характер шахіста)
         d["mode"], d["bot"] = "bot", bot
+    elif ACC["token"]:                       # 1.31.0: ліміт пояснень рахується на акаунт
+        d["token"] = ACC["token"]
     body = json.dumps(d).encode("utf-8")
     req = urllib.request.Request(AI_COACH_URL, data=body, method="POST",
                                  headers={"Content-Type": "application/json", "User-Agent": "ChessAnalyzer"})
@@ -3552,6 +3598,8 @@ def fetch_ai_coach(facts, lang, timeout=40, question=None, history=None, bot=Non
     text = (data.get("text") or "").strip()
     if not text:
         raise RuntimeError("empty")
+    if ACC["user"] is not None and isinstance(data.get("ai_left"), int):
+        ACC["user"]["ai_left"] = data["ai_left"]
     return text
 
 
@@ -4738,34 +4786,82 @@ def puzzle_result(d, pid, solved, now):
     puzzles_save(d)
 
 
-# ---- 1.28.1: ліміт ШІ-тренера - 5 пояснень/запитань на день на пристрої (безплатний ліміт Cloudflare малий) ----
+# ---- 1.28.1 / 1.31.0: ліміт ШІ-тренера - AI_DAILY на день НА АКАУНТ (рахує Worker, адмін - без ліміту) ----
 AI_DAILY = 5
-AI_QUOTA_PATH = os.path.expanduser("~/.chess_analyzer_ai.json")
-
-
-def _ai_quota():
-    today = datetime.date.today().isoformat()
-    try:
-        with open(AI_QUOTA_PATH, encoding="utf-8") as f:
-            d = json.load(f)
-        if d.get("day") == today:
-            return today, int(d.get("n", 0))
-    except Exception:  # noqa: BLE001
-        pass
-    return today, 0
 
 
 def ai_quota_left():
-    return max(0, AI_DAILY - _ai_quota()[1])
+    u = ACC["user"]
+    return int(u.get("ai_left", 0)) if u else 0
 
 
-def ai_quota_use():
-    day, n = _ai_quota()
+# ---- 1.31.0: акаунти (нік + пароль на нашому Worker). Пароль не зберігається - лише токен сесії. ----
+ACC_URL = AI_COACH_URL
+ACC_PATH = os.path.expanduser("~/.chess_analyzer_account.json")
+FREE_ANALYSES = 5          # аналізів партії без акаунта
+LICHESS_CLIENT = "chess-analyzer"
+GOTW_SAVE_DIR = os.path.join(os.path.expanduser("~"), "Desktop", "Партії тижня")
+ACC = {"token": "", "user": None, "free": 0}
+
+
+def acc_load():
     try:
-        with open(AI_QUOTA_PATH, "w", encoding="utf-8") as f:
-            json.dump({"day": day, "n": n + 1}, f)
+        with open(ACC_PATH, encoding="utf-8") as f:
+            d = json.load(f)
+        ACC["token"] = d.get("token") if re.fullmatch(r"[0-9a-f]{64}", d.get("token") or "") else ""
+        ACC["user"] = d.get("user") if ACC["token"] and isinstance(d.get("user"), dict) else None
+        ACC["free"] = int(d.get("free", 0))
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def acc_save():
+    try:
+        with open(ACC_PATH, "w", encoding="utf-8") as f:
+            json.dump(ACC, f)
     except OSError:
         pass
+
+
+def acc_http(path, body):
+    """POST JSON до Worker. Повертає (код, dict); без мережі - (0, {"error": "net"})."""
+    req = urllib.request.Request(ACC_URL + path, data=json.dumps(body).encode("utf-8"), method="POST",
+                                 headers={"Content-Type": "application/json", "User-Agent": "ChessAnalyzer"})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as r:
+            return r.status, json.loads(r.read().decode("utf-8") or "{}")
+    except urllib.error.HTTPError as e:
+        try:
+            return e.code, json.loads(e.read().decode("utf-8") or "{}")
+        except Exception:  # noqa: BLE001
+            return e.code, {"error": str(e.code)}
+    except Exception:  # noqa: BLE001
+        return 0, {"error": "net"}
+
+
+def acc_set(token, user):
+    ACC["token"], ACC["user"] = token or "", (user if token else None)
+    acc_save()
+
+
+def gotw_pgn_with_meta(g):
+    """PGN заявки з [SubmittedBy]/[SubmitComment] - як gotw.ps1 save."""
+    pgn = (g.get("pgn") or "").replace("\r\n", "\n")
+    extra = ""
+    if g.get("nick"):
+        extra += '[SubmittedBy "%s"]\n' % g["nick"].replace('"', "'")
+    if g.get("comment"):
+        extra += '[SubmitComment "%s"]\n' % g["comment"].replace('"', "'").replace("\n", " ")
+    pos = pgn.find("\n\n")
+    if extra and pos > 0:
+        pgn = pgn[:pos + 1] + extra + pgn[pos + 1:]
+    return pgn.rstrip() + "\n"
+
+
+def gotw_file_name(g):
+    name = "%s %s - %s (№%s).pgn" % ((g.get("at") or "")[:10], g.get("white") or "?", g.get("black") or "?", g.get("n"))
+    return re.sub(r'[\\/:*?"<>|]+', "_", name)
+
 
 
 def tele_count(key, n=1):
@@ -7087,6 +7183,7 @@ class App(tk.Tk):
         self.var = None            # власний варіант, який гравець розглядає на дошці
         self._var_token = 0
         self._var_busy = False
+        acc_load()                           # 1.31.0: акаунт (токен сесії)
         self.live = LiveEngine()
         self.botlive = LiveEngine()          # окремий процес Stockfish для ходів бота (1.24.0)
         self.deeplive = LiveEngine()         # 1.30.1: окремий процес - думає глибше над ходом гравця
@@ -7345,6 +7442,8 @@ class App(tk.Tk):
         # з'являється, коли на GitHub є новіша версія (check_update)
         self.upd_btn = RButton(top, text="", style="Accent.TButton", command=self.toggle_update)
         RButton(top, text="⚙  Налаштування", command=self.toggle_settings).pack(side="right")
+        self.acc_btn = RButton(top, text=self._acc_btn_text(), command=self.toggle_account)   # 1.31.0
+        self.acc_btn.pack(side="right", padx=(0, 8))
         RButton(top, text="✨  Що нового", command=self.toggle_changelog).pack(side="right", padx=(0, 8))
         self._build_donate(top)
         # 1.29.1: угорі, бо в рядку дій уже не вистачало місця для рядка стану
@@ -7562,6 +7661,7 @@ class App(tk.Tk):
         self._build_bot_ui()
         self._build_tele_box()
         self.after(3000, lambda: self.check_update(False))
+        self.after(1500, self._acc_refresh)
         self.after(2500, self._tele_start)
 
     def _build_settings_box(self):
@@ -7922,6 +8022,8 @@ class App(tk.Tk):
         if path.lower().endswith(".py"):
             messagebox.showerror(trd("Помилка", "Error"), tr("Це Python-скрипт, а не рушій. Оберіть .exe файл Stockfish."))
             return
+        if not self._acc_gate():             # 1.31.0: без акаунта - FREE_ANALYSES пробних аналізів
+            return
         self._save_config()
         self._clear_var()
         self.board.interactive = False
@@ -8208,7 +8310,11 @@ class App(tk.Tk):
                 b.pack_forget()
             return
         left = ai_quota_left()
-        if left > 0:
+        if not ACC["token"]:
+            b.configure(state="normal", text=pick("🤖  Пояснити (ШІ) · увійдіть в акаунт", "🤖  Explain (AI) · sign in"))
+        elif (ACC["user"] or {}).get("admin"):
+            b.configure(state="normal", text=pick("🤖  Пояснити (ШІ)", "🤖  Explain (AI)"))
+        elif left > 0:
             b.configure(state="normal", text=pick(f"🤖  Пояснити (ШІ) · ще {left} з {AI_DAILY} сьогодні",
                                                   f"🤖  Explain (AI) · {left} of {AI_DAILY} left today"))
         else:
@@ -8218,6 +8324,10 @@ class App(tk.Tk):
             b.pack(anchor="w", pady=(8, 0), after=self.coach)
 
     def _ai_click(self):
+        if not ACC["token"]:
+            self.toggle_account(pick("ШІ-тренер працює з безплатним акаунтом: увійдіть або створіть його.",
+                                     "The AI coach needs a free account: sign in or create one."))
+            return
         key, ai = self._ai_cur, self._ai_cur_args
         if key is None or not ai or ai_quota_left() <= 0 or key in self._ai_busy:
             return
@@ -8424,6 +8534,10 @@ class App(tk.Tk):
         ctx, key = self._ask_ctx, self._ask_key()
         if not q or not ctx or not self.ai_var.get():
             return
+        if not ACC["token"]:
+            self.toggle_account(pick("ШІ-тренер працює з безплатним акаунтом: увійдіть або створіть його.",
+                                     "The AI coach needs a free account: sign in or create one."))
+            return
         self.ask_entry.delete(0, "end")
         thread = self._ask_threads.setdefault(key, [])
         history = [{"q": it["q"], "a": it["a"]} for it in thread if it.get("a")]
@@ -8463,14 +8577,11 @@ class App(tk.Tk):
             if key[0] == "ask":
                 item, ans = text
                 item["a"], item["err"] = ans, (None if ans else (err or "ai"))
-                if ans:
-                    ai_quota_use()
                 self._coach_render(*self._coach_last)
                 if self.ai_btn.winfo_manager():
                     self._ai_btn_show(True)          # оновити «ще N»
                 continue
             if text:
-                ai_quota_use()
                 self._ai_cache[key] = text
                 self._ai_err = None
             else:
@@ -8615,6 +8726,8 @@ class App(tk.Tk):
 
     def _apply_lang(self):
         """Перемальовує статичні написи, таблиці та поточні тексти мовою STATE['lang']."""
+        if hasattr(self, "acc_btn"):
+            self.acc_btn.configure(text=self._acc_btn_text())
         self.title(tr("Аналізатор шахових партій"))
         if self._ask_hint_on:
             self._ask_hint_on = False
@@ -9382,7 +9495,8 @@ class App(tk.Tk):
             self.gotw_nick_lbl = ttk.Label(body, style="Panel.TLabel")
             self.gotw_nick_lbl.pack(anchor="w")
             self.gotw_nick = tk.StringVar()
-            ttk.Entry(body, textvariable=self.gotw_nick, width=40).pack(anchor="w", fill="x", pady=(2, 8))
+            self.gotw_nick_entry = ttk.Entry(body, textvariable=self.gotw_nick, width=40)
+            self.gotw_nick_entry.pack(anchor="w", fill="x", pady=(2, 8))
             self.gotw_com_lbl = ttk.Label(body, style="Panel.TLabel")
             self.gotw_com_lbl.pack(anchor="w")
             self.gotw_text = tk.Text(body, width=52, height=4, wrap="word", bg="#2b2926", fg=FG, insertbackground=FG,
@@ -9409,7 +9523,481 @@ class App(tk.Tk):
         self.gotw_com_lbl.configure(text=pick("Чим цікава партія (необов'язково):", "What makes it interesting (optional):"))
         self.gotw_status.configure(text="")
         self.gotw_send_btn.configure(state="normal")
+        if ACC["user"]:                      # 1.31.0: нік - з акаунта
+            self.gotw_nick.set(ACC["user"]["nick"])
+            self.gotw_nick_entry.configure(state="disabled")
+        else:
+            self.gotw_nick_entry.configure(state="normal")
         self.gotw_box.show()
+
+    # ---------- 1.31.0: акаунт (вхід, реєстрація, chess.com / lichess, адмін) ----------
+    def _bg(self, fn, done):
+        """fn() у потоці, done(результат) - у головному потоці."""
+        out = queue.Queue()
+        threading.Thread(target=lambda: out.put(fn()), daemon=True).start()
+
+        def poll():
+            try:
+                r = out.get_nowait()
+            except queue.Empty:
+                self.after(150, poll)
+                return
+            done(r)
+        poll()
+
+    def _acc_btn_text(self):
+        u = ACC["user"]
+        return f"👤  {u['nick']}" if u else pick("👤  Увійти", "👤  Sign in")
+
+    def _acc_changed(self):
+        if hasattr(self, "acc_btn"):
+            self.acc_btn.configure(text=self._acc_btn_text())
+        u = ACC["user"]
+        if u and u.get("chesscom") and not self._cc_user:
+            self._cc_user = u["chesscom"]
+            if hasattr(self, "cc_user_var"):
+                self.cc_user_var.set(self._cc_user)
+        if getattr(self, "ai_btn", None) is not None and self.ai_btn.winfo_manager():
+            self._ai_btn_show(True)
+        if hasattr(self, "acc_box") and self.acc_box.is_open:
+            self._acc_render()
+
+    def _acc_refresh(self):
+        """При запуску: чи токен ще дійсний (бан, вихід на іншому пристрої), свіжий ліміт ШІ."""
+        tok = ACC["token"]
+        if not tok:
+            return
+
+        def done(r):
+            code, d = r
+            if ACC["token"] != tok:
+                return
+            if code == 200 and d.get("user"):
+                ACC["user"] = d["user"]
+                acc_save()
+            elif code in (401, 403):
+                acc_set("", None)
+            self._acc_changed()
+        self._bg(lambda: acc_http("/acc/me", {"token": tok}), done)
+
+    def toggle_account(self, reason=None):
+        if not hasattr(self, "acc_box"):
+            self._build_account_box()
+        if self.acc_box.is_open and reason is None:
+            self.acc_box.hide()
+            return
+        self._acc_reason = reason
+        self.acc_status.configure(text="")
+        self._acc_render()
+        self.acc_box.show()
+
+    def _build_account_box(self):
+        self.acc_box = OverlayBox(self, "👤  Акаунт")
+        body = ttk.Frame(self.acc_box.box, style="Panel.TFrame", padding=(18, 12))
+        body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+        self.acc_reason_lbl = ttk.Label(body, style="Panel.TLabel", wraplength=440, justify="left")
+        # --- не увійшли
+        f = self.acc_out = ttk.Frame(body, style="Panel.TFrame")
+        self.acc_nick_lbl = ttk.Label(f, style="Panel.TLabel")
+        self.acc_nick_lbl.pack(anchor="w")
+        self.acc_nick = tk.StringVar()
+        ttk.Entry(f, textvariable=self.acc_nick, width=36).pack(anchor="w", fill="x", pady=(2, 8))
+        self.acc_pass_lbl = ttk.Label(f, style="Panel.TLabel")
+        self.acc_pass_lbl.pack(anchor="w")
+        self.acc_pass = tk.StringVar()
+        pe = ttk.Entry(f, textvariable=self.acc_pass, width=36, show="•")
+        pe.pack(anchor="w", fill="x", pady=(2, 8))
+        pe.bind("<Return>", lambda e: self._acc_auth("login"))
+        self.acc_code_row = ttk.Frame(f, style="Panel.TFrame")      # лише для зарезервованого ніка (адмін)
+        self.acc_code_lbl = ttk.Label(self.acc_code_row, style="Panel.TLabel")
+        self.acc_code_lbl.pack(anchor="w")
+        self.acc_code = tk.StringVar()
+        ttk.Entry(self.acc_code_row, textvariable=self.acc_code, width=36).pack(anchor="w", fill="x", pady=(2, 8))
+        self.acc_hint = ttk.Label(f, style="PanelMuted.TLabel", wraplength=440, justify="left")
+        self.acc_hint.pack(anchor="w", pady=(0, 8))
+        row = ttk.Frame(f, style="Panel.TFrame")
+        row.pack(fill="x")
+        self.acc_login_btn = RButton(row, text="Увійти", style="Accent.TButton", command=lambda: self._acc_auth("login"))
+        self.acc_login_btn.pack(side="right")
+        self.acc_reg_btn = RButton(row, text="Створити акаунт", command=lambda: self._acc_auth("register"))
+        self.acc_reg_btn.pack(side="right", padx=(0, 8))
+        # --- увійшли
+        f = self.acc_in = ttk.Frame(body, style="Panel.TFrame")
+        self.acc_who = ttk.Label(f, style="Panel.TLabel", font=fsemi(13))
+        self.acc_who.pack(anchor="w")
+        self.acc_ai = ttk.Label(f, style="PanelMuted.TLabel")
+        self.acc_ai.pack(anchor="w", pady=(2, 10))
+        r1 = ttk.Frame(f, style="Panel.TFrame")
+        r1.pack(fill="x", pady=(0, 6))
+        ttk.Label(r1, text="chess.com:", style="Panel.TLabel", width=10).pack(side="left")
+        self.acc_cc = tk.StringVar()
+        ttk.Entry(r1, textvariable=self.acc_cc, width=22).pack(side="left", padx=(0, 8))
+        self.acc_cc_btn = RButton(r1, text="Зберегти", kind="small", command=self._acc_save_cc)
+        self.acc_cc_btn.pack(side="left")
+        r2 = ttk.Frame(f, style="Panel.TFrame")
+        r2.pack(fill="x", pady=(0, 6))
+        ttk.Label(r2, text="lichess:", style="Panel.TLabel", width=10).pack(side="left")
+        self.acc_li = ttk.Label(r2, style="Panel.TLabel", width=22)
+        self.acc_li.pack(side="left", padx=(0, 8))
+        self.acc_li_btn = RButton(r2, text="Підключити", kind="small", command=self._acc_lichess)
+        self.acc_li_btn.pack(side="left")
+        self.acc_admin = ttk.Frame(f, style="Panel.TFrame")           # лише адмін
+        r3 = ttk.Frame(self.acc_admin, style="Panel.TFrame")
+        r3.pack(fill="x", pady=(8, 6))
+        self.acc_adm_gotw = RButton(r3, text="🏆  Заявки", command=lambda: self.toggle_admin("gotw"))
+        self.acc_adm_gotw.pack(side="left")
+        self.acc_adm_bugs = RButton(r3, text="🐞  Звіти", command=lambda: self.toggle_admin("bugs"))
+        self.acc_adm_bugs.pack(side="left", padx=(8, 0))
+        r4 = ttk.Frame(self.acc_admin, style="Panel.TFrame")
+        r4.pack(fill="x")
+        self.acc_ban_nick = tk.StringVar()
+        ttk.Entry(r4, textvariable=self.acc_ban_nick, width=20).pack(side="left", padx=(0, 8))
+        self.acc_ban_btn = RButton(r4, text="⛔ Бан", kind="small", command=lambda: self._acc_ban(True))
+        self.acc_ban_btn.pack(side="left")
+        self.acc_unban_btn = RButton(r4, text="Розбан", kind="small", command=lambda: self._acc_ban(False))
+        self.acc_unban_btn.pack(side="left", padx=(6, 0))
+        self.acc_logout_btn = RButton(f, text="Вийти", kind="small", command=self._acc_logout)
+        self.acc_logout_btn.pack(anchor="e", pady=(12, 0), side="bottom")
+        self.acc_status = ttk.Label(body, style="PanelMuted.TLabel", wraplength=440, justify="left")
+        self.acc_status.pack(side="bottom", anchor="w", pady=(8, 0))
+
+    def _acc_render(self):
+        u = ACC["user"]
+        self.acc_box.title.configure(text=pick("👤  Акаунт", "👤  Account"))
+        reason = getattr(self, "_acc_reason", None)
+        self.acc_reason_lbl.pack_forget()
+        self.acc_out.pack_forget()
+        self.acc_in.pack_forget()
+        if reason and not u:
+            self.acc_reason_lbl.configure(text=reason)
+            self.acc_reason_lbl.pack(anchor="w", pady=(0, 10), before=self.acc_status)
+        if not u:
+            self.acc_nick_lbl.configure(text=pick("Нік:", "Nickname:"))
+            self.acc_pass_lbl.configure(text=pick("Пароль (від 6 символів):", "Password (6+ characters):"))
+            self.acc_code_lbl.configure(text=pick("Код для цього ніка:", "Code for this nickname:"))
+            self.acc_hint.configure(text=pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, "
+                                              "лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
+                                              "Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, "
+                                              "only a protected fingerprint — it cannot be recovered, remember it."))
+            self.acc_login_btn.configure(text=pick("Увійти", "Sign in"))
+            self.acc_reg_btn.configure(text=pick("Створити акаунт", "Create account"))
+            self.acc_out.pack(fill="x", before=self.acc_status)
+            return
+        self.acc_who.configure(text=f"👤  {u['nick']}" + (pick("  ·  адмін", "  ·  admin") if u.get("admin") else ""))
+        left = u.get("ai_left", 0)
+        self.acc_ai.configure(text=pick("🤖 ШІ-тренер: без ліміту", "🤖 AI coach: unlimited") if u.get("admin") else
+                              pick(f"🤖 ШІ-тренер сьогодні: ще {left} з {u.get('ai_daily', AI_DAILY)}",
+                                   f"🤖 AI coach today: {left} of {u.get('ai_daily', AI_DAILY)} left"))
+        self.acc_cc.set(u.get("chesscom") or "")
+        self.acc_cc_btn.configure(text=pick("Зберегти", "Save"))
+        self.acc_li.configure(text=u.get("lichess") or pick("не підключено", "not connected"))
+        self.acc_li_btn.configure(text=pick("Відключити", "Disconnect") if u.get("lichess") else pick("Підключити", "Connect"))
+        self.acc_adm_gotw.configure(text=pick("🏆  Заявки (адмін)", "🏆  Submissions (admin)"))
+        self.acc_adm_bugs.configure(text=pick("🐞  Звіти про помилки", "🐞  Bug reports"))
+        self.acc_ban_btn.configure(text=pick("⛔ Бан", "⛔ Ban"))
+        self.acc_unban_btn.configure(text=pick("Розбан", "Unban"))
+        if u.get("admin"):
+            self.acc_admin.pack(fill="x", before=self.acc_logout_btn)
+        else:
+            self.acc_admin.pack_forget()
+        self.acc_logout_btn.configure(text=pick("Вийти", "Sign out"))
+        self.acc_in.pack(fill="x", before=self.acc_status)
+
+    def _acc_err(self, d):
+        e = d.get("error")
+        return {
+            "net": pick("Немає з'єднання з інтернетом.", "No internet connection."),
+            "nick": pick("Нік: 3–20 латинських літер, цифр, _ або -.", "Nickname: 3–20 Latin letters, digits, _ or -."),
+            "pass": pick("Пароль — від 6 символів.", "Password must be 6+ characters."),
+            "taken": pick("Цей нік уже зайнятий.", "This nickname is taken."),
+            "wrong": pick("Неправильний нік або пароль.", "Wrong nickname or password."),
+            "banned": pick("Цей акаунт заблоковано.", "This account is banned."),
+            "code": pick("Цей нік зарезервовано — потрібен правильний код.", "This nickname is reserved — the correct code is needed."),
+            "rate": pick("Забагато спроб. Спробуйте за хвилину.", "Too many attempts. Try again in a minute."),
+            "auth": pick("Сесія закінчилась — увійдіть знову.", "Session expired — sign in again."),
+            "lichess": pick("lichess не відповів. Спробуйте ще раз.", "lichess did not answer. Try again."),
+            "not found": pick("Не знайдено.", "Not found."),
+            "admin": pick("Адміна заблокувати не можна.", "An admin cannot be banned."),
+        }.get(e, pick("Не вдалося. Спробуйте пізніше.", "Failed. Try later."))
+
+    def _acc_auth(self, kind):
+        body = {"nick": self.acc_nick.get().strip(), "pass": self.acc_pass.get()}
+        if self.acc_code_row.winfo_manager() and self.acc_code.get().strip():
+            body["code"] = self.acc_code.get().strip()
+        self.acc_status.configure(text=pick("Зачекайте…", "Please wait…"))
+
+        def done(r):
+            code, d = r
+            if code == 200 and d.get("token"):
+                self.acc_pass.set("")
+                self.acc_code.set("")
+                self.acc_code_row.pack_forget()
+                acc_set(d["token"], d["user"])
+                tele_count("f.login" if kind == "login" else "f.register")
+                self.acc_status.configure(text=pick("✓ Готово!", "✓ Done!"))
+                self._acc_changed()
+                if getattr(self, "_acc_reason", None):
+                    self.after(900, self.acc_box.hide)
+                return
+            if d.get("error") == "code" and not self.acc_code_row.winfo_manager():
+                self.acc_code_row.pack(fill="x", before=self.acc_hint)
+            self.acc_status.configure(text=self._acc_err(d))
+        self._bg(lambda: acc_http("/acc/" + kind, body), done)
+
+    def _acc_logout(self):
+        tok = ACC["token"]
+        acc_set("", None)
+        self._bg(lambda: acc_http("/acc/logout", {"token": tok}), lambda r: None)
+        self._acc_changed()
+
+    def _acc_call(self, path, body, ok):
+        """Запит з токеном; 401 - вихід. ok(d) - при успіху."""
+        body = dict(body, token=ACC["token"])
+        self.acc_status.configure(text=pick("Зачекайте…", "Please wait…"))
+
+        def done(r):
+            code, d = r
+            if code == 200:
+                self.acc_status.configure(text="")
+                ok(d)
+                return
+            if code == 401:
+                acc_set("", None)
+                self._acc_changed()
+            self.acc_status.configure(text=self._acc_err(d))
+        self._bg(lambda: acc_http(path, body), done)
+
+    def _acc_take_user(self, d):
+        if d.get("user"):
+            ACC["user"] = d["user"]
+            acc_save()
+            self._acc_changed()
+
+    def _acc_save_cc(self):
+        nick = self.acc_cc.get().strip()
+
+        def ok(d):
+            self._acc_take_user(d)
+            if nick:
+                self._cc_user = nick
+                if hasattr(self, "cc_user_var"):
+                    self.cc_user_var.set(nick)
+            self.acc_status.configure(text=pick("✓ chess.com збережено.", "✓ chess.com saved."))
+        self._acc_call("/acc/chesscom", {"chesscom": nick}, ok)
+
+    def _acc_lichess(self):
+        u = ACC["user"] or {}
+        if u.get("lichess"):
+            self._acc_call("/acc/lichess", {"unlink": True}, self._acc_take_user)
+            return
+        # OAuth PKCE: браузер -> lichess -> наш Worker зберігає код; програма забирає його за state
+        state = os.urandom(16).hex()
+        verifier = base64.urlsafe_b64encode(os.urandom(32)).rstrip(b"=").decode()
+        challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
+        webbrowser.open("https://lichess.org/oauth?" + urllib.parse.urlencode({
+            "response_type": "code", "client_id": LICHESS_CLIENT, "redirect_uri": ACC_URL + "/acc/lichess/cb",
+            "code_challenge_method": "S256", "code_challenge": challenge, "state": state}))
+        self.acc_status.configure(text=pick("Підтвердіть вхід у браузері (lichess)…", "Confirm sign-in in the browser (lichess)…"))
+        t0, tok = time.time(), ACC["token"]
+
+        def step():
+            if ACC["token"] != tok or time.time() - t0 > 300:
+                return
+
+            def done(r):
+                code, d = r
+                if code == 202 or (code == 0 and time.time() - t0 < 300):
+                    self.after(2000, step)
+                    return
+                if code == 200:
+                    self._acc_take_user(d)
+                    self.acc_status.configure(text=pick("✓ lichess підключено.", "✓ lichess connected."))
+                else:
+                    self.acc_status.configure(text=self._acc_err(d))
+            self._bg(lambda: acc_http("/acc/lichess", {"token": tok, "state": state, "verifier": verifier}), done)
+        self.after(3000, step)
+
+    def _acc_ban(self, on):
+        nick = self.acc_ban_nick.get().strip()
+        if not nick:
+            return
+        self._acc_call("/admin/ban", {"nick": nick, "on": on}, lambda d: self.acc_status.configure(
+            text=(pick(f"⛔ {nick} заблоковано.", f"⛔ {nick} banned.") if on else pick(f"✓ {nick} розблоковано.", f"✓ {nick} unbanned."))))
+
+    def _acc_gate(self):
+        """Перед аналізом партії: без акаунта - FREE_ANALYSES пробних. True - можна аналізувати."""
+        if ACC["token"]:
+            return True
+        if ACC["free"] >= FREE_ANALYSES:
+            self.toggle_account(pick(f"Ви використали {FREE_ANALYSES} пробних аналізів. Увійдіть або створіть безплатний "
+                                     "акаунт, щоб аналізувати далі.",
+                                     f"You have used {FREE_ANALYSES} trial analyses. Sign in or create a free account "
+                                     "to keep analyzing."))
+            return False
+        ACC["free"] += 1
+        acc_save()
+        return True
+
+    # ---------- адмін: заявки «Партія тижня» і звіти про помилки
+    def toggle_admin(self, mode):
+        if not (ACC["user"] or {}).get("admin"):
+            return
+        if not hasattr(self, "adm_box"):
+            self._build_admin_box()
+        self._adm_mode = mode
+        self.adm_box.show()
+        self._adm_load()
+
+    def _build_admin_box(self):
+        self.adm_box = OverlayBox(self, "🛡  Адмін")
+        body = ttk.Frame(self.adm_box.box, style="Panel.TFrame", padding=(18, 12))
+        body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+        tv = ttk.Treeview(body, columns=("n", "a", "b", "c", "d"), show="headings", selectmode="browse", height=13)
+        for c, w in (("n", 50), ("a", 150), ("b", 260), ("c", 170), ("d", 110)):
+            tv.column(c, width=w, minwidth=40, anchor="w", stretch=c == "b")
+        tv.pack(fill="both", expand=True)
+        tv.bind("<<TreeviewSelect>>", lambda e: self._adm_show())
+        tv.bind("<Double-Button-1>", lambda e: self._adm_open())
+        self.adm_tree = tv
+        self.adm_text = tk.Text(body, width=90, height=6, wrap="word", bg="#2b2926", fg=FG, bd=0, relief="flat",
+                                padx=8, pady=6, font=("Segoe UI", 10), highlightthickness=1, highlightbackground=BORDER)
+        self.adm_text.pack(fill="x", pady=(8, 0))
+        bot = ttk.Frame(body, style="Panel.TFrame")
+        bot.pack(fill="x", pady=(10, 0))
+        self.adm_status = ttk.Label(bot, style="PanelMuted.TLabel")
+        self.adm_status.pack(side="left")
+        self.adm_del = RButton(bot, text="🗑", kind="small", command=self._adm_delete)
+        self.adm_del.pack(side="right")
+        self.adm_choose = RButton(bot, text="✓", style="Accent.TButton", command=self._adm_choose)
+        self.adm_choose.pack(side="right", padx=(0, 8))
+        self.adm_open_btn = RButton(bot, text="♟", kind="small", command=self._adm_open)
+        self.adm_open_btn.pack(side="right", padx=(0, 8))
+        self._adm_rows = {}
+
+    def _adm_load(self):
+        gotw = self._adm_mode == "gotw"
+        self.adm_box.title.configure(text=pick("🛡  Заявки «Партія тижня»", "🛡  Game of the week submissions") if gotw
+                                     else pick("🛡  Звіти про помилки", "🛡  Bug reports"))
+        heads = (("№", pick("Від", "From"), pick("Партія", "Game"), pick("Точність · ❤", "Accuracy · ❤"), pick("Дата", "Date"))
+                 if gotw else ("№", pick("Платформа", "Platform"), pick("Текст", "Text"), pick("Контакт", "Contact"), pick("Дата", "Date")))
+        for c, h in zip(("n", "a", "b", "c", "d"), heads):
+            self.adm_tree.heading(c, text=h)
+        self.adm_open_btn.configure(text=pick("♟ Відкрити", "♟ Open"))
+        self.adm_choose.configure(text=pick("✓ Вибрати", "✓ Choose"))
+        self.adm_del.configure(text=pick("🗑 Видалити", "🗑 Delete"))
+        for b in (self.adm_choose, self.adm_del):
+            if gotw and not b.winfo_manager():
+                b.pack(side="right", padx=(0, 8), before=self.adm_open_btn)
+            elif not gotw:
+                b.pack_forget()
+        self.adm_tree.delete(*self.adm_tree.get_children())
+        self.adm_text.delete("1.0", "end")
+        self.adm_status.configure(text=pick("Завантаження…", "Loading…"))
+        mode = self._adm_mode
+
+        def done(r):
+            code, d = r
+            if mode != self._adm_mode:
+                return
+            if code != 200:
+                self.adm_status.configure(text=self._acc_err(d))
+                return
+            self._adm_rows = {}
+            for g in d.get("games" if mode == "gotw" else "bugs") or []:
+                iid = str(g["n"])
+                self._adm_rows[iid] = g
+                if mode == "gotw":
+                    acc = "%s / %s" % tuple("–" if g.get(k) is None else f"{g[k]:.1f}" for k in ("white_acc", "black_acc"))
+                    vals = (g["n"], ("✓ " if g.get("chosen") else "") + (g.get("nick") or "—"),
+                            f"{g.get('white') or '?'} – {g.get('black') or '?'}  {g.get('result') or ''}",
+                            f"{acc} · ❤{g.get('likes', 0)}", (g.get("at") or "")[:10])
+                else:
+                    vals = (g["n"], f"{g.get('platform')} {g.get('version')} {g.get('country') or ''}",
+                            (g.get("text") or "").replace("\n", " ")[:80], g.get("contact") or "", (g.get("at") or "")[:10])
+                self.adm_tree.insert("", "end", iid=iid, values=vals)
+            self.adm_status.configure(text=pick(f"Усього: {len(self._adm_rows)}", f"Total: {len(self._adm_rows)}"))
+        self._bg(lambda: acc_http("/admin/gotw" if mode == "gotw" else "/admin/bugs", {"token": ACC["token"]}), done)
+
+    def _adm_sel(self):
+        sel = self.adm_tree.selection()
+        return self._adm_rows.get(sel[0]) if sel else None
+
+    def _adm_show(self):
+        g = self._adm_sel()
+        self.adm_text.delete("1.0", "end")
+        if not g:
+            return
+        if self._adm_mode == "gotw":
+            self.adm_text.insert("end", g.get("comment") or pick("(без коментаря)", "(no comment)"))
+        else:
+            self.adm_text.insert("end", (g.get("text") or "") + (f"\n\n{g['contact']}" if g.get("contact") else "")
+                                 + (pick("\n\n(є PGN — «Відкрити»)", "\n\n(has PGN — «Open»)") if g.get("pgn_len") else ""))
+
+    def _adm_fetch_pgn(self, g, then):
+        path = "/admin/gotw/pgn" if self._adm_mode == "gotw" else "/admin/bugs/pgn"
+
+        def done(r):
+            code, d = r
+            if code != 200:
+                self.adm_status.configure(text=self._acc_err(d))
+                return
+            then(d.get("game") or {"pgn": d.get("pgn") or ""})
+        self._bg(lambda: acc_http(path, {"token": ACC["token"], "n": g["n"]}), done)
+
+    def _adm_open(self):
+        g = self._adm_sel()
+        if not g:
+            return
+
+        def then(full):
+            if not (full.get("pgn") or "").strip():
+                self.adm_status.configure(text=pick("PGN немає.", "No PGN."))
+                return
+            self.adm_box.hide()
+            self._load_pgn(full["pgn"])
+        self._adm_fetch_pgn(g, then)
+
+    def _adm_choose(self):
+        g = self._adm_sel()
+        if not g or self._adm_mode != "gotw":
+            return
+
+        def then(full):
+            try:
+                os.makedirs(GOTW_SAVE_DIR, exist_ok=True)
+                path = os.path.join(GOTW_SAVE_DIR, gotw_file_name(full))
+                with open(path, "w", encoding="utf-8", newline="\n") as f:
+                    f.write(gotw_pgn_with_meta(full))
+            except OSError as e:
+                self.adm_status.configure(text=str(e))
+                return
+
+            def ok(r):
+                g["chosen"] = 1
+                self.adm_tree.set(str(g["n"]), "a", "✓ " + (g.get("nick") or "—"))
+                self.adm_status.configure(text=pick(f"✓ Збережено в «Партії тижня»: {os.path.basename(path)}",
+                                                    f"✓ Saved to «Партії тижня»: {os.path.basename(path)}"))
+            self._bg(lambda: acc_http("/admin/gotw/choose", {"token": ACC["token"], "n": g["n"]}),
+                     lambda r: ok(r) if r[0] == 200 else self.adm_status.configure(text=self._acc_err(r[1])))
+        self._adm_fetch_pgn(g, then)
+
+    def _adm_delete(self):
+        g = self._adm_sel()
+        if not g or self._adm_mode != "gotw":
+            return
+        if not messagebox.askyesno(trd("Видалити", "Delete"), pick(f"Видалити заявку №{g['n']} назавжди?",
+                                                                    f"Delete submission #{g['n']} forever?")):
+            return
+
+        def done(r):
+            if r[0] == 200:
+                self.adm_tree.delete(str(g["n"]))
+                self._adm_rows.pop(str(g["n"]), None)
+                self.adm_text.delete("1.0", "end")
+                self.adm_status.configure(text=pick("Видалено.", "Deleted."))
+            else:
+                self.adm_status.configure(text=self._acc_err(r[1]))
+        self._bg(lambda: acc_http("/admin/gotw/delete", {"token": ACC["token"], "n": g["n"]}), done)
 
     # ---------- 1.29.1: вкладка «🏆 Партії тижня» (заявки гравців + лайки) ----------
     def toggle_gotw_list(self):
@@ -9588,6 +10176,8 @@ class App(tk.Tk):
                    "white": s.get("white"), "black": s.get("black"), "result": s.get("result"),
                    "white_acc": s.get("white_acc"), "black_acc": s.get("black_acc"),
                    "p": "pc", "v": APP_VERSION, "lang": STATE["lang"], "public": True}
+        if ACC["token"]:
+            payload["token"] = ACC["token"]
         self.gotw_send_btn.configure(state="disabled")
         self.gotw_status.configure(text=pick("Надсилаю…", "Sending…"))
         out = queue.Queue()

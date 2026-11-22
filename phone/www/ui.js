@@ -481,12 +481,203 @@ function showCoach(lines, ai = null) {
   renderCoach(lines, null, false, !!(ai && cfg.ai));
 }
 
-// 1.28.1: ліміт ШІ-тренера - 5 пояснень/запитань на день на пристрої (як у ПК)
+// 1.28.1 / 1.31.0: ліміт ШІ-тренера - AI_DAILY на день НА АКАУНТ (рахує Worker, адмін - без ліміту)
 const AI_DAILY = 5;
-function aiQuota() { const d = store.get('ca.aiq', null), today = new Date().toLocaleDateString('sv'); return d && d.day === today ? [today, d.n || 0] : [today, 0]; }
-const aiQuotaLeft = () => Math.max(0, AI_DAILY - aiQuota()[1]);
-function aiQuotaUse() { const [day, n] = aiQuota(); store.set('ca.aiq', { day, n: n + 1 }); }
+const aiQuotaLeft = () => ACC.user ? (ACC.user.admin ? 99 : ACC.user.ai_left || 0) : 0;
+
+// ---------- 1.31.0: акаунти (нік + пароль на нашому Worker; пароль не зберігається - лише токен сесії)
+const FREE_ANALYSES = 5, LICHESS_CLIENT = 'chess-analyzer';
+const ACC = Object.assign({ token: '', user: null, free: 0 }, store.get('ca.acc', {}));
+globalThis.caAcc = ACC;                          // logic.js fetchAiCoach бере звідси токен і залишок ШІ
+function accSave() { store.set('ca.acc', ACC); }
+function accSet(token, user) { ACC.token = token || ''; ACC.user = token ? user : null; accSave(); accChanged(); }
+async function accHttp(path, body) {
+  try {
+    const r = await fetch(D.AI_COACH_URL + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    let d = {};
+    try { d = await r.json(); } catch (_) { /* */ }
+    return { code: r.status, d };
+  } catch (_) { return { code: 0, d: { error: 'net' } }; }
+}
+function accChanged() {
+  const b = $('bAcc');
+  if (b) b.classList.toggle('on', !!ACC.user);
+  if (ACC.user && ACC.user.chesscom && !CC.user) { CC.user = ACC.user.chesscom; store.set('ca.ccUser', CC.user); }
+  if (A.coachLast && A.coachLast[0]) renderCoach(...A.coachLast, true);
+  if (A.boxKind === 'acc') openBox('acc');
+}
+async function accRefresh() {
+  const tok = ACC.token;
+  if (!tok) return;
+  const { code, d } = await accHttp('/acc/me', { token: tok });
+  if (ACC.token !== tok) return;
+  if (code === 200 && d.user) { ACC.user = d.user; accSave(); accChanged(); } else if (code === 401 || code === 403) accSet('', null);
+}
+function accErr(d) {
+  return ({
+    net: pick("Немає з'єднання з інтернетом.", 'No internet connection.'),
+    nick: pick('Нік: 3–20 латинських літер, цифр, _ або -.', 'Nickname: 3–20 Latin letters, digits, _ or -.'),
+    pass: pick('Пароль — від 6 символів.', 'Password must be 6+ characters.'),
+    taken: pick('Цей нік уже зайнятий.', 'This nickname is taken.'),
+    wrong: pick('Неправильний нік або пароль.', 'Wrong nickname or password.'),
+    banned: pick('Цей акаунт заблоковано.', 'This account is banned.'),
+    code: pick('Цей нік зарезервовано — потрібен правильний код.', 'This nickname is reserved — the correct code is needed.'),
+    rate: pick('Забагато спроб. Спробуйте за хвилину.', 'Too many attempts. Try again in a minute.'),
+    auth: pick('Сесія закінчилась — увійдіть знову.', 'Session expired — sign in again.'),
+    lichess: pick('lichess не відповів. Спробуйте ще раз.', 'lichess did not answer. Try again.'),
+    admin: pick('Адміна заблокувати не можна.', 'An admin cannot be banned.'),
+  })[d.error] || pick('Не вдалося. Спробуйте пізніше.', 'Failed. Try later.');
+}
+function accStatus(t) { const e = $('acStatus'); if (e) e.textContent = t; }
+function accOpen(reason = null) { A.accReason = reason; openBox('acc'); }
+function accBody() {
+  const u = ACC.user;
+  if (!u) {
+    return (A.accReason ? `<div class="hint" style="color:inherit;font-weight:600">${esc(A.accReason)}</div>` : '')
+      + `<label class="f">${esc(pick('Нік:', 'Nickname:'))}</label><input id="acNick" type="text" maxlength="20" autocapitalize="off" autocomplete="username" spellcheck="false">`
+      + `<label class="f">${esc(pick('Пароль (від 6 символів):', 'Password (6+ characters):'))}</label><input id="acPass" type="password" maxlength="200" autocomplete="current-password">`
+      + `<div id="acCodeRow" hidden><label class="f">${esc(pick('Код для цього ніка:', 'Code for this nickname:'))}</label><input id="acCode" type="text" maxlength="40" autocapitalize="characters" autocomplete="off"></div>`
+      + `<div class="hint">${esc(pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
+        'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered, remember it.'))}</div>`
+      + `<div class="hint" id="acStatus"></div>`
+      + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`;
+  }
+  const daily = u.ai_daily || AI_DAILY;
+  return `<div style="font-weight:700;font-size:1.15em">👤 ${esc(u.nick)}${u.admin ? esc(pick(' · адмін', ' · admin')) : ''}</div>`
+    + `<div class="hint">${esc(u.admin ? pick('🤖 ШІ-тренер: без ліміту', '🤖 AI coach: unlimited')
+      : pick(`🤖 ШІ-тренер сьогодні: ще ${u.ai_left} з ${daily}`, `🤖 AI coach today: ${u.ai_left} of ${daily} left`))}</div>`
+    + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
+    + `<label class="f">lichess</label><div class="row"><span style="flex:1;align-self:center">${esc(u.lichess || pick('не підключено', 'not connected'))}</span><button id="acLi">${esc(u.lichess ? pick('Відключити', 'Disconnect') : pick('Підключити', 'Connect'))}</button></div>`
+    + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
+      + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button></div>`
+      + `<div class="row"><input id="acBanNick" type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="${esc(pick('нік', 'nickname'))}"><button id="acBan">${esc(pick('⛔ Бан', '⛔ Ban'))}</button><button id="acUnban">${esc(pick('Розбан', 'Unban'))}</button></div>` : '')
+    + `<div class="hint" id="acStatus"></div>`
+    + `<div class="row"><button id="acOut">${esc(pick('Вийти', 'Sign out'))}</button></div>`;
+}
+function accWire() {
+  const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn); };
+  on('acLogin', () => accAuth('login'));
+  on('acReg', () => accAuth('register'));
+  if ($('acPass')) $('acPass').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); accAuth('login'); } });
+  on('acOut', () => { const tok = ACC.token; accSet('', null); accHttp('/acc/logout', { token: tok }); });
+  on('acCcSave', () => accCall('/acc/chesscom', { chesscom: $('acCc').value.trim() }, d => {
+    accTake(d);
+    if (d.user && d.user.chesscom) { CC.user = d.user.chesscom; store.set('ca.ccUser', CC.user); }
+    accStatus(pick('✓ chess.com збережено.', '✓ chess.com saved.'));
+  }));
+  on('acLi', accLichess);
+  on('acAdmG', () => { A.admMode = 'gotw'; openBox('admin'); });
+  on('acAdmB', () => { A.admMode = 'bugs'; openBox('admin'); });
+  const ban = v => { const n = $('acBanNick').value.trim(); if (n) accCall('/admin/ban', { nick: n, on: v }, () => accStatus(v ? pick(`⛔ ${n} заблоковано.`, `⛔ ${n} banned.`) : pick(`✓ ${n} розблоковано.`, `✓ ${n} unbanned.`))); };
+  on('acBan', () => ban(true));
+  on('acUnban', () => ban(false));
+}
+function accTake(d) { if (d.user) { ACC.user = d.user; accSave(); accChanged(); } }
+async function accCall(path, body, ok) {
+  accStatus(pick('Зачекайте…', 'Please wait…'));
+  const { code, d } = await accHttp(path, { ...body, token: ACC.token });
+  if (code === 200) { accStatus(''); ok(d); return; }
+  if (code === 401) accSet('', null);
+  accStatus(accErr(d));
+}
+async function accAuth(kind) {
+  const body = { nick: $('acNick').value.trim(), pass: $('acPass').value };
+  if (!$('acCodeRow').hidden && $('acCode').value.trim()) body.code = $('acCode').value.trim();
+  accStatus(pick('Зачекайте…', 'Please wait…'));
+  const { code, d } = await accHttp('/acc/' + kind, body);
+  if (A.boxKind !== 'acc') return;
+  if (code === 200 && d.token) {
+    tele(kind === 'login' ? 'f.login' : 'f.register');
+    const reason = A.accReason;
+    accSet(d.token, d.user);
+    accStatus(pick('✓ Готово!', '✓ Done!'));
+    if (reason) setTimeout(() => { if (A.boxKind === 'acc') closeBox(); }, 900);
+    return;
+  }
+  if (d.error === 'code') $('acCodeRow').hidden = false;
+  accStatus(accErr(d));
+}
+function b64url(bytes) { return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+async function accLichess() {
+  if (ACC.user && ACC.user.lichess) { accCall('/acc/lichess', { unlink: true }, accTake); return; }
+  // OAuth PKCE: браузер -> lichess -> наш Worker зберігає код; програма забирає його за state
+  const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+  const state = [...rnd(16)].map(b => b.toString(16).padStart(2, '0')).join('');
+  const verifier = b64url(rnd(32));
+  const challenge = b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
+  const u = 'https://lichess.org/oauth?' + new URLSearchParams({ response_type: 'code', client_id: LICHESS_CLIENT,
+    redirect_uri: D.AI_COACH_URL + '/acc/lichess/cb', code_challenge_method: 'S256', code_challenge: challenge, state });
+  if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank');
+  accStatus(pick('Підтвердіть вхід у браузері (lichess)…', 'Confirm sign-in in the browser (lichess)…'));
+  const t0 = Date.now(), tok = ACC.token;
+  while (ACC.token === tok && Date.now() - t0 < 300000) {
+    await new Promise(r => setTimeout(r, 2500));
+    const { code, d } = await accHttp('/acc/lichess', { token: tok, state, verifier });
+    if (code === 202 || code === 0) continue;
+    if (code === 200) { accTake(d); accStatus(pick('✓ lichess підключено.', '✓ lichess connected.')); } else accStatus(accErr(d));
+    return;
+  }
+}
+function accGate() {
+  if (ACC.token) return true;
+  if (ACC.free >= FREE_ANALYSES) {
+    accOpen(pick(`Ви використали ${FREE_ANALYSES} пробних аналізів. Увійдіть або створіть безплатний акаунт, щоб аналізувати далі.`,
+      `You have used ${FREE_ANALYSES} trial analyses. Sign in or create a free account to keep analyzing.`));
+    return false;
+  }
+  ACC.free++; accSave();
+  return true;
+}
+const LOGIN_AI = () => pick('ШІ-тренер працює з безплатним акаунтом: увійдіть або створіть його.', 'The AI coach needs a free account: sign in or create one.');
+
+// ---------- адмін: заявки «Партія тижня» і звіти про помилки
+const ADM = { rows: [] };
+async function admLoad() {
+  const mode = A.admMode, list = $('admList');
+  const { code, d } = await accHttp(mode === 'gotw' ? '/admin/gotw' : '/admin/bugs', { token: ACC.token });
+  if (A.boxKind !== 'admin' || A.admMode !== mode) return;
+  if (code !== 200) { list.textContent = accErr(d); return; }
+  ADM.rows = (mode === 'gotw' ? d.games : d.bugs) || [];
+  admRender();
+}
+function admRender() {
+  const gotw = A.admMode === 'gotw';
+  $('admList').innerHTML = ADM.rows.length ? ADM.rows.map(g => gotw
+    ? `<div class="glrow"><div><b>№${g.n}</b> ${g.chosen ? '✓ ' : ''}${esc(`${g.white || '?'} – ${g.black || '?'} ${g.result || ''}`)}`
+      + `<div class="hint">${esc(`${g.nick || '—'} · ${(g.at || '').slice(0, 10)} · ❤${g.likes || 0}`)}${g.comment ? '<br>' + esc(g.comment) : ''}</div></div>`
+      + `<div class="row"><button data-adm-open="${g.n}">♟</button><button data-adm-choose="${g.n}"${g.chosen ? ' disabled' : ''}>${esc(pick('✓ Вибрати', '✓ Choose'))}</button><button data-adm-del="${g.n}">🗑</button></div></div>`
+    : `<div class="glrow"><div><b>№${g.n}</b> ${esc(`${g.platform} ${g.version} ${g.country || ''} · ${(g.at || '').slice(0, 10)}`)}`
+      + `<div style="white-space:pre-wrap">${esc(g.text || '')}</div>${g.contact ? `<div class="hint">${esc(g.contact)}</div>` : ''}</div>`
+      + (g.pgn_len ? `<div class="row"><button data-adm-open="${g.n}">♟ PGN</button></div>` : '') + '</div>').join('')
+    : esc(pick('Порожньо.', 'Empty.'));
+}
+async function admClick(e) {
+  const b = e.target.closest('[data-adm-open],[data-adm-choose],[data-adm-del]');
+  if (!b) return;
+  const gotw = A.admMode === 'gotw';
+  if (b.dataset.admOpen) {
+    const { code, d } = await accHttp(gotw ? '/admin/gotw/pgn' : '/admin/bugs/pgn', { token: ACC.token, n: +b.dataset.admOpen });
+    const pgn = code === 200 ? (gotw ? d.game.pgn : d.pgn) : '';
+    if (!pgn) { msg(pick('PGN немає.', 'No PGN.')); return; }
+    closeBox(); loadPgn(pgn);
+  } else if (b.dataset.admChoose) {
+    const n = +b.dataset.admChoose, { code, d } = await accHttp('/admin/gotw/choose', { token: ACC.token, n });
+    if (code !== 200) { msg(accErr(d)); return; }
+    const g = ADM.rows.find(x => x.n === n); if (g) g.chosen = 1;
+    admRender();
+    msg(pick('✓ Вибрано. PGN у папку «Партії тижня» зберігає ПК (адмін-вікно або gotw.ps1 save).', '✓ Chosen. The PC saves the PGN to the «Партії тижня» folder (admin window or gotw.ps1 save).'));
+  } else if (b.dataset.admDel) {
+    const n = +b.dataset.admDel;
+    if (!confirm(pick(`Видалити заявку №${n} назавжди?`, `Delete submission #${n} forever?`))) return;
+    const { code, d } = await accHttp('/admin/gotw/delete', { token: ACC.token, n });
+    if (code !== 200) { msg(accErr(d)); return; }
+    ADM.rows = ADM.rows.filter(x => x.n !== n);
+    admRender();
+  }
+}
+
 function aiExplain() {
+  if (!ACC.token) { accOpen(LOGIN_AI()); return; }
   const key = A.aiCur, ai = A.aiCurArgs;
   if (!key || !ai || aiQuotaLeft() <= 0 || A.aiBusy.has(key)) return;
   delete A.aiFailed[key];
@@ -527,7 +718,9 @@ function renderCoach(lines, aiText = null, waiting = false, note = false, noFlas
       + (extra ? `<div class="aimuted">${esc(extra)}</div>` : '');
     if (A.aiCur && A.aiCurArgs && cfg.ai && !A.aiOff && !bl) {      // 1.28.1: кнопка «Пояснити»
       const left = aiQuotaLeft();
-      html += `<button id="aiExplain" class="primary aibtn"${left ? '' : ' disabled'}>${esc(left
+      html += `<button id="aiExplain" class="primary aibtn"${left || !ACC.token ? '' : ' disabled'}>${esc(!ACC.token
+        ? pick('🤖 Пояснити (ШІ) · увійдіть в акаунт', '🤖 Explain (AI) · sign in')
+        : ACC.user.admin ? pick('🤖 Пояснити (ШІ)', '🤖 Explain (AI)') : left
         ? pick(`🤖 Пояснити (ШІ) · ще ${left} з ${AI_DAILY} сьогодні`, `🤖 Explain (AI) · ${left} of ${AI_DAILY} left today`)
         : pick(`🤖 Ліміт ШІ на сьогодні вичерпано (${AI_DAILY})`, `🤖 AI limit for today is used up (${AI_DAILY})`))}</button>`;
     }
@@ -579,6 +772,7 @@ async function askSend() {
   const inp = $('askIn'), q = inp.value.trim().slice(0, 500), ctx = A.askCtx, key = askKey();
   if (botLive()) { if (q) botChatSend(q.slice(0, 300)); return; }   // 1.27.11: повідомлення ботові
   if (!q || !ctx || !cfg.ai) return;
+  if (!ACC.token) { accOpen(LOGIN_AI()); return; }
   inp.value = '';
   tele('f.ask');
   const thread = (A.askThreads[key] ??= []);
@@ -590,7 +784,7 @@ async function askSend() {
   rerender();
   let facts;
   try { facts = askFacts(ctx.fen, ctx.pe, ctx.sans, ctx.last); } catch (_) { facts = pick('Позиція (FEN): ', 'Position (FEN): ') + ctx.fen; }
-  try { item.a = await fetchAiCoach(facts, uiLang(), q, history); if (item.a) aiQuotaUse(); } catch (e) { item.err = e.message || 'ai'; }
+  try { item.a = await fetchAiCoach(facts, uiLang(), q, history); } catch (e) { item.err = e.message || 'ai'; }
   if (askKey() === key) rerender();
 }
 
@@ -610,7 +804,7 @@ async function aiStart(key, ai, force = false) {
   A.aiBusy.add(key);
   tele('f.ai');
   let text = null;
-  try { text = await fetchAiCoach(facts, key.split('|')[2]); A.aiCache[key] = text; A.aiErr = null; if (text) aiQuotaUse(); }
+  try { text = await fetchAiCoach(facts, key.split('|')[2]); A.aiCache[key] = text; A.aiErr = null; }
   catch (e) { A.aiFailed[key] = Date.now(); A.aiErr = e.message; if (e.message === 'quota') A.aiOff = true; }
   A.aiBusy.delete(key);
   if (key === A.aiCur) renderCoach(A.coachLines, text, false, !text);
@@ -707,6 +901,7 @@ function resetView() {
 async function startAnalysis() {
   if (A.analysing && A.runDoc === A.docId) { A.cancel = true; engine.stop(); return; }
   if (!A.game) { msg(tr('Спочатку завантаж партію (PGN з буфера або файл).')); return; }
+  if (!accGate()) return;                          // 1.31.0: без акаунта - FREE_ANALYSES пробних
   clearVar();
   board.interactive = false;
   A.cancel = false;
@@ -2657,13 +2852,24 @@ function openBox(kind) {
   } else if (kind === 'db') {           // 1.29.0: база партій майстрів
     $('boxTitle').textContent = pick('📖  База партій майстрів', '📖  Masters games database');
     MS.fen = null; dbTick();
+  } else if (kind === 'acc') {          // 1.31.0: акаунт
+    $('boxTitle').textContent = pick('👤  Акаунт', '👤  Account');
+    body.innerHTML = accBody();
+    accWire();
+  } else if (kind === 'admin') {
+    $('boxTitle').textContent = A.admMode === 'gotw' ? pick('🛡  Заявки «Партія тижня»', '🛡  Game of the week submissions') : pick('🛡  Звіти про помилки', '🛡  Bug reports');
+    body.innerHTML = `<div id="admList" style="max-height:60vh;overflow:auto">${esc(pick('Завантаження…', 'Loading…'))}</div>`
+      + `<div class="row"><button id="admBack">${esc(pick('← Акаунт', '← Account'))}</button></div>`;
+    $('admList').addEventListener('click', admClick);
+    $('admBack').addEventListener('click', () => openBox('acc'));
+    admLoad();
   } else if (kind === 'gotw') {         // 1.28.3: «Партія тижня»
     const s = (A.res && A.res.summary) || {};
     $('boxTitle').textContent = pick('🏆  Подати заявку на гру тижня', '🏆  Apply for game of the week');
     body.innerHTML = `<div class="hint">${esc(pick('Цікава партія? Подайте заявку. Її побачать інші гравці у вкладці «🏆 Партії тижня» (з іменами гравців з партії) і зможуть поставити ❤, а найкращі покажемо в нашому Telegram-каналі.',
       'An interesting game? Apply with it. Other players will see it in the «🏆 Games of the week» tab (with the player names from the game) and can give it a ❤, and the best ones will be shown in our Telegram channel.'))}</div>`
       + `<div style="font-weight:700;margin:8px 0">${esc(`${tr(s.white || '?')} – ${tr(s.black || '?')} · ${s.result || '*'} · ${(s.white_acc || 0).toFixed(1)}% / ${(s.black_acc || 0).toFixed(1)}%`)}</div>`
-      + `<label class="f">${esc(pick("Як вас підписати (необов'язково):", 'How to credit you (optional):'))}</label><input id="gwNick" type="text" maxlength="60" autocomplete="off">`
+      + `<label class="f">${esc(pick("Як вас підписати (необов'язково):", 'How to credit you (optional):'))}</label><input id="gwNick" type="text" maxlength="60" autocomplete="off"${ACC.user ? ` value="${esc(ACC.user.nick)}" disabled` : ''}>`
       + `<label class="f">${esc(pick("Чим цікава партія (необов'язково):", 'What makes it interesting (optional):'))}</label><textarea id="gwText" rows="3" maxlength="500"></textarea>`
       + `<div class="hint" id="gwStatus"></div>`
       + `<div class="row"><button id="gwCancel">${esc(tr('Скасувати'))}</button><button id="gwSend" class="primary">${esc(pick('Надіслати', 'Send'))}</button></div>`;
@@ -2832,7 +3038,8 @@ async function gotwSend() {
   try {
     const x = await fetch(D.AI_COACH_URL + '/gotw', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pgn, nick: $('gwNick').value.trim(), comment: $('gwText').value.trim(), white: s.white, black: s.black,
-        result: s.result, white_acc: s.white_acc, black_acc: s.black_acc, p: 'phone', v: D.APP_VERSION, lang: cfg.lang, public: true }) });
+        result: s.result, white_acc: s.white_acc, black_acc: s.black_acc, p: 'phone', v: D.APP_VERSION, lang: cfg.lang, public: true,
+        ...(ACC.token ? { token: ACC.token } : {}) }) });
     r = x.ok ? ((await x.json()).ok ? true : 'error') : (x.status === 429 ? 'rate' : 'error');
   } catch (_) { /* немає мережі */ }
   if (A.boxKind !== 'gotw') return;
@@ -3190,6 +3397,8 @@ function wire() {
   click('bSettings', () => toggleBox('settings'));
   click('bNews', () => toggleBox('news'));
   click('bDonate', openDonate);
+  click('bAcc', () => { if (A.boxKind === 'acc') closeBox(); else accOpen(); });   // 1.31.0
+  accChanged(); setTimeout(accRefresh, 1500);
   click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });

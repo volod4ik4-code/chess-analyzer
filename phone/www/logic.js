@@ -968,7 +968,9 @@ export async function fetchAiCoach(facts, lang, question = null, history = null,
   const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 40000);
   try {
     r = await fetch(D.AI_COACH_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(bot ? { lang, facts, mode: 'bot', bot } : question ? { lang, facts, question, history: (history || []).slice(-3) } : { lang, facts }),
+      // 1.31.0: ліміт пояснень - на акаунт (токен кладе ui.js у globalThis.caAcc)
+      body: JSON.stringify(bot ? { lang, facts, mode: 'bot', bot } : { lang, facts, ...(question ? { question, history: (history || []).slice(-3) } : {}),
+        ...(globalThis.caAcc && globalThis.caAcc.token ? { token: globalThis.caAcc.token } : {}) }),
       signal: ctl.signal });
   } catch (_) { throw new Error('net'); } finally { clearTimeout(t); }
   let data = {};
@@ -976,5 +978,7 @@ export async function fetchAiCoach(facts, lang, question = null, history = null,
   if (!r.ok) throw new Error(data.error || String(r.status));
   const text = String(data.text || '').trim();
   if (!text) throw new Error('empty');
+  const acc = globalThis.caAcc;
+  if (!bot && acc && acc.user && Number.isInteger(data.ai_left)) { acc.user.ai_left = data.ai_left; try { localStorage.setItem('ca.acc', JSON.stringify(acc)); } catch (_) { /* */ } }
   return text;
 }
