@@ -952,13 +952,82 @@ async function onUserMove(uci, dragged) {
 
 // ---- черга оцінок ходів гравця: по одному, по порядку (кожна оцінка спирається на попередню)
 function queueEval(v, row) {
+  deepCancel();                                    // 1.30.1: новий хід - глибше над старим не думаємо
   if (!A.pendingEvals) A.statusBeforeEval = A.statusFn;
   A.pendingEvals = (A.pendingEvals || 0) + 1;
   evalStatus();
   A.evalChain = (A.evalChain || Promise.resolve()).then(() => evalRow(v, row)).catch(() => {}).then(() => {
     A.pendingEvals--;
     evalStatus();
+    if (!A.pendingEvals) deepStart();
   });
+}
+
+// ---------- 1.30.1: поки гравець дивиться на свій хід, Stockfish думає глибше (+2, +4 … до +DEEP_EXTRA)
+const DEEP_EXTRA = 10, DEEP_MAX = 30;
+A.deepTok = 0;
+function deepCancel() {
+  A.deepTok++;
+  if (A.deepBusy) engine.stop();                   // поточний глибокий пошук закінчиться одразу
+}
+function deepStart() {
+  deepCancel();
+  const v = A.v;
+  if (!v || A.pendingEvals || !A.res || analysing() || botLive() || A.pz || v.index < 1 || v.index > v.rows.length) return;
+  const row = v.rows[v.index - 1], depth = cfg.depth, top = Math.min(DEEP_MAX, depth + DEEP_EXTRA);
+  if (row.pending || row.failed || row.quality === 'Теорія' || (row.deep_depth || depth) >= top) return;
+  const tok = A.deepTok;
+  // рушій лише для цього пошуку: після скасування нові запити не йдуть, щоб хід гравця не чекав
+  const live = () => tok === A.deepTok;
+  const eng = {
+    analyse: (...a) => live() ? engine.analyse(...a) : Promise.reject(new Error('cancel')),
+    clearHash: () => live() ? engine.clearHash() : Promise.reject(new Error('cancel')),
+  };
+  const prevStatus = A.statusFn;
+  let shown = null;
+  (async () => {
+    let d = row.deep_depth || depth;
+    try {
+      while (d < top && live()) {
+        d = Math.min(top, d + 2);
+        A.deepBusy = true;
+        const ok = await deepStep(tok, eng, v, row, d);
+        A.deepBusy = false;
+        if (!ok || !live()) break;
+        renderMoves();
+        if (A.v === v && v.rows[v.index - 1] === row) showVarState(v.index, false);
+        if (!A.pendingEvals) {
+          shown = () => `🔍 ${pick('Stockfish думає глибше', 'Stockfish is thinking deeper')}: ${pick('глибина', 'depth')} ${d}`;
+          setStatus(shown);
+        }
+      }
+    } catch (_) { /* глибша оцінка - лише бонус, звичайна вже є */ }
+    A.deepBusy = false;
+    if (shown && A.statusFn === shown) setStatus(prevStatus);
+    if (shown) docChanged();
+  })();
+}
+async function deepStep(tok, eng, v, row, d) {
+  const j = v.rows.indexOf(row) + 1;
+  if (j <= 0 || A.v !== v || v.index !== j || !A.res) return false;
+  const res = A.res, prevRow = j >= 2 ? v.rows[j - 2] : null;
+  const b = new Pos(v.fens[j - 1]), s = res.summary || {};
+  const rating = b.turn === 'w' ? s.white_rating : s.black_rating;
+  const prevDrop = prevRow ? prevRow.drop : v.prev_drop, prevCap = prevRow ? prevRow.cap_sq : v.prev_cap;
+  const prevQ = prevRow ? prevRow.quality : (v.base >= 1 && res.moves[v.base - 1] ? res.moves[v.base - 1].quality : null);
+  const hist = { root: v.fens[j - 1], moves: [] };
+  const pb = posEval(await eng.analyse(hist.root, [], d), d);
+  if (tok !== A.deepTok) return false;
+  const [r, peAfter] = await evaluateMove(eng, d, b, hist, row.uci, pb, prevDrop, prevCap, rating, false, true, prevQ === 'Геніальний');
+  if (tok !== A.deepTok) return false;
+  r.elapsed = row.elapsed; r.opening = row.opening || '';
+  Object.assign(row, r);
+  row.deep_depth = d;
+  for (const L of new Set([...A.lines, ...(A.v ? [A.v] : [])])) {
+    const i = L.rows.indexOf(row) + 1;
+    if (i > 0) { L.pes[i - 1] = pb; L.pes[i] = peAfter; }
+  }
+  return true;
 }
 
 function evalStatus() {
@@ -1037,6 +1106,7 @@ function gotoVar(j, animate = null) {
   v.index = j;
   if (animate === null) animate = j === prev + 1;
   showVarState(j, animate);
+  deepStart();                                     // 1.30.1: думати глибше над ходом, на який дивимось
 }
 
 function showVarState(j, animate = false) {
@@ -1147,6 +1217,7 @@ function openLine(line, j = 1, animate = false) {
 function exitVar() { if (!A.v) return; const base = A.v.base; clearVar(); goto(base, false); }
 function clearVar() {
   A.v = null; A.varToken++; A.varBusy = false;
+  deepCancel();
   renderVar();
   board.interactive = !!A.res;
 }
