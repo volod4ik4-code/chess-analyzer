@@ -194,7 +194,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bAcc', '👤 Акаунт', '👤 Account'); try { accChanged(); } catch (_) { /* ще не готово */ } T('bNew', '♟ Нова', '♟ New');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); try { accChanged(); } catch (_) { /* ще не готово */ } T('bNew', '♟ Нова', '♟ New');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -504,7 +504,13 @@ async function accHttp(path, body) {
 }
 function accChanged() {
   const b = $('bAcc');
-  if (b) { b.classList.toggle('on', !!ACC.user); const n = ACC.user ? ACC.user.nick : ''; b.textContent = n ? '👤 ' + (n.length > 10 ? n.slice(0, 9) + '…' : n) : pick('👤 Акаунт', '👤 Account'); }
+  if (b) {   // 1.31.3.4: кружечок профілю вгорі праворуч - перша літера ніка (зелений) або 👤
+    const n = ACC.user ? ACC.user.nick : '';
+    b.classList.toggle('on', !!n);
+    b.textContent = n ? n[0].toUpperCase() : '👤';
+    b.title = n ? n + ' · ' + pick('Мій профіль', 'My profile') : pick('👤 Акаунт', '👤 Account');
+    b.setAttribute('aria-label', b.title);
+  }
   if (ACC.user && ACC.user.chesscom && !CC.user) { CC.user = ACC.user.chesscom; store.set('ca.ccUser', CC.user); }
   if (A.coachLast && A.coachLast[0]) renderCoach(...A.coachLast, true);
   if (A.boxKind === 'acc') openBox('acc');
@@ -537,14 +543,14 @@ function accBody() {
   const u = ACC.user;
   if (!u) {
     return (A.accReason ? `<div class="hint" style="color:inherit;font-weight:600">${esc(A.accReason)}</div>` : '')
+      + `<div class="row"><button id="acGoogle" class="google">${esc(pick('G   Увійти через Google', 'G   Sign in with Google'))}</button></div>`
       + `<label class="f">${esc(pick('Нік:', 'Nickname:'))}</label><input id="acNick" type="text" maxlength="20" autocapitalize="off" autocomplete="username" spellcheck="false">`
       + `<label class="f">${esc(pick('Пароль (від 6 символів):', 'Password (6+ characters):'))}</label><input id="acPass" type="password" maxlength="200" autocomplete="current-password">`
       + `<div id="acCodeRow" hidden><label class="f">${esc(pick('Код для цього ніка:', 'Code for this nickname:'))}</label><input id="acCode" type="text" maxlength="40" autocapitalize="characters" autocomplete="off"></div>`
       + `<div class="hint">${esc(pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
         'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered, remember it.'))}</div>`
       + `<div class="hint" id="acStatus"></div>`
-      + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`
-      + `<div class="row"><button id="acGoogle">${esc(pick('G   Увійти через Google', 'G   Sign in with Google'))}</button></div>`;
+      + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`;
   }
   const daily = u.ai_daily || AI_DAILY;
   return `<div style="font-weight:700;font-size:1.15em">👤 ${esc(u.nick)}${u.admin ? esc(pick(' · адмін', ' · admin')) : ''}</div>`
@@ -3250,6 +3256,21 @@ async function bugSend() {
     : r === 'rate' ? pick('Забагато звітів. Спробуйте за хвилину.', 'Too many reports. Try again in a minute.')
     : pick('Не вдалося надіслати. Спробуйте через GitHub.', 'Could not send. Try via GitHub.');
 }
+// 1.31.3.4: клавіатура не закриває квадрат - стискаємо його до видимої частини екрана, поле - по центру
+let fullH = window.innerHeight;
+function fitBoxToKeyboard() {
+  const vv = window.visualViewport, b = $('box');
+  fullH = Math.max(fullH, window.innerHeight);
+  if (!vv || !b || $('overlay').hidden) return;
+  if (vv.height < fullH - 120) {
+    b.style.maxHeight = Math.round(vv.height - 24) + 'px';
+    b.style.top = Math.round(vv.offsetTop + 12) + 'px';
+    const f = document.activeElement;
+    if (f && b.contains(f)) f.scrollIntoView({ block: 'center' });
+  } else if (b.style.maxHeight) { b.style.maxHeight = ''; clampBox(); }
+}
+if (window.visualViewport) window.visualViewport.addEventListener('resize', fitBoxToKeyboard);
+document.addEventListener('focusin', e => { if (e.target.matches('input, textarea') && $('box').contains(e.target)) setTimeout(fitBoxToKeyboard, 350); });
 function closeBox() { A.boxKind = null; $('overlay').hidden = true; $('boxBody').innerHTML = ''; }
 function toggleBox(kind) { if (A.boxKind === kind) closeBox(); else openBox(kind); }
 function placeBox() {
