@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.1"
+APP_VERSION = "1.31.2"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.2", "2026-11-23 08:26", [
+        ("Нове вікно акаунта (ПК): великий квадрат як у «Ботах» — ліворуч картка гравця з профілем, праворуч прив'язки, ШІ, синхронізація.",
+         "New account window (PC): a big panel like «Bots» — your player card with profile on the left, links, AI and sync on the right."),
+    ]),
     ("1.31.1", "2026-11-23 07:45", [
         ("Синхронізація акаунта: задачі «🧩 Тренування», зірки ботів і дослідження однакові на ПК і телефоні (кожні 5 хв і кнопкою «🔄 Синхронізувати»).",
          "Account sync: «🧩 Training» puzzles, bot stars and studies are the same on PC and phone (every 5 min and with the «🔄 Sync now» button)."),
@@ -1671,6 +1675,25 @@ TR_EN.update({"📊  Анонімна статистика": "📊  Anonymous st
 # шаблони з {0}, {1}… (збирає ~/.chess_analyzer_android/i18n/extract.py). Чого немає - лишається англійською.
 LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português"), ("es", "Español")]
 I18N = {
+    'Chess Analyzer account': ('Conta Chess Analyzer', 'Cuenta de Chess Analyzer'),
+    'Free, no e-mail': ('Grátis, sem e-mail', 'Gratis, sin correo'),
+    'SIGN IN OR SIGN UP': ('ENTRAR OU CRIAR CONTA', 'INICIAR SESIÓN O REGISTRARSE'),
+    'Nickname': ('Apelido', 'Apodo'),
+    'Password (6+ characters)': ('Senha (6+ caracteres)', 'Contraseña (6+ caracteres)'),
+    'Code for this nickname': ('Código para este apelido', 'Código para este apodo'),
+    'LINKED ACCOUNTS': ('CONTAS VINCULADAS', 'CUENTAS VINCULADAS'),
+    'AI COACH': ('TREINADOR IA', 'ENTRENADOR IA'),
+    'SYNC': ('SINCRONIZAÇÃO', 'SINCRONIZACIÓN'),
+    'ADMIN': ('ADMIN', 'ADMIN'),
+    '🛡 Admin': ('🛡 Admin', '🛡 Admin'),
+    'Player': ('Jogador', 'Jugador'),
+    '🤖 Unlimited': ('🤖 Sem limite', '🤖 Sin límite'),
+    '🤖 Today: {0} of {1} left': ('🤖 Hoje: restam {0} de {1}', '🤖 Hoy: quedan {0} de {1}'),
+    '🏆  Game of the week': ('🏆  Jogo da semana', '🏆  Partida de la semana'),
+    '🐞  Bug reports': ('🐞  Relatórios de erros', '🐞  Informes de errores'),
+    '⛔ Ban': ('⛔ Banir', '⛔ Bloquear'),
+    'Unban': ('Desbanir', 'Desbloquear'),
+    '✓  Unlimited game analysis\n✓  AI coach: 5 explanations a day\n✓  Puzzles, bot stars and studies — the same on PC and phone\n✓  Link chess.com and lichess\n✓  Game of the week submissions under your name': ('✓  Análise de partidas sem limite\n✓  Treinador IA: 5 explicações por dia\n✓  Problemas, estrelas dos bots e estudos — iguais no PC e no celular\n✓  Vincular chess.com e lichess\n✓  Inscrições no jogo da semana com seu nome', '✓  Análisis de partidas sin límite\n✓  Entrenador IA: 5 explicaciones al día\n✓  Problemas, estrellas de bots y estudios — iguales en PC y móvil\n✓  Vincular chess.com y lichess\n✓  Solicitudes de partida de la semana con tu nombre'),
     '🔄 Sync now': ('🔄 Sincronizar agora', '🔄 Sincronizar ahora'),
     '📅 Member since {0}': ('📅 Membro desde {0}', '📅 Miembro desde {0}'),
     '🧩 Puzzles: {0} in training, {1} learned': ('🧩 Problemas: {0} em treino, {1} aprendidos', '🧩 Problemas: {0} en entrenamiento, {1} aprendidos'),
@@ -9647,80 +9670,119 @@ class App(tk.Tk):
         self.acc_box.show()
 
     def _build_account_box(self):
+        """1.31.2: великий квадрат як «Боти»: ліворуч картка гравця, праворуч прив'язки, синхронізація, адмін."""
         self.acc_box = OverlayBox(self, "👤  Акаунт")
-        body = ttk.Frame(self.acc_box.box, style="Panel.TFrame", padding=(18, 12))
+        body = tk.Frame(self.acc_box.box, bg=PANEL)
         body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
-        self.acc_reason_lbl = ttk.Label(body, style="Panel.TLabel", wraplength=440, justify="left")
-        # --- не увійшли
-        f = self.acc_out = ttk.Frame(body, style="Panel.TFrame")
-        self.acc_nick_lbl = ttk.Label(f, style="Panel.TLabel")
+        inner = tk.Frame(body, bg=PANEL)
+        inner.pack(fill="both", expand=True, padx=18, pady=(12, 14))
+        row = tk.Frame(inner, bg=PANEL)
+        row.pack(fill="both", expand=True)
+        lab = lambda p, **k: tk.Label(p, bg=k.pop("bg", PANEL), fg=k.pop("fg", FG), anchor="w", justify="left", **k)
+        # --- ліворуч: картка гравця
+        card = tk.Frame(row, bg=PANEL2, width=320, height=470)
+        card.pack(side="left", fill="y")
+        card.pack_propagate(False)
+        ci = tk.Frame(card, bg=PANEL2)
+        ci.pack(fill="both", expand=True, padx=20, pady=20)
+        self.acc_avatar = tk.Canvas(ci, width=104, height=104, bg=PANEL2, highlightthickness=0, bd=0)
+        self.acc_avatar.pack(anchor="w")
+        self.acc_who = lab(ci, bg=PANEL2, font=fsemi(20), wraplength=280)
+        self.acc_who.pack(anchor="w", pady=(12, 0))
+        self.acc_role = lab(ci, bg=PANEL2, fg=MUTED, font=("Segoe UI", 10))
+        self.acc_role.pack(anchor="w", pady=(2, 12))
+        self.acc_prof = lab(ci, bg=PANEL2, font=("Segoe UI", 11), wraplength=280)      # профіль / що дає акаунт
+        self.acc_prof.pack(anchor="w")
+        # --- праворуч
+        right = tk.Frame(row, bg=PANEL, width=500)
+        right.pack(side="left", fill="both", expand=True, padx=(22, 0))
+        self.acc_reason_lbl = lab(right, fg=ACCENT, font=fsemi(12), wraplength=480)
+        # не увійшли
+        f = self.acc_out = tk.Frame(right, bg=PANEL)
+        self.acc_out_head = lab(f, fg=MUTED, font=fsemi(10))
+        self.acc_out_head.pack(anchor="w", pady=(0, 8))
+        self.acc_nick_lbl = lab(f)
         self.acc_nick_lbl.pack(anchor="w")
         self.acc_nick = tk.StringVar()
-        ttk.Entry(f, textvariable=self.acc_nick, width=36).pack(anchor="w", fill="x", pady=(2, 8))
-        self.acc_pass_lbl = ttk.Label(f, style="Panel.TLabel")
+        ttk.Entry(f, textvariable=self.acc_nick, width=40, font=("Segoe UI", 12)).pack(anchor="w", fill="x", pady=(2, 10))
+        self.acc_pass_lbl = lab(f)
         self.acc_pass_lbl.pack(anchor="w")
         self.acc_pass = tk.StringVar()
-        pe = ttk.Entry(f, textvariable=self.acc_pass, width=36, show="•")
-        pe.pack(anchor="w", fill="x", pady=(2, 8))
+        pe = ttk.Entry(f, textvariable=self.acc_pass, width=40, show="•", font=("Segoe UI", 12))
+        pe.pack(anchor="w", fill="x", pady=(2, 10))
         pe.bind("<Return>", lambda e: self._acc_auth("login"))
-        self.acc_code_row = ttk.Frame(f, style="Panel.TFrame")      # лише для зарезервованого ніка (адмін)
-        self.acc_code_lbl = ttk.Label(self.acc_code_row, style="Panel.TLabel")
+        self.acc_code_row = tk.Frame(f, bg=PANEL)       # лише для зарезервованого ніка (адмін)
+        self.acc_code_lbl = lab(self.acc_code_row)
         self.acc_code_lbl.pack(anchor="w")
         self.acc_code = tk.StringVar()
-        ttk.Entry(self.acc_code_row, textvariable=self.acc_code, width=36).pack(anchor="w", fill="x", pady=(2, 8))
-        self.acc_hint = ttk.Label(f, style="PanelMuted.TLabel", wraplength=440, justify="left")
-        self.acc_hint.pack(anchor="w", pady=(0, 8))
-        row = ttk.Frame(f, style="Panel.TFrame")
-        row.pack(fill="x")
-        self.acc_login_btn = RButton(row, text="Увійти", style="Accent.TButton", command=lambda: self._acc_auth("login"))
-        self.acc_login_btn.pack(side="right")
-        self.acc_reg_btn = RButton(row, text="Створити акаунт", command=lambda: self._acc_auth("register"))
-        self.acc_reg_btn.pack(side="right", padx=(0, 8))
-        # --- увійшли
-        f = self.acc_in = ttk.Frame(body, style="Panel.TFrame")
-        self.acc_who = ttk.Label(f, style="Panel.TLabel", font=fsemi(13))
-        self.acc_who.pack(anchor="w")
-        self.acc_ai = ttk.Label(f, style="PanelMuted.TLabel")
-        self.acc_ai.pack(anchor="w", pady=(2, 6))
-        self.acc_prof = ttk.Label(f, style="Panel.TLabel", justify="left")      # 1.31.1: профіль
-        self.acc_prof.pack(anchor="w", pady=(0, 10))
-        r1 = ttk.Frame(f, style="Panel.TFrame")
+        ttk.Entry(self.acc_code_row, textvariable=self.acc_code, width=40, font=("Segoe UI", 12)).pack(anchor="w", fill="x", pady=(2, 10))
+        self.acc_hint = lab(f, fg=MUTED, font=("Segoe UI", 9), wraplength=480)
+        self.acc_hint.pack(anchor="w", pady=(0, 14))
+        br = tk.Frame(f, bg=PANEL)
+        br.pack(fill="x")
+        self.acc_login_btn = RButton(br, text="Увійти", kind="play", command=lambda: self._acc_auth("login"))
+        self.acc_login_btn.pack(side="left")
+        self.acc_reg_btn = RButton(br, text="Створити акаунт", command=lambda: self._acc_auth("register"))
+        self.acc_reg_btn.pack(side="left", padx=(10, 0))
+        # увійшли
+        f = self.acc_in = tk.Frame(right, bg=PANEL)
+        self.acc_h_links = lab(f, fg=MUTED, font=fsemi(10))
+        self.acc_h_links.pack(anchor="w", pady=(0, 6))
+        r1 = tk.Frame(f, bg=PANEL)
         r1.pack(fill="x", pady=(0, 6))
-        ttk.Label(r1, text="chess.com:", style="Panel.TLabel", width=10).pack(side="left")
+        lab(r1, text="chess.com", font=fsemi(11), width=10).pack(side="left")
         self.acc_cc = tk.StringVar()
-        ttk.Entry(r1, textvariable=self.acc_cc, width=22).pack(side="left", padx=(0, 8))
+        ttk.Entry(r1, textvariable=self.acc_cc, width=22, font=("Segoe UI", 11)).pack(side="left", padx=(0, 8))
         self.acc_cc_btn = RButton(r1, text="Зберегти", kind="small", command=self._acc_save_cc)
         self.acc_cc_btn.pack(side="left")
-        r2 = ttk.Frame(f, style="Panel.TFrame")
-        r2.pack(fill="x", pady=(0, 6))
-        ttk.Label(r2, text="lichess:", style="Panel.TLabel", width=10).pack(side="left")
-        self.acc_li = ttk.Label(r2, style="Panel.TLabel", width=22)
+        r2 = tk.Frame(f, bg=PANEL)
+        r2.pack(fill="x", pady=(0, 14))
+        lab(r2, text="lichess", font=fsemi(11), width=10).pack(side="left")
+        self.acc_li = lab(r2, font=("Segoe UI", 11), width=22)
         self.acc_li.pack(side="left", padx=(0, 8))
         self.acc_li_btn = RButton(r2, text="Підключити", kind="small", command=self._acc_lichess)
         self.acc_li_btn.pack(side="left")
-        self.acc_admin = ttk.Frame(f, style="Panel.TFrame")           # лише адмін
-        r3 = ttk.Frame(self.acc_admin, style="Panel.TFrame")
-        r3.pack(fill="x", pady=(8, 6))
+        self.acc_h_ai = lab(f, fg=MUTED, font=fsemi(10))
+        self.acc_h_ai.pack(anchor="w", pady=(0, 4))
+        self.acc_ai = lab(f, font=("Segoe UI", 11))
+        self.acc_ai.pack(anchor="w", pady=(0, 14))
+        self.acc_h_sync = lab(f, fg=MUTED, font=fsemi(10))
+        self.acc_h_sync.pack(anchor="w", pady=(0, 4))
+        r5 = tk.Frame(f, bg=PANEL)
+        r5.pack(fill="x", pady=(0, 14))
+        self.acc_sync_lbl = lab(r5, font=("Segoe UI", 11))
+        self.acc_sync_lbl.pack(side="left")
+        self.acc_sync_btn = RButton(r5, text="🔄", kind="small", command=self._sync)
+        self.acc_sync_btn.pack(side="left", padx=(12, 0))
+        self.acc_admin = tk.Frame(f, bg=PANEL)           # лише адмін
+        self.acc_h_admin = lab(self.acc_admin, fg="#ffd34d", font=fsemi(10))
+        self.acc_h_admin.pack(anchor="w", pady=(0, 6))
+        r3 = tk.Frame(self.acc_admin, bg=PANEL)
+        r3.pack(fill="x", pady=(0, 6))
         self.acc_adm_gotw = RButton(r3, text="🏆  Заявки", command=lambda: self.toggle_admin("gotw"))
         self.acc_adm_gotw.pack(side="left")
         self.acc_adm_bugs = RButton(r3, text="🐞  Звіти", command=lambda: self.toggle_admin("bugs"))
         self.acc_adm_bugs.pack(side="left", padx=(8, 0))
-        r4 = ttk.Frame(self.acc_admin, style="Panel.TFrame")
-        r4.pack(fill="x")
+        r4 = tk.Frame(self.acc_admin, bg=PANEL)
+        r4.pack(fill="x", pady=(0, 14))
         self.acc_ban_nick = tk.StringVar()
-        ttk.Entry(r4, textvariable=self.acc_ban_nick, width=20).pack(side="left", padx=(0, 8))
+        ttk.Entry(r4, textvariable=self.acc_ban_nick, width=20, font=("Segoe UI", 11)).pack(side="left", padx=(0, 8))
         self.acc_ban_btn = RButton(r4, text="⛔ Бан", kind="small", command=lambda: self._acc_ban(True))
         self.acc_ban_btn.pack(side="left")
         self.acc_unban_btn = RButton(r4, text="Розбан", kind="small", command=lambda: self._acc_ban(False))
         self.acc_unban_btn.pack(side="left", padx=(6, 0))
-        r5 = ttk.Frame(f, style="Panel.TFrame")
-        r5.pack(fill="x", pady=(12, 0), side="bottom")
-        self.acc_logout_btn = RButton(r5, text="Вийти", kind="small", command=self._acc_logout)
-        self.acc_logout_btn.pack(side="right")
-        self.acc_sync_btn = RButton(r5, text="🔄", kind="small", command=self._sync)
-        self.acc_sync_btn.pack(side="right", padx=(0, 8))
-        self.acc_status = ttk.Label(body, style="PanelMuted.TLabel", wraplength=440, justify="left")
-        self.acc_status.pack(side="bottom", anchor="w", pady=(8, 0))
+        self.acc_bottom = tk.Frame(f, bg=PANEL)
+        self.acc_bottom.pack(fill="x", side="bottom")
+        self.acc_logout_btn = RButton(self.acc_bottom, text="Вийти", kind="small", command=self._acc_logout)
+        self.acc_logout_btn.pack(side="left")
+        self.acc_status = lab(right, fg=MUTED, font=("Segoe UI", 10), wraplength=480)
+        self.acc_status.pack(side="bottom", anchor="w", pady=(10, 0))
+
+    def _acc_avatar_draw(self, nick):
+        c = self.acc_avatar
+        c.delete("all")
+        c.create_image(52, 52, image=circle_image(100, ACCENT if nick else "#4a4642", PANEL2))
+        c.create_text(52, 52, text=(nick[:1].upper() if nick else "👤"), fill="white", font=fsemi(40 if nick else 34))
 
     def _acc_render(self):
         u = ACC["user"]
@@ -9729,42 +9791,59 @@ class App(tk.Tk):
         self.acc_reason_lbl.pack_forget()
         self.acc_out.pack_forget()
         self.acc_in.pack_forget()
-        if reason and not u:
-            self.acc_reason_lbl.configure(text=reason)
-            self.acc_reason_lbl.pack(anchor="w", pady=(0, 10), before=self.acc_status)
+        self._acc_avatar_draw(u["nick"] if u else "")
         if not u:
-            self.acc_nick_lbl.configure(text=pick("Нік:", "Nickname:"))
-            self.acc_pass_lbl.configure(text=pick("Пароль (від 6 символів):", "Password (6+ characters):"))
-            self.acc_code_lbl.configure(text=pick("Код для цього ніка:", "Code for this nickname:"))
+            self.acc_who.configure(text=pick("Акаунт Chess Analyzer", "Chess Analyzer account"))
+            self.acc_role.configure(text=pick("Безплатно, без пошти", "Free, no e-mail"))
+            self.acc_prof.configure(text=pick(
+                "✓  Аналіз партій без обмежень\n✓  ШІ-тренер: 5 пояснень на день\n✓  Задачі, зірки ботів і дослідження"
+                " — однакові на ПК і телефоні\n✓  Прив'язка chess.com і lichess\n✓  Заявки на гру тижня під своїм ніком",
+                "✓  Unlimited game analysis\n✓  AI coach: 5 explanations a day\n✓  Puzzles, bot stars and studies"
+                " — the same on PC and phone\n✓  Link chess.com and lichess\n✓  Game of the week submissions under your name"))
+            if reason:
+                self.acc_reason_lbl.configure(text=reason)
+                self.acc_reason_lbl.pack(anchor="w", pady=(0, 12))
+            self.acc_out_head.configure(text=pick("ВХІД АБО РЕЄСТРАЦІЯ", "SIGN IN OR SIGN UP"))
+            self.acc_nick_lbl.configure(text=pick("Нік", "Nickname"))
+            self.acc_pass_lbl.configure(text=pick("Пароль (від 6 символів)", "Password (6+ characters)"))
+            self.acc_code_lbl.configure(text=pick("Код для цього ніка", "Code for this nickname"))
             self.acc_hint.configure(text=pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, "
                                               "лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
                                               "Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, "
                                               "only a protected fingerprint — it cannot be recovered, remember it."))
             self.acc_login_btn.configure(text=pick("Увійти", "Sign in"))
             self.acc_reg_btn.configure(text=pick("Створити акаунт", "Create account"))
-            self.acc_out.pack(fill="x", before=self.acc_status)
+            self.acc_out.pack(fill="both", expand=True)
             return
-        self.acc_who.configure(text=f"👤  {u['nick']}" + (pick("  ·  адмін", "  ·  admin") if u.get("admin") else ""))
-        left = u.get("ai_left", 0)
-        self.acc_ai.configure(text=pick("🤖 ШІ-тренер: без ліміту", "🤖 AI coach: unlimited") if u.get("admin") else
-                              pick(f"🤖 ШІ-тренер сьогодні: ще {left} з {u.get('ai_daily', AI_DAILY)}",
-                                   f"🤖 AI coach today: {left} of {u.get('ai_daily', AI_DAILY)} left"))
+        self.acc_who.configure(text=u["nick"])
+        self.acc_role.configure(text=pick("🛡 Адмін", "🛡 Admin") if u.get("admin") else pick("Гравець", "Player"),
+                                fg="#ffd34d" if u.get("admin") else MUTED)
+        prof = self._acc_profile_text().split("\n")
+        self.acc_prof.configure(text="\n".join(x for x in prof if not x.startswith("🔄")))
+        self.acc_h_links.configure(text=pick("ПРИВ'ЯЗАНІ АКАУНТИ", "LINKED ACCOUNTS"))
         self.acc_cc.set(u.get("chesscom") or "")
         self.acc_cc_btn.configure(text=pick("Зберегти", "Save"))
         self.acc_li.configure(text=u.get("lichess") or pick("не підключено", "not connected"))
         self.acc_li_btn.configure(text=pick("Відключити", "Disconnect") if u.get("lichess") else pick("Підключити", "Connect"))
-        self.acc_adm_gotw.configure(text=pick("🏆  Заявки (адмін)", "🏆  Submissions (admin)"))
+        self.acc_h_ai.configure(text=pick("ШІ-ТРЕНЕР", "AI COACH"))
+        left = u.get("ai_left", 0)
+        self.acc_ai.configure(text=pick("🤖 Без ліміту", "🤖 Unlimited") if u.get("admin") else
+                              pick(f"🤖 Сьогодні: ще {left} з {u.get('ai_daily', AI_DAILY)}",
+                                   f"🤖 Today: {left} of {u.get('ai_daily', AI_DAILY)} left"))
+        self.acc_h_sync.configure(text=pick("СИНХРОНІЗАЦІЯ", "SYNC"))
+        self.acc_sync_lbl.configure(text=next((x for x in prof if x.startswith("🔄")), ""))
+        self.acc_sync_btn.configure(text=pick("🔄 Синхронізувати", "🔄 Sync now"))
+        self.acc_h_admin.configure(text=pick("АДМІН", "ADMIN"))
+        self.acc_adm_gotw.configure(text=pick("🏆  Заявки на гру тижня", "🏆  Game of the week"))
         self.acc_adm_bugs.configure(text=pick("🐞  Звіти про помилки", "🐞  Bug reports"))
         self.acc_ban_btn.configure(text=pick("⛔ Бан", "⛔ Ban"))
         self.acc_unban_btn.configure(text=pick("Розбан", "Unban"))
-        self.acc_prof.configure(text=self._acc_profile_text())
-        self.acc_sync_btn.configure(text=pick("🔄 Синхронізувати", "🔄 Sync now"))
         if u.get("admin"):
-            self.acc_admin.pack(fill="x", before=self.acc_logout_btn.master)
+            self.acc_admin.pack(fill="x", before=self.acc_bottom)
         else:
             self.acc_admin.pack_forget()
-        self.acc_logout_btn.configure(text=pick("Вийти", "Sign out"))
-        self.acc_in.pack(fill="x", before=self.acc_status)
+        self.acc_logout_btn.configure(text=pick("Вийти з акаунта", "Sign out"))
+        self.acc_in.pack(fill="both", expand=True)
 
     def _acc_err(self, d):
         e = d.get("error")
