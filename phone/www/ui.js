@@ -194,7 +194,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bPgn', '📋 PGN', '📋 PGN'); T('bNew', '♟ Нова', '♟ New');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bAcc', '👤 Акаунт', '👤 Account'); try { accChanged(); } catch (_) { /* ще не готово */ } T('bNew', '♟ Нова', '♟ New');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -504,7 +504,7 @@ async function accHttp(path, body) {
 }
 function accChanged() {
   const b = $('bAcc');
-  if (b) b.classList.toggle('on', !!ACC.user);
+  if (b) { b.classList.toggle('on', !!ACC.user); const n = ACC.user ? ACC.user.nick : ''; b.textContent = n ? '👤 ' + (n.length > 10 ? n.slice(0, 9) + '…' : n) : pick('👤 Акаунт', '👤 Account'); }
   if (ACC.user && ACC.user.chesscom && !CC.user) { CC.user = ACC.user.chesscom; store.set('ca.ccUser', CC.user); }
   if (A.coachLast && A.coachLast[0]) renderCoach(...A.coachLast, true);
   if (A.boxKind === 'acc') openBox('acc');
