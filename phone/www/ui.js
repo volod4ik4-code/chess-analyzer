@@ -194,7 +194,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); try { accChanged(); } catch (_) { /* ще не готово */ } T('bNew', '♟ Нова', '♟ New');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); try { accChanged(); } catch (_) { /* ще не готово */ } T('bNew', '♟ Нова', '♟ New'); T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); $('nList').title = pick('Список оцінених ходів', 'List of graded moves');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -356,7 +356,16 @@ function renderMoves() {
   });
   flush();
   el.innerHTML = html.join('');
+  fillList();
   scrollToCurrent();
+}
+// 1.31.6: кнопка 📜 - повний список ходів з оцінками під усім (копія рядка ходів у стовпчик)
+function fillList() { if (!$('listCard').hidden) $('movesFull').innerHTML = $('moves').innerHTML; }
+function toggleList() {
+  const c = $('listCard');
+  c.hidden = !c.hidden;
+  $('nList').classList.toggle('on', !c.hidden);
+  if (!c.hidden) { fillList(); c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
 }
 
 function scrollToCurrent() {
@@ -366,9 +375,11 @@ function scrollToCurrent() {
 }
 
 function markCurrent() {
-  for (const e of $('moves').querySelectorAll('.cur')) e.classList.remove('cur');
-  if (A.v) { const e = $('moves').querySelector(`[data-line="${A.v.id}"]`); if (e) e.classList.add('cur'); }
-  else { const e = $('moves').querySelector(`[data-k="${A.index}"]`); if (e) e.classList.add('cur'); }
+  for (const box of [$('moves'), $('movesFull')]) {
+    for (const e of box.querySelectorAll('.cur')) e.classList.remove('cur');
+    const e = box.querySelector(A.v ? `[data-line="${A.v.id}"]` : `[data-k="${A.index}"]`);
+    if (e) e.classList.add('cur');
+  }
   scrollToCurrent();
 }
 
@@ -3567,7 +3578,7 @@ async function copyCard() {
 
 function toggleDraw() {
   board.drawMode = !board.drawMode;
-  $('nDraw').classList.toggle('on', board.drawMode);
+  $('nDraw').classList.toggle('on', board.drawMode);   // кнопку сховано (1.31.6), режим лишився
   $('drawBar').hidden = !board.drawMode;
   board.selected = null; board.render();
   layout();
@@ -3595,7 +3606,7 @@ function wire() {
   click('bStudies', () => { if (A.boxKind !== 'studies') tele('f.study'); toggleBox('studies'); });
   click('bRun', startAnalysis);
   click('nStart', goStart); click('nPrev', () => { stopPlay(); step(-1); }); click('nNext', () => { stopPlay(); step(1); });
-  click('nEnd', goEnd); click('nPlay', togglePlay); click('nFlip', flipBoard); click('nDraw', toggleDraw);
+  click('nEnd', goEnd); click('nPlay', togglePlay); click('nFlip', flipBoard); click('nDraw', toggleDraw); click('nList', toggleList);
   click('drawClear', () => { board.shapes = []; board.render(); onShapes([]); });
   click('vBack', exitVar); click('vUndo', undoVar); click('vDel', deleteVar);
   click('askBtn', askSend); click('askClear', askClear);
@@ -3615,7 +3626,7 @@ function wire() {
     const it = e.target.closest('[data-ch]');
     if (it && A.study && A.study.chapters[+it.dataset.ch] !== A.chapter) openChapter(+it.dataset.ch);
   });
-  $('moves').addEventListener('click', e => {
+  for (const mbox of [$('moves'), $('movesFull')]) mbox.addEventListener('click', e => {
     const ln = e.target.closest('[data-line]');
     if (ln) { const line = lineById(ln.dataset.line); if (line && line !== A.v) openLine(line, 1); return; }
     const mv = e.target.closest('[data-k]');

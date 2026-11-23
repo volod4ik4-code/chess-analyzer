@@ -110,6 +110,17 @@ button.google { background: #fff; color: #1f1a12; font-weight: 700; }
 #nav { display: flex; gap: 4px; padding: 6px 0 4px; }
 #nav button { flex: 1; padding: 7px 0; font-size: 16px; }
 #nav button.on { background: var(--accent); color: #fff; }
+#nav #bNew { flex: 2; font-size: 13px; white-space: nowrap; }
+/* 1.31.6: повний список оцінених ходів (кнопка 📜) */
+#movesFull { display: grid; grid-template-columns: 34px 1fr 1fr; row-gap: 2px; font-size: 14px; }
+#movesFull .num { color: var(--muted); padding: 5px 0; text-align: right; padding-right: 6px; }
+#movesFull .mv { padding: 5px 6px; border-radius: 6px; display: flex; gap: 5px; align-items: center; min-width: 0; }
+#movesFull .mv .ev { color: var(--muted); font-size: 11px; margin-left: auto; }
+#movesFull .mv.cur { background: var(--sel); }
+#movesFull .line { grid-column: 1 / -1; background: #34312e; border-radius: 6px; padding: 5px 8px; font-size: 13px;
+  display: flex; gap: 6px; align-items: center; color: #d9d6d1; }
+#movesFull .line.cur { outline: 2px solid var(--accent); }
+#movesFull .empty { grid-column: 1 / -1; color: var(--muted); padding: 6px 0; }
 #drawBar { display: flex; align-items: center; gap: 8px; padding: 0 0 4px; font-size: 12px; color: var(--muted); }
 #drawBar .chips { display: flex; gap: 6px; }
 #drawBar .chip { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; padding: 0; }
