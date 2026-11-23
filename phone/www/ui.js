@@ -3854,7 +3854,7 @@ function wire() {
   click('bNews', () => toggleBox('news'));
   click('bDonate', openDonate);
   click('bAcc', () => { if (A.boxKind === 'acc') closeBox(); else accOpen(); });   // 1.31.0
-  accChanged(); setTimeout(accRefresh, 1500); setTimeout(syncRun, 5000); setInterval(syncRun, 300000);   // 1.31.1
+  accChanged(); setTimeout(accRefresh, 1500); setTimeout(syncRun, 1500); setInterval(syncRun, 300000);   // 1.31.1; 1.31.20: одразу
   click('bCc', lastOpen); click('bBots', () => toggleBox('bots')); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
@@ -3955,6 +3955,7 @@ function wire() {
     if (document.hidden) { flushSave(); teleSend(); return; }
     // повернулися в програму (напр. зі сповіщення) - перевірити оновлення, не частіше разу на 10 хв
     if (Date.now() - (A.lastUpdCheck || 0) > 600000) checkUpdate(false);
+    if (Date.now() - (A.lastSyncTry || 0) > 60000) { A.lastSyncTry = Date.now(); syncRun(); }   // 1.31.20: повернулися - синхронізуємо
   });
   window.addEventListener('pagehide', flushSave);
   document.addEventListener('keydown', e => {
