@@ -551,7 +551,8 @@ function accBody() {
     + `<div class="hint">${esc(u.admin ? pick('🤖 ШІ-тренер: без ліміту', '🤖 AI coach: unlimited')
       : pick(`🤖 ШІ-тренер сьогодні: ще ${u.ai_left} з ${daily}`, `🤖 AI coach today: ${u.ai_left} of ${daily} left`))}</div>`
     + `<div style="white-space:pre-line;margin:6px 0">${esc(accProfileText())}</div>`
-    + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
+    + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на chess.com', 'your chess.com username'))}" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
+    + `<div class="hint">${esc(pick('Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть «Зберегти» — тоді «♞ Партії Chess.com» одразу показуватимуть ваші партії.', 'Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «♞ Chess.com games» will show your games right away.'))}</div>`
     + `<label class="f">Google</label><div class="row"><span style="flex:1;align-self:center">${esc(u.google ? pick('підключено', 'connected') : pick('не підключено', 'not connected'))}</span>${u.google ? '' : `<button id="acGoogle">${esc(pick('Підключити', 'Connect'))}</button>`}</div>`
     + `<label class="f">lichess</label><div class="row"><span style="flex:1;align-self:center">${esc(u.lichess || pick('не підключено', 'not connected'))}</span><button id="acLi">${esc(u.lichess ? pick('Відключити', 'Disconnect') : pick('Підключити', 'Connect'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
