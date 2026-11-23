@@ -194,7 +194,7 @@ function applyLang() {
   T('title', 'Аналізатор', 'Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', 'Партії Chess.com', 'Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
+  T('bCc', 'Останні партії', 'Last games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -670,14 +670,15 @@ function accBody() {
       + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`;
   }
   const daily = u.ai_daily || AI_DAILY;
-  return `<div style="font-weight:700;font-size:1.15em">👤 ${esc(u.nick)}${u.admin ? esc(pick(' · адмін', ' · admin')) : ''}</div>`
+  return (A.accReason ? `<div class="hint" style="color:var(--accent);font-weight:700">${esc(A.accReason)}</div>` : '')
+    + `<div style="font-weight:700;font-size:1.15em">👤 ${esc(u.nick)}${u.admin ? esc(pick(' · адмін', ' · admin')) : ''}</div>`
     + `<div class="hint">${esc(u.admin ? pick('🤖 ШІ-тренер: без ліміту', '🤖 AI coach: unlimited')
       : pick(`🤖 ШІ-тренер сьогодні: ще ${u.ai_left} з ${daily}`, `🤖 AI coach today: ${u.ai_left} of ${daily} left`))}</div>`
     + `<div style="white-space:pre-line;margin:6px 0">${esc(accProfileText())}</div>`
     + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на chess.com', 'your chess.com username'))}" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
-    + `<div class="hint">${esc(pick('Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть «Зберегти» — тоді «♞ Партії Chess.com» одразу показуватимуть ваші партії.', 'Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «♞ Chess.com games» will show your games right away.'))}</div>`
+    + `<div class="hint">${esc(pick('Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть «Зберегти» — тоді «Останні партії» одразу показуватимуть ваші партії.', 'Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «Last games» will show your games right away.'))}</div>`
     + `<label class="f">Google</label><div class="row"><span style="flex:1;align-self:center">${esc(u.google ? pick('підключено', 'connected') : pick('не підключено', 'not connected'))}</span>${u.google ? '' : `<button id="acGoogle">${esc(pick('Підключити', 'Connect'))}</button>`}</div>`
-    + `<label class="f">lichess</label><div class="row"><span style="flex:1;align-self:center">${esc(u.lichess || pick('не підключено', 'not connected'))}</span><button id="acLi">${esc(u.lichess ? pick('Відключити', 'Disconnect') : pick('Підключити', 'Connect'))}</button></div>`
+    + `<label class="f">lichess</label><div class="row ccrow"><input id="acLiNick" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на lichess', 'your lichess username'))}" value="${esc(u.lichess || '')}"><button id="acLiSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
       + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button></div>`
       + `<div class="row"><input id="acBanNick" type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="${esc(pick('нік', 'nickname'))}"><button id="acBan">${esc(pick('⛔ Бан', '⛔ Ban'))}</button><button id="acUnban">${esc(pick('Розбан', 'Unban'))}</button></div>` : '')
@@ -695,7 +696,9 @@ function accWire() {
     if (d.user && d.user.chesscom) { CC.user = d.user.chesscom; store.set('ca.ccUser', CC.user); }
     accStatus(pick('✓ chess.com збережено.', '✓ chess.com saved.'));
   }));
-  on('acLi', accLichess);
+  on('acLiSave', () => accCall('/acc/lichess', { name: $('acLiNick').value.trim() }, d => {     // 1.31.19: нік lichess вручну
+    accTake(d); accStatus(pick('✓ lichess збережено.', '✓ lichess saved.'));
+  }));
   on('acGoogle', accGoogle);
   on('acSync', syncRun);
   on('acAdmG', () => { A.admMode = 'gotw'; openBox('admin'); });
@@ -3041,6 +3044,85 @@ function ccAnalyze(r) {
   closeBox();
   if (loadPgn(r.pgn) && board.flipped !== !r.white) flipBoard();   // свої фігури - знизу
 }
+// ------------------------------------------------------------ 1.31.19: останні партії (chess.com + lichess) ---
+const LG = { rows: [], status: '', seq: 0, key: '' };
+function lastNicks() {
+  const u = ACC.user || {};
+  return { cc: (u.chesscom || CC.user || '').trim(), li: (u.lichess || '').trim() };
+}
+function lastOpen() {
+  if (A.boxKind === 'last') { closeBox(); return; }
+  tele('f.chesscom');
+  const n = lastNicks();
+  if (!n.cc && !n.li) {
+    accOpen(pick('Додайте в профілі свій нік на chess.com або lichess — тоді тут будуть ваші останні партії.',
+      'Add your chess.com or lichess username to your profile — then your last games will be here.'));
+    return;
+  }
+  openBox('last');
+  const key = n.cc + '|' + n.li;
+  if (LG.key !== key || !LG.rows.length) lastLoad(n, key);
+}
+async function lastLoad(n, key) {
+  const seq = ++LG.seq;
+  LG.key = key; LG.rows = []; LG.status = pick('Завантажую партії…', 'Loading games…');
+  lastRender();
+  const out = [], errs = [];
+  if (n.cc) {
+    try {
+      const arch = (await ccGet(`${CC_API}${encodeURIComponent(n.cc.toLowerCase())}/games/archives`)).archives || [];
+      for (const url of arch.slice(-2).reverse()) {
+        out.push(...ccGames(await ccGet(url), n.cc).map(r => ({ ...r, site: 'chess.com' })));
+        if (out.length >= 20) break;
+      }
+    } catch (e) { errs.push('chess.com'); }
+  }
+  if (n.li) {
+    try {
+      const r = await fetch(`https://lichess.org/api/games/user/${encodeURIComponent(n.li)}?max=20&pgnInJson=true&opening=true&clocks=true`,
+        { headers: { Accept: 'application/x-ndjson' } });
+      if (!r.ok) throw new Error('http');
+      const me = n.li.toLowerCase();
+      for (const line of (await r.text()).split('\n')) {
+        if (!line.trim()) continue;
+        const g = JSON.parse(line);
+        if (g.variant !== 'standard' || !g.pgn) continue;
+        const pw = g.players.white || {}, pb = g.players.black || {};
+        const white = ((pw.user || {}).name || '').toLowerCase() === me, opp = white ? pb : pw;
+        const result = !g.winner ? 'draw' : (g.winner === 'white') === white ? 'win' : 'loss';
+        out.push({ end: Math.floor((g.lastMoveAt || g.createdAt || 0) / 1000), white, opp: (opp.user || {}).name || pick('Stockfish', 'Stockfish'),
+          oppRating: opp.rating || null, result, cls: g.speed || '', tc: g.clock ? `${g.clock.initial}+${g.clock.increment}` : '',
+          opening: (g.opening || {}).name || '', pgn: g.pgn, site: 'lichess' });
+      }
+    } catch (e) { errs.push('lichess'); }
+  }
+  if (seq !== LG.seq) return;
+  LG.rows = out.sort((a, b) => b.end - a.end).slice(0, 40);
+  LG.status = (errs.length ? pick(`Не вдалося завантажити: ${errs.join(', ')} (перевірте нік у профілі).`, `Could not load: ${errs.join(', ')} (check the username in your profile).`) + ' ' : '')
+    + (LG.rows.length ? '' : pick('Партій не знайдено.', 'No games found.'));
+  lastRender();
+}
+function lastRender() {
+  if (A.boxKind !== 'last') return;
+  const n = lastNicks(), z = v => String(v).padStart(2, '0');
+  const res = { win: pick('Перемога', 'Win'), loss: pick('Поразка', 'Loss'), draw: pick('Нічия', 'Draw') };
+  const names = Object.fromEntries(CC_CLASSES.map(([k, uk, en]) => [k, pick(uk, en)]));
+  $('boxBody').innerHTML = `<div class="hint">${esc([n.cc && 'chess.com: ' + n.cc, n.li && 'lichess: ' + n.li].filter(Boolean).join(' · '))}</div>`
+    + (LG.status ? `<div class="hint">${esc(LG.status)}</div>` : '')
+    + (LG.rows.length ? `<div class="list cclist" id="lgList">${LG.rows.map((r, i) => {
+      const d = new Date(r.end * 1000), when = r.end ? `${z(d.getDate())}.${z(d.getMonth() + 1)} ${z(d.getHours())}:${z(d.getMinutes())}` : '';
+      const tc = [names[r.cls] || r.cls, r.tc ? ccTime(r.tc) : ''].filter(Boolean).join(' · ');
+      return `<div class="it cc-${r.result}" data-i="${i}"><span class="ccres">${esc(res[r.result])}</span> ${r.white ? '●' : '○'} ${esc(r.opp)}${r.oppRating ? ` (${r.oppRating})` : ''}`
+        + `<small>${esc(r.site)} · ${esc(when)} · ${esc(tc)}${r.opening ? ' · ' + esc(r.opening) : ''}</small></div>`;
+    }).join('')}</div>` : '')
+    + `<div class="row"><button id="lgReload">${esc(pick('Оновити', 'Refresh'))}</button><button id="lgCc">${esc(pick('Усі партії chess.com', 'All chess.com games'))}</button>`
+    + `<button id="lgProf">${esc(pick('Профіль', 'Profile'))}</button></div>`;
+  if ($('lgList')) $('lgList').addEventListener('click', e => { const it = e.target.closest('[data-i]'); if (it) ccAnalyze(LG.rows[+it.dataset.i]); });
+  $('lgReload').addEventListener('click', () => { const k = lastNicks(); lastLoad(k, k.cc + '|' + k.li); });
+  $('lgCc').addEventListener('click', () => { closeBox(); openChesscom(); });
+  $('lgProf').addEventListener('click', () => accOpen());
+}
+
 // ------------------------------------------------------------ 1.29.0: база партій майстрів ---
 const CC_FAMOUS = ["Hikaru", "MagnusCarlsen", "DanielNaroditsky", "FabianoCaruana", "GukeshDommaraju", "Firouzja2003", "AnishGiri", "LyonBeast", "RpragChess", "GothamChess"];
 const MASTERS_URL = 'https://explorer.lichess.ovh/masters';
@@ -3283,6 +3365,10 @@ function openBox(kind) {
   } else if (kind === 'credits') {
     $('boxTitle').textContent = pick('ⓘ  Ліцензія фото', 'ⓘ  Photo license');
     creditsRenderBody();
+  } else if (kind === 'last') {
+    $('boxTitle').textContent = pick('Останні партії', 'Last games');
+    $('overlay').hidden = false;
+    lastRender();
   } else if (kind === 'chesscom') {
     $('boxTitle').textContent = pick('♞  Партії з chess.com', '♞  Games from chess.com');
     $('overlay').hidden = false;
@@ -3769,7 +3855,7 @@ function wire() {
   click('bDonate', openDonate);
   click('bAcc', () => { if (A.boxKind === 'acc') closeBox(); else accOpen(); });   // 1.31.0
   accChanged(); setTimeout(accRefresh, 1500); setTimeout(syncRun, 5000); setInterval(syncRun, 300000);   // 1.31.1
-  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
+  click('bCc', lastOpen); click('bBots', () => toggleBox('bots')); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3

@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.18.1"
+APP_VERSION = "1.31.19"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,12 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.19", "2026-11-23 20:22", [
+        ("«Останні партії» замість «Партії Chess.com»: ваші останні партії з chess.com і lichess разом; торкніться чи двічі клацніть — аналіз. Якщо нік не вписано — відкривається профіль",
+         "«Last games» instead of «Chess.com games»: your latest games from chess.com and lichess together; tap or double-click to analyze. If no username is set, the profile opens"),
+        ("Профіль: поле для ніка lichess (як для chess.com) — входити в lichess не треба",
+         "Profile: a lichess username field (like chess.com) — no lichess sign-in needed"),
+    ]),
     ("1.31.18.1", "2026-11-23 18:46", [
         ("Small fixes", "Small fixes"),
     ]),
@@ -1794,6 +1800,21 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    '«Last games» instead of «Chess.com games»: your latest games from chess.com and lichess together; tap or double-click to analyze. If no username is set, the profile opens': ('«Últimas partidas» no lugar de «Partidas do Chess.com»: suas partidas mais recentes do chess.com e do lichess juntas; toque ou clique duas vezes para analisar. Se não houver apelido, o perfil abre', '«Últimas partidas» en lugar de «Partidas de Chess.com»: tus partidas más recientes de chess.com y lichess juntas; toca o haz doble clic para analizar. Si no hay apodo, se abre el perfil'),
+    'Profile: a lichess username field (like chess.com) — no lichess sign-in needed': ('Perfil: campo do apelido do lichess (como o do chess.com) — não precisa entrar no lichess', 'Perfil: campo del apodo de lichess (como el de chess.com) — no hace falta iniciar sesión en lichess'),
+    'Last games': ('Últimas partidas', 'Últimas partidas'),
+    'your lichess username': ('seu usuário do lichess', 'tu usuario de lichess'),
+    '✓ lichess saved.': ('✓ lichess salvo.', '✓ lichess guardado.'),
+    'Add your chess.com or lichess username to your profile — then your last games will be here.': ('Adicione seu apelido do chess.com ou do lichess ao perfil — então suas últimas partidas aparecerão aqui.', 'Añade tu apodo de chess.com o de lichess al perfil — así tus últimas partidas aparecerán aquí.'),
+    'Could not load: {0} (check the username in your profile).': ('Não foi possível carregar: {0} (verifique o apelido no perfil).', 'No se pudo cargar: {0} (revisa el apodo en tu perfil).'),
+    'No games found.': ('Nenhuma partida encontrada.', 'No se encontraron partidas.'),
+    'All chess.com games': ('Todas as partidas do chess.com', 'Todas las partidas de chess.com'),
+    'Profile': ('Perfil', 'Perfil'),
+    'Refresh': ('Atualizar', 'Actualizar'),
+    'Site': ('Site', 'Sitio'),
+    'Games: {0} · double-click to analyze': ('Partidas: {0} · clique duas vezes para analisar', 'Partidas: {0} · doble clic para analizar'),
+    'Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «Last games» will show your games right away.': ('Digite seu nome de usuário do chess.com (como no seu perfil do chess.com, ex. Hikaru) e toque em «Salvar» — então «Últimas partidas» mostrará suas partidas na hora.', 'Escribe tu nombre de usuario de chess.com (como en tu perfil de chess.com, p. ej. Hikaru) y pulsa «Guardar» — así «Últimas partidas» mostrará tus partidas al instante.'),
+    '↑ Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «Last games» will show your games right away.': ('↑ Digite seu nome de usuário do chess.com (como no seu perfil do chess.com, ex. Hikaru) e toque em «Salvar» — então «Últimas partidas» mostrará suas partidas na hora.', '↑ Escribe tu nombre de usuario de chess.com (como en tu perfil de chess.com, p. ej. Hikaru) y pulsa «Guardar» — así «Últimas partidas» mostrará tus partidas al instante.'),
     'PC: almost no emoji in the interface — only the icon buttons keep them': ('PC: quase sem emojis na interface — ficaram só os ícones dos botões', 'PC: casi sin emojis en la interfaz — solo quedan los iconos de los botones'),
     'Phone: almost no emoji in the interface — only the icon buttons keep them': ('Telefone: quase sem emojis na interface — ficaram só os ícones dos botões', 'Teléfono: casi sin emojis en la interfaz — solo quedan los iconos de los botones'),
     'Phone: in a game against a bot the moves are shown in one row under the board (tap a move to view it)': ('Telefone: numa partida contra um bot os lances aparecem numa linha sob o tabuleiro (toque num lance para vê-lo)', 'Teléfono: en una partida contra un bot las jugadas se ven en una fila bajo el tablero (toca una jugada para verla)'),
@@ -4790,7 +4811,8 @@ def bot_game_over(board):
 
 
 TR_EN.update({b["uk"]: b["en"] for b in BOTS})
-TR_EN["🎓  Розбір"] = "🎓  Review"          # 1.31.15: кнопка «Розбір з тренером»
+TR_EN["🎓  Розбір"] = "🎓  Review"
+TR_EN["Останні партії"] = "Last games"            # 1.31.19          # 1.31.15: кнопка «Розбір з тренером»
 
 
 # -------------------------------------------------------------- оновлення ---
@@ -5518,6 +5540,54 @@ def chesscom_games(url, user):
                      "tc": str(g.get("time_control") or ""), "opening": opening, "pgn": g["pgn"]})
     rows.sort(key=lambda r: r["end"], reverse=True)
     return rows
+
+
+def lichess_games(user, n=20):
+    """1.31.19: останні партії гравця lichess (лише звичайні шахи) у тому ж вигляді, що chesscom_games."""
+    url = f"https://lichess.org/api/games/user/{urllib.parse.quote(user.strip())}?max={n}&pgnInJson=true&opening=true&clocks=true"
+    req = urllib.request.Request(url, headers={"Accept": "application/x-ndjson", "User-Agent": "ChessAnalyzer"})
+    with urllib.request.urlopen(req, timeout=25) as r:
+        text = r.read().decode("utf-8", "replace")
+    me, rows = user.strip().lower(), []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        g = json.loads(line)
+        if g.get("variant") != "standard" or not g.get("pgn"):
+            continue
+        pl = g.get("players") or {}
+        pw, pb = pl.get("white") or {}, pl.get("black") or {}
+        white = ((pw.get("user") or {}).get("name") or "").lower() == me
+        opp = pb if white else pw
+        win = g.get("winner")
+        res = "draw" if not win else ("win" if (win == "white") == white else "loss")
+        clock = g.get("clock") or {}
+        rows.append({"end": int((g.get("lastMoveAt") or g.get("createdAt") or 0) / 1000), "white": white,
+                     "opp": (opp.get("user") or {}).get("name") or "Stockfish", "opp_rating": opp.get("rating"),
+                     "result": res, "class": g.get("speed") or "",
+                     "tc": f"{clock.get('initial')}+{clock.get('increment')}" if clock else "",
+                     "opening": (g.get("opening") or {}).get("name") or "", "pgn": g["pgn"], "site": "lichess"})
+    return rows
+
+
+def last_games(cc, li):
+    """Останні партії з chess.com і lichess разом, новіші перші: (рядки, [сайти, що не відповіли])."""
+    out, errs = [], []
+    if cc:
+        try:
+            for _y, _m, url in chesscom_archives(cc)[:2]:
+                out += [dict(r, site="chess.com") for r in chesscom_games(url, cc)]
+                if len(out) >= 20:
+                    break
+        except Exception:  # noqa: BLE001
+            errs.append("chess.com")
+    if li:
+        try:
+            out += lichess_games(li)
+        except Exception:  # noqa: BLE001
+            errs.append("lichess")
+    out.sort(key=lambda r: r["end"], reverse=True)
+    return out[:40], errs
 
 
 def fmt_time_control(tc):
@@ -7795,7 +7865,7 @@ class App(tk.Tk):
                                ("♪  TikTok", TIKTOK_URL, "tiktok")):
             RButton(bar, text=txt, kind=kind, command=lambda u=url: webbrowser.open(u)).pack(side="right", padx=(8, 0))
         # партії з chess.com - найпомітніша кнопка, з самого краю (жовта, більша; з 1.20.1)
-        RButton(bar, text="♞  Партії Chess.com", kind="chesscom", command=self.toggle_chesscom).pack(side="left")
+        RButton(bar, text="Останні партії", kind="chesscom", command=self.toggle_last).pack(side="left")   # 1.31.19
         RButton(bar, text="🤖  Боти", command=self.toggle_bots).pack(side="left", padx=(8, 0))
         RButton(bar, text="🎓  Розбір", command=self.toggle_review).pack(side="left", padx=(8, 0))   # 1.31.15
         tk.Frame(bar, bg=BORDER, width=1, height=24).pack(side="left", padx=14)
@@ -10004,9 +10074,10 @@ class App(tk.Tk):
         r2 = tk.Frame(f, bg=PANEL)
         r2.pack(fill="x", pady=(0, 14))
         lab(r2, text="lichess", font=fsemi(11), width=10).pack(side="left")
-        self.acc_li = lab(r2, font=("Segoe UI", 11), width=22)
-        self.acc_li.pack(side="left", padx=(0, 8))
-        self.acc_li_btn = RButton(r2, text="Підключити", kind="small", command=self._acc_lichess)
+        self.acc_li = tk.StringVar()                   # 1.31.19: нік lichess вручну (раніше - вхід через lichess)
+        self.acc_li_entry = ttk.Entry(r2, textvariable=self.acc_li, width=22, font=("Segoe UI", 11))
+        self.acc_li_entry.pack(side="left", padx=(0, 8))
+        self.acc_li_btn = RButton(r2, text="Зберегти", kind="small", command=self._acc_save_li)
         self.acc_li_btn.pack(side="left")
         r6 = tk.Frame(f, bg=PANEL)
         r6.pack(fill="x", pady=(0, 14), before=r2)
@@ -10099,11 +10170,12 @@ class App(tk.Tk):
         self.acc_cc.set(u.get("chesscom") or "")
         self.acc_cc_btn.configure(text=pick("Зберегти", "Save"))
         self.acc_cc_hint.configure(text=pick("↑ Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть "
-                                             "«Зберегти» — тоді «♞ Партії Chess.com» одразу показуватимуть ваші партії.",
+                                             "«Зберегти» — тоді «Останні партії» одразу показуватимуть ваші партії.",
                                              "↑ Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press "
-                                             "«Save» — then «♞ Chess.com games» will show your games right away."))
-        self.acc_li.configure(text=u.get("lichess") or pick("не підключено", "not connected"))
-        self.acc_li_btn.configure(text=pick("Відключити", "Disconnect") if u.get("lichess") else pick("Підключити", "Connect"))
+                                             "«Save» — then «Last games» will show your games right away."))
+        if self.focus_get() is not self.acc_li_entry:
+            self.acc_li.set(u.get("lichess") or "")
+        self.acc_li_btn.configure(text=pick("Зберегти", "Save"))
         self.acc_g.configure(text=pick("підключено", "connected") if u.get("google") else pick("не підключено", "not connected"))
         self.acc_g_btn.configure(text=pick("Підключити", "Connect"))
         if u.get("google"):
@@ -10215,6 +10287,124 @@ class App(tk.Tk):
                     self.cc_user_var.set(nick)
             self.acc_status.configure(text=pick("✓ chess.com збережено.", "✓ chess.com saved."))
         self._acc_call("/acc/chesscom", {"chesscom": nick}, ok)
+
+    def _acc_save_li(self):
+        nick = self.acc_li.get().strip()
+
+        def ok(d):
+            self._acc_take_user(d)
+            self.acc_status.configure(text=pick("✓ lichess збережено.", "✓ lichess saved."))
+        self._acc_call("/acc/lichess", {"name": nick}, ok)
+
+    # ---------- 1.31.19: «Останні партії» з chess.com і lichess
+    def toggle_last(self):
+        if getattr(self, "last_box", None) is not None and self.last_box.is_open:
+            self.last_box.hide()
+            return
+        tele_count("f.chesscom")
+        u = ACC["user"] or {}
+        cc, li = (u.get("chesscom") or self._cc_user or "").strip(), (u.get("lichess") or "").strip()
+        if not cc and not li:
+            reason = pick("Додайте в профілі свій нік на chess.com або lichess — тоді тут будуть ваші останні партії.",
+                          "Add your chess.com or lichess username to your profile — then your last games will be here.")
+            self.toggle_account(reason)
+            self.acc_status.configure(text=reason)
+            return
+        if getattr(self, "last_box", None) is None:
+            self._build_last_box()
+        self.last_box.title.configure(text=pick("Останні партії", "Last games"))
+        self.last_who.configure(text="  ·  ".join(x for x in (cc and "chess.com: " + cc, li and "lichess: " + li) if x))
+        self.last_box.show()
+        if getattr(self, "_last_key", None) != (cc, li) or not self._last_rows:
+            self._last_load(cc, li)
+
+    def _build_last_box(self):
+        self.last_box = OverlayBox(self, "")
+        body = tk.Frame(self.last_box.box, bg=PANEL)
+        body.pack(fill="both", expand=True, padx=20, pady=(8, 14))
+        self.last_who = tk.Label(body, bg=PANEL, fg=MUTED, font=("Segoe UI", 10), anchor="w")
+        self.last_who.pack(anchor="w")
+        mid = tk.Frame(body, bg=PANEL)
+        mid.pack(fill="both", expand=True, pady=(8, 0))
+        cols = ("site", "date", "side", "opp", "res", "tc", "open")
+        tv = ttk.Treeview(mid, columns=cols, show="headings", selectmode="browse", height=16)
+        for c, w, a in (("site", 84, "w"), ("date", 104, "w"), ("side", 30, "center"), ("opp", 200, "w"), ("res", 96, "w"),
+                        ("tc", 110, "w"), ("open", 280, "w")):
+            tv.column(c, width=w, minwidth=30, anchor=a, stretch=(c == "open"))
+        tv.tag_configure("win", foreground="#9bd36a")
+        tv.tag_configure("loss", foreground="#ec7c6a")
+        tv.tag_configure("draw", foreground=MUTED)
+        sb = ttk.Scrollbar(mid, orient="vertical", command=tv.yview)
+        tv.configure(yscrollcommand=sb.set)
+        tv.pack(side="left", fill="both", expand=True)
+        sb.pack(side="right", fill="y")
+        tv.bind("<Double-Button-1>", lambda e: self._last_analyze())
+        tv.bind("<Return>", lambda e: self._last_analyze())
+        self.last_tree = tv
+        bot = tk.Frame(body, bg=PANEL)
+        bot.pack(fill="x", pady=(12, 0))
+        self.last_status = tk.Label(bot, bg=PANEL, fg=MUTED, font=("Segoe UI", 10), anchor="w")
+        self.last_status.pack(side="left")
+        self.last_btns = [RButton(bot, text="", style="Accent.TButton", command=self._last_analyze),
+                          RButton(bot, text="", style="Small.TButton", command=self.last_box.hide),
+                          RButton(bot, text="", style="Small.TButton", command=lambda: (self.last_box.hide(), self.toggle_account())),
+                          RButton(bot, text="", style="Small.TButton", command=lambda: (self.last_box.hide(), self.toggle_chesscom())),
+                          RButton(bot, text="", style="Small.TButton", command=lambda: self._last_load(*self._last_key))]
+        for i, b in enumerate(self.last_btns):
+            b.pack(side="right", padx=(0, 0 if i == 0 else 8))
+        self._last_rows = []
+
+    def _last_lang(self):
+        for c, uk, en in (("site", "Сайт", "Site"), ("date", "Дата", "Date"), ("side", "", ""), ("opp", "Суперник", "Opponent"),
+                          ("res", "Результат", "Result"), ("tc", "Контроль", "Time"), ("open", "Дебют", "Opening")):
+            self.last_tree.heading(c, text=pick(uk, en) if uk else "")
+        for b, (uk, en) in zip(self.last_btns, (("Аналізувати", "Analyze"), ("Закрити", "Close"), ("Профіль", "Profile"),
+                                                 ("Усі партії chess.com", "All chess.com games"), ("Оновити", "Refresh"))):
+            b.configure(text=pick(uk, en))
+
+    def _last_load(self, cc, li):
+        self._last_key = (cc, li)
+        self._last_rows = []
+        self._last_fill()
+        self.last_status.configure(text=pick("Завантажую партії…", "Loading games…"))
+        key = self._last_key
+
+        def done(r):
+            if self._last_key != key:
+                return
+            self._last_rows, errs = r
+            self._last_fill()
+            msg = (pick(f"Не вдалося завантажити: {', '.join(errs)} (перевірте нік у профілі).",
+                        f"Could not load: {', '.join(errs)} (check the username in your profile).") + "  ") if errs else ""
+            n = len(self._last_rows)
+            self.last_status.configure(text=msg + (pick(f"Партій: {n} · подвійний клік — аналіз", f"Games: {n} · double-click to analyze")
+                                                   if n else pick("Партій не знайдено.", "No games found.")))
+        self._bg(lambda: last_games(cc, li), done)
+
+    def _last_fill(self):
+        self._last_lang()
+        tv = self.last_tree
+        tv.delete(*tv.get_children())
+        names = {k: pick(uk, en) for k, uk, en in self.CC_CLASSES}
+        res = {"win": pick("Перемога", "Win"), "loss": pick("Поразка", "Loss"), "draw": pick("Нічия", "Draw")}
+        for i, r in enumerate(self._last_rows):
+            when = datetime.datetime.fromtimestamp(r["end"]).strftime("%d.%m %H:%M") if r["end"] else ""
+            tc = "  ·  ".join(x for x in (names.get(r["class"], r["class"]), fmt_time_control(r["tc"]) if r["tc"] else "") if x)
+            opp = r["opp"] + (f" ({r['opp_rating']})" if r.get("opp_rating") else "")
+            tv.insert("", "end", iid=str(i), values=(r["site"], when, "●" if r["white"] else "○", opp, res[r["result"]], tc,
+                                                    r["opening"]), tags=(r["result"],))
+
+    def _last_analyze(self):
+        sel = self.last_tree.selection()
+        if not sel or not (0 <= int(sel[0]) < len(self._last_rows)):
+            self.last_status.configure(text=pick("Виберіть партію в списку.", "Choose a game in the list."))
+            return
+        r = self._last_rows[int(sel[0])]
+        self.last_box.hide()
+        before = self.game
+        self._load_pgn(r["pgn"])
+        if self.game is not before and bool(self.board.flipped) != (not r["white"]):
+            self.flip_board()
 
     def _acc_lichess(self):
         u = ACC["user"] or {}
