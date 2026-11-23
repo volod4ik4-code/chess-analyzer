@@ -184,15 +184,15 @@ button.x { background: transparent; padding: 2px 8px; font-size: 16px; color: va
   scroll-snap-type: x mandatory;   /* 1.31.9: хід «примагнічується» до центру */
   -webkit-overflow-scrolling: touch; }
 #movesCard::-webkit-scrollbar { display: none; }
-#moves { display: flex; flex-wrap: nowrap; align-items: center; gap: 2px; font-size: 16px; white-space: nowrap; min-height: 38px; }
-#moves .num { color: var(--muted); padding: 6px 1px 6px 8px; flex: none; }
-#moves .mv { padding: 6px 8px; border-radius: 6px; display: inline-flex; gap: 4px; align-items: center; flex: none; font-weight: 600; }
-#moves .mv svg { width: 18px; height: 18px; }
+#moves { display: flex; flex-wrap: nowrap; align-items: center; gap: 1px; font-size: 14px; white-space: nowrap; min-height: 28px; }
+#moves .num { color: var(--muted); padding: 3px 1px 3px 6px; flex: none; }
+#moves .mv { padding: 3px 6px; border-radius: 6px; display: inline-flex; gap: 4px; align-items: center; flex: none; font-weight: 600; }
+#moves .mv svg { width: 15px; height: 15px; }
 #moves .mv { scroll-snap-align: center; transition: background-color .2s ease, transform .2s ease; }
 #moves .mv.cur { transform: scale(1.08); }
 #moves .mv .ev { display: none; }
 #moves .mv.cur { background: var(--sel); box-shadow: inset 0 -2px 0 #d9d6d1; }
-#moves .line { flex: none; background: #34312e; border-radius: 6px; padding: 5px 8px; font-size: 13px;
+#moves .line { flex: none; background: #34312e; border-radius: 6px; padding: 3px 7px; font-size: 12.5px;
   display: inline-flex; gap: 6px; align-items: center; color: #d9d6d1; }
 #moves .line .ev { display: none; }
 #moves .line.cur { outline: 2px solid var(--accent); }
