@@ -372,7 +372,7 @@ function scrollToCurrent() {
   if (A.stripUser) return;                     // гравець саме гортає рядок пальцем
   const box = $('movesCard'), cur = $('moves').querySelector('.cur');
   if (!cur) return;
-  box.scrollLeft = Math.max(0, cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2);   // 1.31.5: поточний хід - по центру рядка
+  box.scrollTo({ left: Math.max(0, cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2), behavior: 'smooth' });   // 1.31.9: плавно   // 1.31.5: поточний хід - по центру рядка
 }
 
 function markCurrent() {
@@ -393,15 +393,26 @@ function renderSummary() {
     `<tr class="acc"><td>${esc(tr('Точність'))}</td><td class="n">${s.white_acc.toFixed(1)}%</td><td class="n">${s.black_acc.toFixed(1)}%</td></tr>`];
   for (const q of Object.keys(QUALITY)) {
     rows.push(`<tr><td>${qBadge(q)} <span style="color:${QUALITY[q][0]}">${esc(qname(q))}</span></td>`
-      + `<td class="n">${(s.white_counts || {})[q] || 0}</td><td class="n">${(s.black_counts || {})[q] || 0}</td></tr>`);
+      + qCell(q, true, (s.white_counts || {})[q] || 0) + qCell(q, false, (s.black_counts || {})[q] || 0) + '</tr>');
   }
   // 1.26.6 (користувач): пропущені «Геніальні» - торкання числа показує їх по черзі
+  // 1.31.9: торкання числа - перший хід з такою оцінкою (у вкладці «Оцінка партії»)
   const mb = w => { const n = missedList(w).length; return `<td class="n">${n ? `<button class="missedBtn" data-missed="${w ? 'w' : 'b'}">${n}</button>` : 0}</td>`; };
   rows.push(`<tr class="missed"><td>💎 <span style="color:${QUALITY['Геніальний'][0]}">${esc(pick('Пропущені геніальні', 'Missed brilliants'))}</span></td>${mb(true)}${mb(false)}</tr>`);
   el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`
     + (analysing() ? '' : `<button class="gotwBtn" data-gotw="1">${esc(pick('🏆 Подати заявку на гру тижня', '🏆 Apply for game of the week'))}</button>`);
 }
 
+function qCell(q, white, n) { return `<td class="n">${n ? `<button class="qBtn" data-q="${esc(q)}" data-side="${white ? 'w' : 'b'}">${n}</button>` : 0}</td>`; }
+function gotoQuality(q, white) {
+  const r = A.res;
+  if (!r) return;
+  const i = r.moves.findIndex((m, k) => m.quality === q && r.fens[k].includes(' w ') === white);
+  if (i < 0) return;
+  toggleList(false);
+  stopPlay();
+  jump(i + 1);
+}
 function missedList(white) {
   const r = A.res;
   if (!r || r.free) return [];
@@ -409,10 +420,10 @@ function missedList(white) {
 }
 
 /** Торкання числа пропущених «Геніальних»: наступна така позиція (по колу) зі стрілкою геніального ходу. */
-function gotoMissed(white) {
+function gotoMissed(white, first = false) {
   const idx = missedList(white);
   if (!idx.length) return;
-  const k = idx.find(i => i > A.index || (i === A.index && !A.missedShown)) ?? idx[0];
+  const k = first ? idx[0] : (idx.find(i => i > A.index || (i === A.index && !A.missedShown)) ?? idx[0]);
   goto(k, false);
   const m = A.res.moves[k], n = idx.indexOf(k) + 1;
   board.arrow = m.best_uci; board.render();
@@ -3600,7 +3611,12 @@ function wire() {
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3
-  document.addEventListener('click', e => { const b = e.target.closest('[data-missed]'); if (b) gotoMissed(b.dataset.missed === 'w'); });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-missed]');
+    if (b) { const inPage = !$('gradesPage').hidden; if (inPage) toggleList(false); gotoMissed(b.dataset.missed === 'w', inPage); }
+    const qb = e.target.closest('[data-q]');
+    if (qb) gotoQuality(qb.dataset.q, qb.dataset.side === 'w');
+  });
   document.addEventListener('click', e => {     // TikTok / Telegram / GitHub під верхніми кнопками (1.26.2)
     const b = e.target.closest('[data-link]'), u = b && D[b.dataset.link];
     if (u) { if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank'); }
@@ -3641,7 +3657,8 @@ function wire() {
         const d = Math.abs(e.offsetLeft + e.offsetWidth / 2 - mid);
         if (d < bd) { bd = d; best = e; }
       }
-      if (best && (A.v || +best.dataset.k !== A.index)) { stopPlay(); jump(+best.dataset.k); }
+      const k = best ? +best.dataset.k : A.index;
+      if (best && (A.v || k !== A.index)) { stopPlay(); if (A.v) jump(k); else goto(k, Math.abs(k - A.index) === 1); }   // один хід - з анімацією фігури
     };
     const arm = () => { clearTimeout(idle); idle = setTimeout(() => { if (!touching) { A.stripUser = false; scrollToCurrent(); } }, 200); };
     const start = () => { touching = true; A.stripUser = true; clearTimeout(idle); };
