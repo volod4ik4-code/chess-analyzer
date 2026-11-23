@@ -644,6 +644,7 @@ export function missedBrilliant(board, peBefore, rating = null, prevBril = false
   const sign = board.turn === 'w' ? 1 : -1;
   if (sign * peBefore.cp <= -(MATE - 100)) return false;    // 1.27.16: мат у будь-якому разі
   const winB = expectedPoints(sign * peBefore.cp, rating);
+  if (zone(winB) === 0) return false;                       // 1.31.15.2: у програшній позиції «!!» не буває
   if (prevBril && sign * peBefore.cp < -100) return false;   // 1.29.2.1: була б лише «!»
   const secondW = peBefore.second != null ? expectedPoints(sign * peBefore.second, rating) : null;
   const after = board.copy(); after.push(best);
