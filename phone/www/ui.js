@@ -191,10 +191,10 @@ function applyLang() {
   document.documentElement.lang = cfg.lang;
   document.title = tr('Аналізатор шахових партій');
   const T = (id, uk, en) => { $(id).textContent = pick(uk, en); };
-  T('title', '♞ Аналізатор', '♞ Chess Analyzer');
+  T('title', 'Аналізатор', 'Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
+  T('bCc', 'Партії Chess.com', 'Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -494,7 +494,7 @@ function renderSummary() {
   // 1.26.6 (користувач): пропущені «Геніальні» - торкання числа показує їх по черзі
   // 1.31.9: торкання числа - перший хід з такою оцінкою (у вкладці «Оцінка партії»)
   const mb = w => { const n = missedList(w).length; return `<td class="n">${n ? `<button class="missedBtn" data-missed="${w ? 'w' : 'b'}">${n}</button>` : 0}</td>`; };
-  rows.push(`<tr class="missed"><td>💎 <span style="color:${QUALITY['Геніальний'][0]}">${esc(pick('Пропущені геніальні', 'Missed brilliants'))}</span></td>${mb(true)}${mb(false)}</tr>`);
+  rows.push(`<tr class="missed"><td><span style="color:${QUALITY['Геніальний'][0]}">${esc(pick('Пропущені геніальні', 'Missed brilliants'))}</span></td>${mb(true)}${mb(false)}</tr>`);
   el.innerHTML = `<div class="cardHead">${esc(tr('ОЦІНКА ПАРТІЇ'))}</div><table>${rows.join('')}</table>`
     + (analysing() ? '' : `<button class="gotwBtn" data-gotw="1">${esc(pick('🏆 Подати заявку на гру тижня', '🏆 Apply for game of the week'))}</button>`);
 }
@@ -2556,8 +2556,8 @@ function botsRenderBody() {
     + `<small>${esc(spec.years)} · ${esc(pick('рейтинг', 'rating'))} ${spec.elo} · ${esc(cat)}</small>`
     + `<div class="st">${starsText(stars[spec.id] || 0)} <small style="color:var(--muted);letter-spacing:0">${esc(pick('ваш рекорд', 'your record'))}</small></div></div></div>`
     + `<div class="botdesc">${esc(pick(spec.d_uk, spec.d_en))}</div>`
-    + `<div class="botfact">💡 ${esc(pick(spec.fact_uk, spec.fact_en))}</div>`
-    + `<div class="botopen">♟ ${esc(pick(spec.open_uk, spec.open_en))}</div>`
+    + `<div class="botfact">${esc(pick(spec.fact_uk, spec.fact_en))}</div>`
+    + `<div class="botopen">${esc(pick(spec.open_uk, spec.open_en))}</div>`
     + `<label class="f">${esc(pick('Ваш колір', 'Your colour'))}</label><div class="seg" id="btColor">`
     + [pick('♔ Білими', '♔ White'), pick('♚ Чорними', '♚ Black'), pick('🎲 Навмання', '🎲 Random')]
       .map((l, i) => `<button data-c="${i}"${i === colorI ? ' class="on"' : ''}>${esc(l)}</button>`).join('') + '</div>'
@@ -2669,12 +2669,12 @@ function botCoach() {
   let me = -1;
   items.forEach((x, i) => { if (typeof x === 'object') me = i; });
   for (const x of (me >= 0 && items.length - me <= 3 ? items.slice(me) : items.slice(-1))) {
-    if (typeof x === 'object') lines.push('🗨 ' + pick('Ви', 'You') + ': ' + x.me, x.a || pick('Пише…', 'Typing…'));
+    if (typeof x === 'object') lines.push(pick('Ви', 'You') + ': ' + x.me, x.a || pick('Пише…', 'Typing…'));
     else lines.push(x);
   }
-  if (b.thinking) lines.push('⏳ ' + pick('Думає над ходом…', 'Thinking about the move…'));
+  if (b.thinking) lines.push(pick('Думає над ходом…', 'Thinking about the move…'));
   else if (!lines.length) lines.push(pick('Ваш хід.', 'Your move.'));
-  return [`💬 ${botName(b.spec)}`, lines];
+  return [`${botName(b.spec)}`, lines];
 }
 
 /** Репліка бота: ШІ (у характері шахіста, без підказок) або запасна фраза. */
@@ -2741,7 +2741,7 @@ function botKick() {
 async function coachExplain(b, v, row) {
   const j = v.rows.indexOf(row) + 1;
   if (j < 1) return;
-  const head = `🎓 ${row.label}${row.san} — ${qname(row.quality)}`;
+  const head = `${row.label}${row.san} — ${qname(row.quality)}`;
   let text = null;
   if (!ACC.token) text = pick('ШІ-пояснення працюють з акаунтом: увійдіть (👤).', 'AI explanations need an account: sign in (👤).');
   else if (cfg.ai) {
@@ -2884,7 +2884,7 @@ function botendStats() {
   const best = ['Геніальний', 'Чудовий'].map(q => done.find(r => r.quality === q)).find(Boolean);
   if (best) lines.push('⭐ ' + pick('Ваш найкращий хід: ', 'Your best move: ') + `${best.label}${best.san} (${qname(best.quality)})`);
   const worst = done.reduce((w, r) => (!w || (r.drop || 0) > (w.drop || 0) ? r : w), null);
-  if (worst && (worst.drop || 0) >= 10) lines.push('⚠ ' + pick('Найдорожча помилка: ', 'Costliest mistake: ') + `${worst.label}${worst.san} (${qname(worst.quality)})`);
+  if (worst && (worst.drop || 0) >= 10) lines.push(''+ pick('Найдорожча помилка: ', 'Costliest mistake: ') + `${worst.label}${worst.san} (${qname(worst.quality)})`);
   return { stats: parts.join(' · '), lines, pending };
 }
 
@@ -3163,8 +3163,8 @@ function openBox(kind) {
       + chk('sTele', pick('Надсилати анонімну статистику', 'Send anonymous statistics'), TELE.on === true)
       + `<div class="hint" id="sStats" style="white-space:pre-line"></div>`
       + `<label class="f">${esc(pick('Ми в мережі', 'Follow us'))}</label><div class="social">`   // 1.26.6: з верху сторінки сюди
-      + `<button data-link="TIKTOK_URL">♪ TikTok</button><button data-link="TELEGRAM_URL">✈ Telegram</button>`
-      + `<button data-link="GITHUB_URL">🐙 GitHub</button></div>`
+      + `<button data-link="TIKTOK_URL">TikTok</button><button data-link="TELEGRAM_URL">Telegram</button>`
+      + `<button data-link="GITHUB_URL">GitHub</button></div>`
       + `<div class="hint">${esc(pick('Версія', 'Version'))} ${esc(D.APP_VERSION)}</div>`
       + `<div class="row"><button id="sReset">${esc(tr('Скинути налаштування'))}</button><button id="sDone" class="primary">${esc(tr('Готово'))}</button></div>`;
     const on = (id, ev, fn) => $(id).addEventListener(ev, fn);

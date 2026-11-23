@@ -34,8 +34,11 @@ export function xl(en) {
   if (_xlCache.size < 5000) _xlCache.set(key, out);
   return out;
 }
-export const pick = (uk, en) => (S.lang === 'en' ? xl(en) : uk);
-export const tr = uk => (S.lang === 'en' ? xl(D.TR_EN[uk] ?? uk) : uk);
+// 1.31.17 (користувач): у текстах інтерфейсу без смайликів; значки-кнопки (☕ ✨ ⚙ 📖 📋 ⏮ ◀ ▶ ⏭ ⇅) - в index.html
+const EMOJI = /[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{1F3FB}-\u{1F3FF}]+[\s ]*/gu;
+export const noEmoji = s => (typeof s === 'string' ? s.replace(EMOJI, '') : s);
+export const pick = (uk, en) => noEmoji(S.lang === 'en' ? xl(en) : uk);
+export const tr = uk => noEmoji(S.lang === 'en' ? xl(D.TR_EN[uk] ?? uk) : uk);
 export const qname = q => (S.lang === 'en' ? xl(D.QUALITY_EN[q] ?? q) : q);
 export const uiLang = () => S.xl || S.lang;
 
