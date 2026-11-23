@@ -362,9 +362,7 @@ function renderMoves() {
 function scrollToCurrent() {
   const box = $('movesCard'), cur = $('moves').querySelector('.cur');
   if (!cur) return;
-  const top = cur.offsetTop, bottom = top + cur.offsetHeight;
-  if (top < box.scrollTop) box.scrollTop = top - 8;
-  else if (bottom > box.scrollTop + box.clientHeight) box.scrollTop = bottom - box.clientHeight + 8;
+  box.scrollLeft = Math.max(0, cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2);   // 1.31.5: поточний хід - по центру рядка
 }
 
 function markCurrent() {
