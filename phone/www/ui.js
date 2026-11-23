@@ -177,7 +177,7 @@ function layout() {
   $('evalbar').hidden = !showEval;
   const evalW = showEval ? 20 : 0;
   const top = $('top').offsetHeight + $('actions').offsetHeight;
-  const fixed = 52 + $('nav').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
+  const fixed = 40 + $('nav').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
   let size = wide ? Math.min(H - top - fixed, W * 0.55 - evalW) : Math.min(W - 20 - evalW, H - top - fixed - 150);   // 1.31.13: розмір дошки як до 1.31.11
   size = Math.max(200, Math.floor(size / 8) * 8);
   board.setSize(size);
@@ -326,6 +326,14 @@ function qBadge(q, r = null) {
 function renderMoves() {
   const el = $('moves');
   if (!A.res) { el.innerHTML = `<div class="empty">${esc(pick('Тут з\'являться ходи партії.', 'The game moves will appear here.'))}</div>`; return; }
+  if (botLive() && A.v) {                 // 1.31.16: гра з ботом - ходи одним рядком (без оцінок)
+    el.innerHTML = A.v.rows.map((r, i) => (r.label.endsWith('.') || i === 0 ? `<span class="num">${esc(r.label)}</span>` : '')
+      + `<span class="mv${A.v.index === i + 1 ? ' cur' : ''}" data-j="${i + 1}"><span>${esc(r.san)}</span></span>`).join('')
+      || `<div class="empty">${esc(pick('Ходів ще немає.', 'No moves yet.'))}</div>`;
+    fillList();
+    scrollToCurrent();
+    return;
+  }
   const res = A.res, n = res.moves.length;
   const byParent = {};
   for (const ln of [...A.lines].sort((a, b) => a.base - b.base)) {
@@ -465,7 +473,8 @@ function scrollToCurrent() {
 function markCurrent() {
   for (const box of [$('moves'), $('movesFull')]) {
     for (const e of box.querySelectorAll('.cur')) e.classList.remove('cur');
-    const e = box.querySelector(A.v ? `[data-line="${A.v.id}"]` : `[data-k="${A.index}"]`);
+    const e = A.v ? (box.querySelector(`[data-j="${A.v.index}"]`) || box.querySelector(`[data-line="${A.v.id}"]`))
+      : box.querySelector(`[data-k="${A.index}"]`);
     if (e) e.classList.add('cur');
   }
   scrollToCurrent();
@@ -3827,6 +3836,8 @@ function wire() {
     }, { passive: true });
   })();
   for (const mbox of [$('moves'), $('movesFull')]) mbox.addEventListener('click', e => {
+    const jb = e.target.closest('[data-j]');
+    if (jb && A.v) { stopPlay(); gotoVar(+jb.dataset.j, false); return; }   // 1.31.16: хід гри з ботом
     const ln = e.target.closest('[data-line]');
     if (ln) { const line = lineById(ln.dataset.line); if (line && line !== A.v) openLine(line, 1); if (mbox.id === 'movesFull') toggleList(false); return; }
     const mv = e.target.closest('[data-k]');
