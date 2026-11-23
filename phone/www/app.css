@@ -266,7 +266,7 @@ button:active { transform: scale(.96); }
 /* chess.com (з 1.21.0): жовта, більша кнопка з самого лівого краю */
 #actions { flex-wrap: wrap; }
 #actions button.cc { flex: 1 0 56%; background: #ffdd00; color: #1f1a12; font-weight: 800; font-size: 15px; padding: 10px 14px; }
-#actions button.row2 { flex: 1 1 30%; min-width: 0; padding: 8px 4px; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; }
+#actions button.row2 { flex: 1 1 40%; min-width: 0; padding: 8px 4px; font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; }
 #actions button.bots { flex: 1 0 28%; font-weight: 800; font-size: 15px; padding: 10px 14px; }
 #app.wide #actions button.cc, #app.wide #actions button.bots { flex: 0 0 auto; }
 .aibtn { margin-top: 8px; width: 100%; }

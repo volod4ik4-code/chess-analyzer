@@ -177,8 +177,9 @@ function layout() {
   $('evalbar').hidden = !showEval;
   const evalW = showEval ? 20 : 0;
   const top = $('top').offsetHeight + $('actions').offsetHeight;
-  const fixed = 52 + $('nav').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
-  let size = wide ? Math.min(H - top - fixed, W * 0.55 - evalW) : Math.min(W - 20 - evalW, H - top - fixed - 150);
+  const fixed = 52 + $('nav').offsetHeight + $('movesCard').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
+  const bar = $('bottomBar').offsetHeight;          // 1.31.11: нижня панель і більше місця тренерові (210 px)
+  let size = wide ? Math.min(H - top - fixed - bar, W * 0.55 - evalW) : Math.min(W - 20 - evalW, H - top - fixed - bar - 210);
   size = Math.max(200, Math.floor(size / 8) * 8);
   board.setSize(size);
   $('evalbar').style.height = size + 'px';
@@ -194,7 +195,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -1127,7 +1128,9 @@ async function startAnalysis() {
     if (doc === A.docId) {
       teleAnalysis(res);
       showResults(res);
-      if (cfg.review !== false && !res.free) toggleList(true);   // 1.31.8: одразу вкладка «Оцінка партії»
+      // 1.31.11: по центру - «Аналіз завершено» і питання, чи відкрити «Оцінку партії»
+      if (cfg.review !== false && !res.free) modal(pick('✅ Аналіз завершено. Відкрити оцінку партії?', '✅ Analysis complete. Open the game review?'),
+        [[pick('Ні', 'No'), false], [pick('📊 Відкрити', '📊 Open'), true]]).then(ok => { if (ok) toggleList(true); });
       // розбивка часу: увесь аналіз / сам рушій (щоб було видно, що гальмує)
       const all = (performance.now() - tAnalysis) / 1000, eng = (engine.searchMs || 0) / 1000;
       const base = A.statusFn();
@@ -1161,7 +1164,7 @@ function showResults(res, save = true) {
   let extra = '';
   if (s.opening) extra = `  ·  ${s.opening[0]} ${s.opening[1]}`;
   else if (A.bookErr) extra = '  ·  ' + tr('без теорії (базу дебютів не завантажено)');
-  setStatus(() => `${tr('Готово')} · ${tr('результат')} ${s.result}${extra}`);
+  setStatus(() => `${pick('✅ Аналіз завершено', '✅ Analysis complete')} · ${tr('результат')} ${s.result}${extra}`);
   renderPlayers(); renderSummary(); renderMoves(); drawGraph();
   puzzlesCollect(res);
   board.interactive = true;
@@ -1641,8 +1644,6 @@ function puzzlesCollect(res) {
     if (!add.length) return;
     d.list = d.list.concat(add).slice(-PZ_MAX);
     pzSave(d);
-    const old = A.statusFn;
-    setStatus(() => old() + '  ·  ' + pick(`🧩 нових задач: ${add.length}`, `🧩 new puzzles: ${add.length}`));
   } catch (_) { /* */ }
 }
 function pzNext(d, now, skip) {
@@ -2992,7 +2993,7 @@ function openBox(kind) {
         ['lite', pick('Stockfish 19 lite — швидший, слабший', 'Stockfish 19 lite — faster, weaker')]], cfg.engine)}`
       + (A.engDl ? `<div class="hint">${esc(pick('Рушій «усі ядра» завантажується…', 'The "all cores" engine is downloading…'))}</div>` : '')
       + `<label class="f">${esc(tr('Стрілка'))}</label>${sel('sArrow', D.ARROW_MODES.map(m => [m, pick(...ARROW_LABELS[m])]), cfg.arrow)}`
-      + chk('sReview', pick('Після аналізу відкривати оцінку партії', 'Open the game review after analysis'), cfg.review !== false)
+      + chk('sReview', pick('Після аналізу питати, чи відкрити оцінку партії', 'After the analysis, ask to open the game review'), cfg.review !== false)
       + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
@@ -3607,7 +3608,7 @@ function wire() {
   click('bDonate', openDonate);
   click('bAcc', () => { if (A.boxKind === 'acc') closeBox(); else accOpen(); });   // 1.31.0
   accChanged(); setTimeout(accRefresh, 1500); setTimeout(syncRun, 5000); setInterval(syncRun, 300000);   // 1.31.1
-  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
+  click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3

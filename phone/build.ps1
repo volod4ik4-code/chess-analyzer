@@ -1,3 +1,4 @@
+# (1.31.11: d8/apksigner - прямо через java, без .bat: .bat відкривали видимі вікна cmd)
 # Збірка «Chess Analyzer.apk» без Android Studio і Gradle: aapt2 + javac + d8 + zipalign + apksigner.
 # Інструменти й ключ підпису - у %USERPROFILE%\.chess_analyzer_android (jdk, sdk, key).
 # Поруч з цим файлом: www\ (сторінка програми), android\ (маніфест, ресурси, MainActivity.java),
@@ -39,7 +40,7 @@ Copy-Item "$here\build.ps1", "$here\gen_data.py" "$b\assets\src\"
 $java = @(Get-ChildItem "$b\gen", "$here\android\src" -Recurse -Filter *.java | ForEach-Object FullName)
 & javac -source 8 -target 8 -encoding UTF-8 -Xlint:-options -bootclasspath $jar -d "$b\classes" @java; Check "javac"
 $classes = Get-ChildItem "$b\classes" -Recurse -Filter *.class | ForEach-Object FullName
-& "$bt\d8.bat" --release --min-api 24 --lib $jar --output "$b\dex" @classes; Check "d8"
+& java -Xmx1024M -cp "$bt\lib\d8.jar" com.android.tools.r8.D8 --release --min-api 24 --lib $jar --output "$b\dex" @classes; Check "d8"
 
 # переписуємо архів начисто (те саме стиснення для кожного файлу) і додаємо classes.dex
 python -c "import sys,zipfile; s=zipfile.ZipFile(sys.argv[1]); d=zipfile.ZipFile(sys.argv[2],'w'); [d.writestr(i.filename, s.read(i.filename), compress_type=i.compress_type) for i in s.infolist()]; d.write(sys.argv[3],'classes.dex',compress_type=zipfile.ZIP_DEFLATED); d.write(sys.argv[4],'lib/arm64-v8a/libstockfish.so',compress_type=zipfile.ZIP_DEFLATED); d.close()" "$b\base.apk" "$b\unaligned.apk" "$b\dex\classes.dex" "$here\nativelib\arm64-v8a\libstockfish.so"; Check "add dex"
@@ -55,7 +56,7 @@ if (-not (Test-Path $ks)) {
     & keytool -genkeypair -keystore $ks -storetype PKCS12 -alias chessanalyzer -keyalg RSA -keysize 2048 `
         -validity 36500 -storepass $pw -keypass $pw -dname "CN=Chess Analyzer" | Out-Null; Check "keytool"
 }
-& "$bt\apksigner.bat" sign --ks $ks --ks-pass "file:$pwFile" --out "$b\signed.apk" "$b\aligned.apk"; Check "apksigner sign"
-& "$bt\apksigner.bat" verify "$b\signed.apk"; Check "apksigner verify"
+& java -jar "$bt\lib\apksigner.jar" sign --ks $ks --ks-pass "file:$pwFile" --out "$b\signed.apk" "$b\aligned.apk"; Check "apksigner sign"
+& java -jar "$bt\lib\apksigner.jar" verify "$b\signed.apk"; Check "apksigner verify"
 Copy-Item "$b\signed.apk" $Out -Force
 "APK $vname ($vcode): " + [math]::Round((Get-Item $Out).Length / 1MB, 1) + " MB -> $Out"
