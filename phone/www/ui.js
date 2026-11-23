@@ -543,7 +543,8 @@ function accBody() {
       + `<div class="hint">${esc(pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
         'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered, remember it.'))}</div>`
       + `<div class="hint" id="acStatus"></div>`
-      + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`;
+      + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`
+      + `<div class="row"><button id="acGoogle">${esc(pick('G   Увійти через Google', 'G   Sign in with Google'))}</button></div>`;
   }
   const daily = u.ai_daily || AI_DAILY;
   return `<div style="font-weight:700;font-size:1.15em">👤 ${esc(u.nick)}${u.admin ? esc(pick(' · адмін', ' · admin')) : ''}</div>`
@@ -551,6 +552,7 @@ function accBody() {
       : pick(`🤖 ШІ-тренер сьогодні: ще ${u.ai_left} з ${daily}`, `🤖 AI coach today: ${u.ai_left} of ${daily} left`))}</div>`
     + `<div style="white-space:pre-line;margin:6px 0">${esc(accProfileText())}</div>`
     + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
+    + `<label class="f">Google</label><div class="row"><span style="flex:1;align-self:center">${esc(u.google ? pick('підключено', 'connected') : pick('не підключено', 'not connected'))}</span>${u.google ? '' : `<button id="acGoogle">${esc(pick('Підключити', 'Connect'))}</button>`}</div>`
     + `<label class="f">lichess</label><div class="row"><span style="flex:1;align-self:center">${esc(u.lichess || pick('не підключено', 'not connected'))}</span><button id="acLi">${esc(u.lichess ? pick('Відключити', 'Disconnect') : pick('Підключити', 'Connect'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
       + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button></div>`
@@ -570,6 +572,7 @@ function accWire() {
     accStatus(pick('✓ chess.com збережено.', '✓ chess.com saved.'));
   }));
   on('acLi', accLichess);
+  on('acGoogle', accGoogle);
   on('acSync', syncRun);
   on('acAdmG', () => { A.admMode = 'gotw'; openBox('admin'); });
   on('acAdmB', () => { A.admMode = 'bugs'; openBox('admin'); });
@@ -586,6 +589,7 @@ async function accCall(path, body, ok) {
   accStatus(accErr(d));
 }
 async function accAuth(kind) {
+  if (kind === 'register' && A.gState) { accGoogleDone(await accHttp('/acc/google', { state: A.gState, nick: $('acNick').value.trim() }), A.gState); return; }
   const body = { nick: $('acNick').value.trim(), pass: $('acPass').value };
   if (!$('acCodeRow').hidden && $('acCode').value.trim()) body.code = $('acCode').value.trim();
   accStatus(pick('Зачекайте…', 'Please wait…'));
@@ -604,6 +608,44 @@ async function accAuth(kind) {
   accStatus(accErr(d));
 }
 function b64url(bytes) { return btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+// 1.31.3: вхід / прив'язка Google: браузер -> Google -> наш Worker; програма забирає результат за state
+async function accGoogle() {
+  const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+  const state = [...rnd(16)].map(b => b.toString(16).padStart(2, '0')).join('');
+  const verifier = b64url(rnd(32));
+  const challenge = b64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier))));
+  const u = D.AI_COACH_URL + '/acc/google/go?' + new URLSearchParams({ state, challenge });
+  if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank');
+  accStatus(pick('Підтвердіть вхід у браузері (Google)…', 'Confirm sign-in in the browser (Google)…'));
+  A.gState = null;
+  const t0 = Date.now(), tok = ACC.token;
+  while (ACC.token === tok && Date.now() - t0 < 300000) {
+    await new Promise(r => setTimeout(r, 2500));
+    const r = await accHttp('/acc/google', { state, verifier, ...(tok ? { token: tok } : {}) });
+    if (r.code === 202 || r.code === 0) continue;
+    accGoogleDone(r, state);
+    return;
+  }
+}
+function accGoogleDone({ code, d }, state) {
+  if (code === 200 && d.need_nick) {
+    A.gState = state;
+    if ($('acNick')) $('acNick').value = d.suggest || '';
+    accStatus(pick('Google підтвердив. Придумайте нік і натисніть «Створити акаунт» (пароль не потрібен).', 'Google confirmed. Choose a nickname and press «Create account» (no password needed).'));
+    return;
+  }
+  if (code === 200 && d.token) {
+    A.gState = null;
+    const reason = A.accReason;
+    accSet(d.token, d.user);
+    accStatus(pick('✓ Готово!', '✓ Done!'));
+    syncRun();
+    if (reason) setTimeout(() => { if (A.boxKind === 'acc') closeBox(); }, 900);
+    return;
+  }
+  if (code === 200 && d.user) { accTake(d); accStatus(pick('✓ Google підключено.', '✓ Google connected.')); return; }
+  accStatus(d.error === 'google_taken' ? pick("Цей Google уже прив'язаний до іншого акаунта.", 'This Google account is linked to another account.') : accErr(d));
+}
 async function accLichess() {
   if (ACC.user && ACC.user.lichess) { accCall('/acc/lichess', { unlink: true }, accTake); return; }
   // OAuth PKCE: браузер -> lichess -> наш Worker зберігає код; програма забирає його за state

@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.2"
+APP_VERSION = "1.31.3"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.3", "2026-11-23 08:45", [
+        ("Вхід через Google: кнопка «G Увійти через Google» — без пароля. До наявного акаунта Google можна прив'язати в «👤 Акаунт».",
+         "Sign in with Google: the «G Sign in with Google» button — no password. You can link Google to an existing account in «👤 Account»."),
+    ]),
     ("1.31.2", "2026-11-23 08:26", [
         ("Нове вікно акаунта (ПК): великий квадрат як у «Ботах» — ліворуч картка гравця з профілем, праворуч прив'язки, ШІ, синхронізація.",
          "New account window (PC): a big panel like «Bots» — your player card with profile on the left, links, AI and sync on the right."),
@@ -1675,6 +1679,12 @@ TR_EN.update({"📊  Анонімна статистика": "📊  Anonymous st
 # шаблони з {0}, {1}… (збирає ~/.chess_analyzer_android/i18n/extract.py). Чого немає - лишається англійською.
 LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português"), ("es", "Español")]
 I18N = {
+    'G   Sign in with Google': ('G   Entrar com o Google', 'G   Iniciar sesión con Google'),
+    'connected': ('conectado', 'conectado'),
+    'Confirm sign-in in the browser (Google)…': ('Confirme o acesso no navegador (Google)…', 'Confirma el acceso en el navegador (Google)…'),
+    'Google confirmed. Choose a nickname and press «Create account» (no password needed).': ('O Google confirmou. Escolha um apelido e toque em «Criar conta» (sem senha).', 'Google lo confirmó. Elige un apodo y pulsa «Crear cuenta» (sin contraseña).'),
+    '✓ Google connected.': ('✓ Google conectado.', '✓ Google conectado.'),
+    'This Google account is linked to another account.': ('Esta conta Google já está vinculada a outra conta.', 'Esta cuenta de Google ya está vinculada a otra cuenta.'),
     'Chess Analyzer account': ('Conta Chess Analyzer', 'Cuenta de Chess Analyzer'),
     'Free, no e-mail': ('Grátis, sem e-mail', 'Gratis, sin correo'),
     'SIGN IN OR SIGN UP': ('ENTRAR OU CRIAR CONTA', 'INICIAR SESIÓN O REGISTRARSE'),
@@ -9724,6 +9734,8 @@ class App(tk.Tk):
         self.acc_login_btn.pack(side="left")
         self.acc_reg_btn = RButton(br, text="Створити акаунт", command=lambda: self._acc_auth("register"))
         self.acc_reg_btn.pack(side="left", padx=(10, 0))
+        self.acc_google_btn = RButton(f, text="G  Google", command=self._acc_google)      # 1.31.3
+        self.acc_google_btn.pack(anchor="w", pady=(12, 0))
         # увійшли
         f = self.acc_in = tk.Frame(right, bg=PANEL)
         self.acc_h_links = lab(f, fg=MUTED, font=fsemi(10))
@@ -9742,6 +9754,14 @@ class App(tk.Tk):
         self.acc_li.pack(side="left", padx=(0, 8))
         self.acc_li_btn = RButton(r2, text="Підключити", kind="small", command=self._acc_lichess)
         self.acc_li_btn.pack(side="left")
+        r6 = tk.Frame(f, bg=PANEL)
+        r6.pack(fill="x", pady=(0, 14), before=r2)
+        r2.pack_configure(pady=(0, 6))
+        lab(r6, text="Google", font=fsemi(11), width=10).pack(side="left")
+        self.acc_g = lab(r6, font=("Segoe UI", 11), width=22)
+        self.acc_g.pack(side="left", padx=(0, 8))
+        self.acc_g_btn = RButton(r6, text="Підключити", kind="small", command=self._acc_google)
+        self.acc_g_btn.pack(side="left")
         self.acc_h_ai = lab(f, fg=MUTED, font=fsemi(10))
         self.acc_h_ai.pack(anchor="w", pady=(0, 4))
         self.acc_ai = lab(f, font=("Segoe UI", 11))
@@ -9813,6 +9833,7 @@ class App(tk.Tk):
                                               "only a protected fingerprint — it cannot be recovered, remember it."))
             self.acc_login_btn.configure(text=pick("Увійти", "Sign in"))
             self.acc_reg_btn.configure(text=pick("Створити акаунт", "Create account"))
+            self.acc_google_btn.configure(text=pick("G   Увійти через Google", "G   Sign in with Google"))
             self.acc_out.pack(fill="both", expand=True)
             return
         self.acc_who.configure(text=u["nick"])
@@ -9825,6 +9846,12 @@ class App(tk.Tk):
         self.acc_cc_btn.configure(text=pick("Зберегти", "Save"))
         self.acc_li.configure(text=u.get("lichess") or pick("не підключено", "not connected"))
         self.acc_li_btn.configure(text=pick("Відключити", "Disconnect") if u.get("lichess") else pick("Підключити", "Connect"))
+        self.acc_g.configure(text=pick("підключено", "connected") if u.get("google") else pick("не підключено", "not connected"))
+        self.acc_g_btn.configure(text=pick("Підключити", "Connect"))
+        if u.get("google"):
+            self.acc_g_btn.pack_forget()
+        elif not self.acc_g_btn.winfo_manager():
+            self.acc_g_btn.pack(side="left")
         self.acc_h_ai.configure(text=pick("ШІ-ТРЕНЕР", "AI COACH"))
         left = u.get("ai_left", 0)
         self.acc_ai.configure(text=pick("🤖 Без ліміту", "🤖 Unlimited") if u.get("admin") else
@@ -9863,6 +9890,9 @@ class App(tk.Tk):
         }.get(e, pick("Не вдалося. Спробуйте пізніше.", "Failed. Try later."))
 
     def _acc_auth(self, kind):
+        if kind == "register" and getattr(self, "_g_state", None):      # 1.31.3: акаунт через Google - лише нік
+            self._acc_google_finish(self.acc_nick.get().strip())
+            return
         body = {"nick": self.acc_nick.get().strip(), "pass": self.acc_pass.get()}
         if self.acc_code_row.winfo_manager() and self.acc_code.get().strip():
             body["code"] = self.acc_code.get().strip()
@@ -9959,6 +9989,61 @@ class App(tk.Tk):
                     self.acc_status.configure(text=self._acc_err(d))
             self._bg(lambda: acc_http("/acc/lichess", {"token": tok, "state": state, "verifier": verifier}), done)
         self.after(3000, step)
+
+    def _acc_google(self):
+        """1.31.3: вхід / прив'язка Google: браузер -> Google -> наш Worker; програма забирає результат за state."""
+        state = os.urandom(16).hex()
+        verifier = base64.urlsafe_b64encode(os.urandom(32)).rstrip(b"=").decode()
+        challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
+        webbrowser.open(ACC_URL + "/acc/google/go?" + urllib.parse.urlencode({"state": state, "challenge": challenge}))
+        self.acc_status.configure(text=pick("Підтвердіть вхід у браузері (Google)…", "Confirm sign-in in the browser (Google)…"))
+        self._g_state = None
+        t0, tok = time.time(), ACC["token"]
+
+        def step():
+            if ACC["token"] != tok or time.time() - t0 > 300:
+                return
+            body = {"state": state, "verifier": verifier}
+            if tok:
+                body["token"] = tok
+
+            def done(r):
+                code, d = r
+                if code == 202 or (code == 0 and time.time() - t0 < 300):
+                    self.after(2000, step)
+                    return
+                self._acc_google_result(code, d, state)
+            self._bg(lambda: acc_http("/acc/google", body), done)
+        self.after(2500, step)
+
+    def _acc_google_result(self, code, d, state):
+        if code == 200 and d.get("need_nick"):
+            self._g_state = state
+            self.acc_nick.set(d.get("suggest") or "")
+            self.acc_status.configure(text=pick("Google підтвердив. Придумайте нік і натисніть «Створити акаунт» (пароль не потрібен).",
+                                                "Google confirmed. Choose a nickname and press «Create account» (no password needed)."))
+            return
+        if code == 200 and d.get("token"):
+            self._g_state = None
+            acc_set(d["token"], d["user"])
+            self.acc_status.configure(text=pick("✓ Готово!", "✓ Done!"))
+            self._acc_changed()
+            self._sync()
+            if getattr(self, "_acc_reason", None):
+                self.after(900, self.acc_box.hide)
+            return
+        if code == 200 and d.get("user"):
+            self._acc_take_user(d)
+            self.acc_status.configure(text=pick("✓ Google підключено.", "✓ Google connected."))
+            return
+        self.acc_status.configure(text=pick("Цей Google уже прив'язаний до іншого акаунта.", "This Google account is linked to another account.")
+                                  if d.get("error") == "google_taken" else self._acc_err(d))
+
+    def _acc_google_finish(self, nick):
+        state = self._g_state
+        self.acc_status.configure(text=pick("Зачекайте…", "Please wait…"))
+        self._bg(lambda: acc_http("/acc/google", {"state": state, "nick": nick}),
+                 lambda r: self._acc_google_result(r[0], r[1], state))
 
     def _acc_ban(self, on):
         nick = self.acc_ban_nick.get().strip()
