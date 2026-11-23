@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.14"
+APP_VERSION = "1.31.15"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.15", "2026-11-23 13:47", [
+        ("ПК: кнопка «🎓 Розбір» — розбір з тренером: точність за частинами партії, тактика, помилки, урок ШІ, що покращити, і «✏️ Виправити мої помилки» в проаналізованій партії",
+         "PC: the «🎓 Review» button — review with the coach: accuracy by phase, tactics, mistakes, an AI lesson on what to improve, and «✏️ Fix my mistakes» in the game you analyzed"),
+    ]),
     ("1.31.14", "2026-11-23 13:43", [
         ("Телефон: «🎓 Розбір з тренером» в оцінці партії — точність за частинами партії (дебют, мідлшпіль, ендшпіль), тактика, помилки, урок ШІ, що покращити, і «✏️ Виправити мої помилки»: пройдіть свої погані ходи цієї партії і знайдіть кращі",
          "Phone: «🎓 Review with the coach» in the game review — accuracy by phase (opening, middlegame, endgame), tactics, mistakes, an AI lesson on what to improve, and «✏️ Fix my mistakes»: go through your bad moves of this game and find better ones"),
@@ -1764,6 +1768,17 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'PC: the «🎓 Review» button — review with the coach: accuracy by phase, tactics, mistakes, an AI lesson on what to improve, and «✏️ Fix my mistakes» in the game you analyzed': ('PC: o botão «🎓 Análise» — análise com o treinador: precisão por fase, tática, erros, uma lição da IA sobre o que melhorar e «✏️ Corrigir meus erros» na partida analisada', 'PC: el botón «🎓 Análisis» — análisis con el entrenador: precisión por fase, táctica, errores, una lección de la IA sobre qué mejorar y «✏️ Corregir mis errores» en la partida analizada'),
+    '🎓  Review': ('🎓  Análise', '🎓  Análisis'),
+    '🎓  Review with the coach': ('🎓  Análise com o treinador', '🎓  Análisis con el entrenador'),
+    '○  White': ('○  Brancas', '○  Blancas'),
+    '●  Black': ('●  Pretas', '●  Negras'),
+    '🤖  Lesson from the coach (AI)': ('🤖  Lição do treinador (IA)', '🤖  Lección del entrenador (IA)'),
+    '✏️  Fix my mistakes ({0})': ('✏️  Corrigir meus erros ({0})', '✏️  Corregir mis errores ({0})'),
+    '🎓  FIXING MISTAKES  ·  {0} of {1}': ('🎓  CORRIGINDO ERROS  ·  {0} de {1}', '🎓  CORRIGIENDO ERRORES  ·  {0} de {1}'),
+    '🤖  The coach is thinking…': ('🤖  O treinador está pensando…', '🤖  El entrenador está pensando…'),
+    '🤖  Failed — try again': ('🤖  Falhou — tente de novo', '🤖  Falló — inténtalo de nuevo'),
+    'Analyze a game first — then the coach will review it.': ('Analise uma partida primeiro — depois o treinador vai revisá-la.', 'Analiza primero una partida — luego el entrenador la revisará.'),
     'Phone: «🎓 Review with the coach» in the game review — accuracy by phase (opening, middlegame, endgame), tactics, mistakes, an AI lesson on what to improve, and «✏️ Fix my mistakes»: go through your bad moves of this game and find better ones': ('Telefone: «🎓 Análise com o treinador» na avaliação da partida — precisão por fase (abertura, meio-jogo, final), tática, erros, uma lição da IA sobre o que melhorar e «✏️ Corrigir meus erros»: passe pelos seus lances ruins desta partida e encontre melhores', 'Teléfono: «🎓 Análisis con el entrenador» en la valoración de la partida — precisión por fase (apertura, medio juego, final), táctica, errores, una lección de la IA sobre qué mejorar y «✏️ Corregir mis errores»: repasa tus malas jugadas de esta partida y encuentra mejores'),
     'Phone: smaller buttons at the top and bottom — more room for the coach; input fields without the white background': ('Telefone: botões menores em cima e embaixo — mais espaço para o treinador; campos de texto sem fundo branco', 'Teléfono: botones más pequeños arriba y abajo — más espacio para el entrenador; campos de texto sin fondo blanco'),
     '🎓 REVIEW WITH THE COACH': ('🎓 ANÁLISE COM O TREINADOR', '🎓 ANÁLISIS CON EL ENTRENADOR'),
@@ -4730,6 +4745,7 @@ def bot_game_over(board):
 
 
 TR_EN.update({b["uk"]: b["en"] for b in BOTS})
+TR_EN["🎓  Розбір"] = "🎓  Review"          # 1.31.15: кнопка «Розбір з тренером»
 
 
 # -------------------------------------------------------------- оновлення ---
@@ -7716,6 +7732,7 @@ class App(tk.Tk):
         # партії з chess.com - найпомітніша кнопка, з самого краю (жовта, більша; з 1.20.1)
         RButton(bar, text="♞  Партії Chess.com", kind="chesscom", command=self.toggle_chesscom).pack(side="left")
         RButton(bar, text="🤖  Боти", command=self.toggle_bots).pack(side="left", padx=(8, 0))
+        RButton(bar, text="🎓  Розбір", command=self.toggle_review).pack(side="left", padx=(8, 0))   # 1.31.15
         tk.Frame(bar, bg=BORDER, width=1, height=24).pack(side="left", padx=14)
         RButton(bar, text="📋  PGN з буфера", command=self.load_clipboard).pack(side="left")
         RButton(bar, text="📂  Відкрити файл", command=self.load_file).pack(side="left", padx=(8, 0))
@@ -10881,7 +10898,8 @@ class App(tk.Tk):
         self.pz_hint_btn.pack(side="left")
         self.pz_show_btn = RButton(row, text="✔", command=self._puzzle_show)
         self.pz_show_btn.pack(side="left", padx=(6, 0))
-        self.pz_next_btn = RButton(row, text="⏭", kind="accent", command=self.puzzle_start)
+        self.pz_next_btn = RButton(row, text="⏭", kind="accent",
+                                   command=lambda: self._fix_next() if getattr(self, "_fix", None) else self.puzzle_start())
         self.pz_next_btn.pack(side="left", padx=(6, 0))
         self.pz_exit_btn = RButton(row, text="✕", command=self._puzzle_exit)
         self.pz_exit_btn.pack(side="right")
@@ -10911,7 +10929,13 @@ class App(tk.Tk):
             else:
                 messagebox.showinfo(trd("🧩  Тренування", "🧩  Training"), msg)
             return
-        due_now = sum(1 for x in d["list"] if x.get("due", 0) <= now)
+        self._puzzle_open(p, sum(1 for x in d["list"] if x.get("due", 0) <= now))
+
+    def _pz_result(self, pid, solved):
+        if getattr(self, "_fix", None) is None:          # 1.31.15: виправлення помилок партії - не черга задач
+            puzzle_result(puzzles_load(), pid, solved, time.time())
+
+    def _puzzle_open(self, p, due_now):
         res = {"free": True, "fens": [p["fen"]], "evals": [0], "pos_info": [None], "moves": [], "book_path": [False],
                "depth": None,
                "summary": {"white": "Білі", "black": "Чорні", "white_rating": None, "black_rating": None,
@@ -10966,7 +10990,7 @@ class App(tk.Tk):
         pz["solved"] = True
         first = not pz["tried"]
         if first:
-            puzzle_result(puzzles_load(), pz["id"], True, time.time())
+            self._pz_result(pz["id"], True)
             tele_count("pz.ok")
         self._puzzle_render(pick(f"✓ Правильно! {row['san']}" + ("" if first else " (не з першої спроби)")
                                  + " - тисніть «Наступна».",
@@ -10977,7 +11001,13 @@ class App(tk.Tk):
         pz = self._puzzle
         white = chess.Board(pz["fen"]).turn == chess.WHITE
         qn = pick("пропущений геніальний", "missed brilliant") if pz["q"] == "missed" else qname(pz["q"]).lower()
-        self.pz_title.configure(text=pick(f"🧩  ТРЕНУВАННЯ  ·  у черзі: {pz['left']}", f"🧩  TRAINING  ·  in queue: {pz['left']}"))
+        fx = getattr(self, "_fix", None)
+        self.pz_title.configure(text=pick(f"🎓  ВИПРАВЛЕННЯ ПОМИЛОК  ·  {fx['i'] + 1} з {len(fx['list'])}",
+                                          f"🎓  FIXING MISTAKES  ·  {fx['i'] + 1} of {len(fx['list'])}") if fx else
+                                pick(f"🧩  ТРЕНУВАННЯ  ·  у черзі: {pz['left']}", f"🧩  TRAINING  ·  in queue: {pz['left']}"))
+        if text is None and fx:
+            text = pick(f"Хід {pz['move']}: тут зіграно {pz['played']} ({qn}). Знайдіть кращий хід.",
+                        f"Move {pz['move']}: {pz['played']} was played here ({qn}). Find a better move.")
         if text is None:
             text = (pick(f"Знайдіть найкращий хід за {'білих' if white else 'чорних'}.",
                          f"Find the best move for {'White' if white else 'Black'}.")
@@ -11009,7 +11039,7 @@ class App(tk.Tk):
         nm = pick(*names[b.piece_type_at(mv.from_square)])
         if not pz["tried"]:
             pz["tried"] = True                  # з підказкою задача не зараховується як розв'язана з першого разу
-            puzzle_result(puzzles_load(), pz["id"], False, time.time())
+            self._pz_result(pz["id"], False)
         self._puzzle_render(pick(f"💡 Ходить {nm} з {chess.square_name(mv.from_square)}.",
                                  f"💡 Move the {nm} on {chess.square_name(mv.from_square)}."))
 
@@ -11019,7 +11049,7 @@ class App(tk.Tk):
             return
         if not pz["tried"]:
             pz["tried"] = True
-            puzzle_result(puzzles_load(), pz["id"], False, time.time())
+            self._pz_result(pz["id"], False)
         pz["shown"] = True
         if self.var is not None:                 # 1.28.2: прибрати свій хід і зіграти розв'язок на дошці
             self._clear_var()
@@ -11040,7 +11070,7 @@ class App(tk.Tk):
             pz["solved"] = True
             first = not pz["tried"]
             if first:
-                puzzle_result(puzzles_load(), pz["id"], True, time.time())
+                self._pz_result(pz["id"], True)
                 tele_count("pz.ok")
             self._puzzle_render(pick(f"✓ Правильно! {row['san']}" + ("" if first else " (не з першої спроби)")
                                      + " - тисніть «Наступна».",
@@ -11049,7 +11079,7 @@ class App(tk.Tk):
         else:
             if not pz["tried"]:
                 pz["tried"] = True
-                puzzle_result(puzzles_load(), pz["id"], False, time.time())
+                self._pz_result(pz["id"], False)
                 tele_count("pz.fail")
             self._puzzle_render(pick(f"✗ {row['san']} - {qname(row['quality']).lower()}. Поверніть хід (↶) і спробуйте ще, "
                                      "або подивіться розв'язок.",
@@ -11064,8 +11094,192 @@ class App(tk.Tk):
             self._graph_box.pack(fill="x", pady=(0, 10), before=self._mid)
 
     def _puzzle_exit(self):
+        if getattr(self, "_fix", None):
+            self._fix_end()
+            return
         self._puzzle_hide()
         self._start_free()
+
+    # ---------- 1.31.15: «🎓 Розбір з тренером» - аспекти гри гравця, урок ШІ, виправлення своїх помилок у партії
+    def _review_side(self):
+        s = (self.result or {}).get("summary") or {}
+        nick = (self._cc_user or (ACC["user"] or {}).get("chesscom") or "").strip().lower()
+        if nick and nick == str(s.get("white") or "").lower():
+            return True
+        if nick and nick == str(s.get("black") or "").lower():
+            return False
+        if s.get("white") == "You":
+            return True
+        if s.get("black") == "You":
+            return False
+        side = getattr(self, "_review_white", None)
+        return (not self.board.flipped) if side is None else side
+
+    def _review_aspects(self, white):
+        r, ph, cnt, bad, missed = self.result, {"opening": [], "middle": [], "end": []}, {}, [], 0
+        for i, m in enumerate(r["moves"]):
+            if (" w " in r["fens"][i]) != white:
+                continue
+            pieces = sum(1 for c in r["fens"][i].split()[0] if c.isalpha() and c not in "pPkK")
+            phase = "opening" if i < 20 else ("end" if pieces <= 6 else "middle")
+            if isinstance(m.get("acc"), (int, float)):
+                ph[phase].append(m["acc"])
+            cnt[m.get("quality")] = cnt.get(m.get("quality"), 0) + 1
+            if m.get("missed_bril") or m.get("quality") == "Пропуск":
+                missed += 1
+            if m.get("quality") in ("Неточність", "Помилка", "Груба помилка", "Пропуск"):
+                bad.append(m)
+        acc = {k: (game_accuracy(v) if v else None) for k, v in ph.items()}
+        return dict(acc, cnt=cnt, missed=missed, bad=bad)
+
+    def toggle_review(self):
+        res = self.result
+        if not res or res.get("free") or res.get("partial") or not res.get("moves"):
+            self.status_var.set(pick("Спершу проаналізуйте партію — тоді тренер її розбере.",
+                                     "Analyze a game first — then the coach will review it."))
+            return
+        if getattr(self, "review_box", None) is None:
+            self._build_review_box()
+        if self.review_box.is_open:
+            self.review_box.hide()
+            return
+        self._review_render()
+        self.review_box.show()
+
+    def _build_review_box(self):
+        self.review_box = OverlayBox(self, "🎓")
+        inner = tk.Frame(self.review_box.box, bg=PANEL)
+        inner.pack(fill="both", expand=True, padx=22, pady=(10, 16))
+        seg = tk.Frame(inner, bg=PANEL)
+        seg.pack(anchor="w")
+        self.rv_side_btns = []
+        for k in (True, False):
+            b = RButton(seg, text="", kind="seg", command=lambda k=k: (setattr(self, "_review_white", k), self._review_render()))
+            b.pack(side="left", padx=(0, 6))
+            self.rv_side_btns.append(b)
+        self.rv_asp = tk.Label(inner, bg=PANEL, fg=FG, font=("Segoe UI", 11), justify="left", anchor="w")
+        self.rv_asp.pack(anchor="w", fill="x", pady=(12, 0))
+        self.rv_weak = tk.Label(inner, bg=PANEL, fg=ACCENT, font=fsemi(10), anchor="w")
+        self.rv_weak.pack(anchor="w", pady=(8, 0))
+        self.rv_lesson = tk.Label(inner, bg=PANEL, fg=FG, font=("Segoe UI", 11), justify="left", anchor="w", wraplength=620)
+        self.rv_lesson.pack(anchor="w", fill="x", pady=(10, 0))
+        row = tk.Frame(inner, bg=PANEL)
+        row.pack(fill="x", pady=(16, 0))
+        self.rv_lesson_btn = RButton(row, text="", command=self._review_lesson)
+        self.rv_lesson_btn.pack(side="left")
+        self.rv_fix_btn = RButton(row, text="", kind="play", command=self._fix_start)
+        self.rv_fix_btn.pack(side="left", padx=(10, 0))
+        self.rv_close = RButton(row, text="", style="Small.TButton", command=self.review_box.hide)
+        self.rv_close.pack(side="right")
+
+    def _review_render(self):
+        white = self._review_side()
+        a = self._review_aspects(white)
+        pct = lambda x: "—" if x is None else f"{x:.0f}%"
+        self.review_box.title.configure(text=pick("🎓  Розбір з тренером", "🎓  Review with the coach"))
+        for b, k in zip(self.rv_side_btns, (True, False)):
+            b.configure(text=pick("○  Білі", "○  White") if k else pick("●  Чорні", "●  Black"))
+            b.set_kind("segon" if k == white else "seg")
+        c = a["cnt"]
+        self.rv_asp.configure(text="\n".join([
+            f"{pick('Дебют', 'Opening')}:  {pct(a['opening'])}      {pick('Мідлшпіль', 'Middlegame')}:  {pct(a['middle'])}      "
+            f"{pick('Ендшпіль', 'Endgame')}:  {pct(a['end'])}",
+            f"{pick('Тактика', 'Tactics')}:  " + (pick(f"пропущено можливостей: {a['missed']}", f"missed chances: {a['missed']}")
+                                                  if a["missed"] else pick("нічого не пропущено", "nothing missed")),
+            f"{pick('Помилки', 'Mistakes')}:  " + pick(
+                f"грубих {c.get('Груба помилка', 0)}, помилок {c.get('Помилка', 0)}, неточностей {c.get('Неточність', 0)}",
+                f"blunders {c.get('Груба помилка', 0)}, mistakes {c.get('Помилка', 0)}, inaccuracies {c.get('Неточність', 0)}")]))
+        phases = [(k, n) for k, n in (("opening", pick("Дебют", "Opening")), ("middle", pick("Мідлшпіль", "Middlegame")),
+                                      ("end", pick("Ендшпіль", "Endgame"))) if a[k] is not None]
+        weak = min(phases, key=lambda x: a[x[0]], default=None)
+        self.rv_weak.configure(text=pick(f"Найслабша частина: {weak[1].lower()}.", f"Weakest part: {weak[1].lower()}.") if weak else "")
+        rv = getattr(self, "_review", None)
+        lesson = rv["text"] if rv and rv["res"] is self.result and rv["white"] == white else ""
+        self.rv_lesson.configure(text=lesson)
+        self.rv_lesson_btn.configure(text=pick("🤖  Урок від тренера (ШІ)", "🤖  Lesson from the coach (AI)"), state="normal")
+        if lesson:
+            self.rv_lesson_btn.pack_forget()
+        elif not self.rv_lesson_btn.winfo_manager():
+            self.rv_lesson_btn.pack(side="left", before=self.rv_fix_btn)
+        self._fix_list = puzzles_from_result(self.result, white)
+        n = len(self._fix_list)
+        self.rv_fix_btn.configure(text=pick(f"✏️  Виправити мої помилки ({n})", f"✏️  Fix my mistakes ({n})"),
+                                  state="normal" if n else "disabled")
+        self.rv_close.configure(text=pick("Закрити", "Close"))
+
+    def _review_lesson(self):
+        if not ACC["token"]:
+            self.review_box.hide()
+            self.toggle_account(pick("Урок від тренера працює з безплатним акаунтом: увійдіть або створіть його.",
+                                     "The coach lesson needs a free account: sign in or create one."))
+            return
+        white, res = self._review_side(), self.result
+        a, s = self._review_aspects(white), res.get("summary") or {}
+        p = lambda x: "n/a" if x is None else f"{x:.0f}%"
+        c = a["cnt"]
+        qn = {"Груба помилка": "blunder", "Помилка": "mistake", "Пропуск": "miss"}
+        facts = "\n".join([
+            "TASK: You are the player's chess coach. Using the data below, write a short lesson (5-7 sentences): which 2-3 "
+            "aspects of play (opening, middlegame plans, tactics, endgame, blunder checks) this player should improve, with "
+            "concrete practical advice based on their mistakes. Do not repeat the raw numbers.",
+            f"Game: {s.get('white') or '?'} vs {s.get('black') or '?'}, result {s.get('result') or '*'}"
+            + (f", opening {' '.join(s['opening'])}" if s.get("opening") else "") + f". The player plays {'White' if white else 'Black'}.",
+            f"Accuracy by phase: opening {p(a['opening'])}, middlegame {p(a['middle'])}, endgame {p(a['end'])}.",
+            f"Blunders {c.get('Груба помилка', 0)}, mistakes {c.get('Помилка', 0)}, inaccuracies {c.get('Неточність', 0)}, "
+            f"missed chances {a['missed']}.",
+            "Worst moves (played -> better): " + ("; ".join(f"{m['label']}{m['san']} ({qn.get(m['quality'], 'inaccuracy')}) -> "
+                                                           f"{m.get('best_san') or '?'}" for m in a["bad"][:8]) or "none")])
+        self.rv_lesson_btn.configure(text=pick("🤖  Тренер думає…", "🤖  The coach is thinking…"), state="disabled")
+        lang = ui_lang()
+
+        def work():
+            try:
+                return fetch_ai_coach(facts, lang, timeout=60, mode="trainer")
+            except Exception:  # noqa: BLE001
+                return None
+
+        def done(text):
+            if self.result is not res:
+                return
+            if not text:
+                self.rv_lesson_btn.configure(text=pick("🤖  Не вдалося — спробувати ще", "🤖  Failed — try again"), state="normal")
+                return
+            self._review = {"res": res, "white": white, "text": text}
+            if self.review_box.is_open:
+                self._review_render()
+        self._bg(work, done)
+
+    def _fix_start(self):
+        lst = getattr(self, "_fix_list", None) or []
+        if not lst:
+            return
+        self.review_box.hide()
+        self._fix = {"list": lst, "i": 0, "back": {"res": self.result, "game": self.game, "index": self.index,
+                                                    "flipped": self.board.flipped, "lines": self.lines, "notes": self.notes,
+                                                    "shapes": self.shapes, "chapter": self.chapter}}
+        self._puzzle_open(lst[0], len(lst))
+
+    def _fix_next(self):
+        f = self._fix
+        if f["i"] + 1 >= len(f["list"]):
+            self._fix_end(pick("🎓 Усі помилки цієї партії пройдено!", "🎓 You went through all the mistakes of this game!"))
+            return
+        f["i"] += 1
+        self._puzzle_open(f["list"][f["i"]], len(f["list"]) - f["i"])
+
+    def _fix_end(self, text=None):
+        back = self._fix["back"]
+        self._fix = None
+        self._puzzle_hide()
+        self.game = back["game"]
+        self.lines, self.notes, self.shapes, self.chapter = back["lines"], back["notes"], back["shapes"], back["chapter"]
+        self.var = None
+        self._show_results(back["res"], save=False)
+        if self.board.flipped != back["flipped"]:
+            self.flip_board()
+        self.goto(back["index"], animate=False)
+        if text:
+            self.status_var.set(text)
 
     def _edit_comment(self, key, line, j):
         if not hasattr(self, "comment_box"):
