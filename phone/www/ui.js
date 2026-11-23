@@ -490,7 +490,10 @@ const FREE_ANALYSES = 5, LICHESS_CLIENT = 'chess-analyzer';
 const ACC = Object.assign({ token: '', user: null, free: 0 }, store.get('ca.acc', {}));
 globalThis.caAcc = ACC;                          // logic.js fetchAiCoach бере звідси токен і залишок ШІ
 function accSave() { store.set('ca.acc', ACC); }
-function accSet(token, user) { ACC.token = token || ''; ACC.user = token ? user : null; accSave(); accChanged(); }
+function accSet(token, user) {
+  if (!token || (user || {}).nick !== (ACC.user || {}).nick) ACC.sync = { since: '', sent: {} };   // інший акаунт - з нуля
+  ACC.token = token || ''; ACC.user = token ? user : null; accSave(); accChanged();
+}
 async function accHttp(path, body) {
   try {
     const r = await fetch(D.AI_COACH_URL + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -546,13 +549,14 @@ function accBody() {
   return `<div style="font-weight:700;font-size:1.15em">👤 ${esc(u.nick)}${u.admin ? esc(pick(' · адмін', ' · admin')) : ''}</div>`
     + `<div class="hint">${esc(u.admin ? pick('🤖 ШІ-тренер: без ліміту', '🤖 AI coach: unlimited')
       : pick(`🤖 ШІ-тренер сьогодні: ще ${u.ai_left} з ${daily}`, `🤖 AI coach today: ${u.ai_left} of ${daily} left`))}</div>`
+    + `<div style="white-space:pre-line;margin:6px 0">${esc(accProfileText())}</div>`
     + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
     + `<label class="f">lichess</label><div class="row"><span style="flex:1;align-self:center">${esc(u.lichess || pick('не підключено', 'not connected'))}</span><button id="acLi">${esc(u.lichess ? pick('Відключити', 'Disconnect') : pick('Підключити', 'Connect'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
       + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button></div>`
       + `<div class="row"><input id="acBanNick" type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="${esc(pick('нік', 'nickname'))}"><button id="acBan">${esc(pick('⛔ Бан', '⛔ Ban'))}</button><button id="acUnban">${esc(pick('Розбан', 'Unban'))}</button></div>` : '')
     + `<div class="hint" id="acStatus"></div>`
-    + `<div class="row"><button id="acOut">${esc(pick('Вийти', 'Sign out'))}</button></div>`;
+    + `<div class="row"><button id="acSync">${esc(pick('🔄 Синхронізувати', '🔄 Sync now'))}</button><button id="acOut">${esc(pick('Вийти', 'Sign out'))}</button></div>`;
 }
 function accWire() {
   const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn); };
@@ -566,6 +570,7 @@ function accWire() {
     accStatus(pick('✓ chess.com збережено.', '✓ chess.com saved.'));
   }));
   on('acLi', accLichess);
+  on('acSync', syncRun);
   on('acAdmG', () => { A.admMode = 'gotw'; openBox('admin'); });
   on('acAdmB', () => { A.admMode = 'bugs'; openBox('admin'); });
   const ban = v => { const n = $('acBanNick').value.trim(); if (n) accCall('/admin/ban', { nick: n, on: v }, () => accStatus(v ? pick(`⛔ ${n} заблоковано.`, `⛔ ${n} banned.`) : pick(`✓ ${n} розблоковано.`, `✓ ${n} unbanned.`))); };
@@ -591,6 +596,7 @@ async function accAuth(kind) {
     const reason = A.accReason;
     accSet(d.token, d.user);
     accStatus(pick('✓ Готово!', '✓ Done!'));
+    syncRun();
     if (reason) setTimeout(() => { if (A.boxKind === 'acc') closeBox(); }, 900);
     return;
   }
@@ -628,6 +634,120 @@ function accGate() {
   ACC.free++; accSave();
   return true;
 }
+
+// ---------- 1.31.1: синхронізація акаунта між пристроями (задачі, зірки ботів, дослідження) - як у ПК
+const SYNC_MAX_ITEM = 1400000;
+function jhash(obj) {                              // cyrb53 від JSON - лише щоб помітити зміни
+  const s = JSON.stringify(obj);
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+function puzzlesMerge(a, b) {
+  const done = [...new Set([...(a.done || []), ...(b.done || [])])].slice(-2000), gone = new Set(done), by = new Map();
+  for (const x of [...(a.list || []), ...(b.list || [])]) {
+    if (!x.id || gone.has(x.id)) continue;
+    const y = by.get(x.id);
+    if (!y || (x.ok || 0) > (y.ok || 0) || ((x.ok || 0) === (y.ok || 0) && (x.due || 0) > (y.due || 0))) by.set(x.id, x);
+  }
+  return { list: [...by.values()].slice(-PZ_MAX), done };
+}
+let syncing = false;
+async function syncRun() {
+  if (!ACC.token || syncing) return;
+  syncing = true;
+  try { await syncOnce(); } catch (_) { /* наступна спроба за 5 хв */ }
+  syncing = false;
+  if (A.boxKind === 'acc') openBox('acc');
+}
+async function syncOnce() {
+  const tok = ACC.token, st = ACC.sync || (ACC.sync = { since: '', sent: {} }), sent = st.sent || (st.sent = {});
+  const r = await accHttp('/acc/sync', { token: tok, since: st.since || '' });
+  if (ACC.token !== tok) return;
+  if (r.code === 401) { accSet('', null); return; }
+  if (r.code !== 200) return;
+  flushSave();
+  const ids = store.get('ca.studies', []);
+  const local = new Map();
+  for (const id of ids) { const s = store.get('ca.study.' + id, null); if (s && s.sid) local.set(s.sid, { id, s }); }
+  for (const it of r.d.items || []) {
+    let obj = null;
+    try { obj = it.data ? JSON.parse(it.data) : null; } catch (_) { continue; }
+    const hk = it.kind + ':' + it.key;
+    if (it.kind === 'puzzles' && obj) { sent[hk] = jhash(obj); const mine = pzLoad(), m = puzzlesMerge(mine, obj); if (jhash(m) !== jhash(mine)) pzSave(m); }
+    else if (it.kind === 'stars' && obj) {
+      sent[hk] = jhash(obj);
+      const cur = cfg.botStars || (cfg.botStars = {});
+      let ch = false;
+      for (const [k, v] of Object.entries(obj)) if ((+v || 0) > (cur[k] || 0)) { cur[k] = +v; ch = true; }
+      if (ch) saveCfg();
+    } else if (it.kind === 'study') {
+      const loc = local.get(it.key);
+      if (!obj) {                                    // видалено на іншому пристрої
+        delete sent[hk];
+        if (loc && loc.id !== A.studyId) {
+          store.del('ca.study.' + loc.id);
+          store.set('ca.studies', store.get('ca.studies', []).filter(x => x !== loc.id));
+          local.delete(it.key);
+        }
+        continue;
+      }
+      sent[hk] = jhash(obj);
+      if (loc && loc.id === A.studyId) continue;     // відкрите зараз - лишаємо своє
+      if (!loc || (obj.updated || '') > (loc.s.updated || '')) {
+        const id = loc ? loc.id : 'study-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        if (store.set('ca.study.' + id, obj)) {
+          const all = store.get('ca.studies', []);
+          if (!all.includes(id)) { all.push(id); store.set('ca.studies', all); }
+          local.set(it.key, { id, s: obj });
+        }
+      }
+    }
+  }
+  const put = [];
+  const pz = pzLoad();
+  if ((pz.list.length || pz.done.length) && jhash(pz) !== sent['puzzles:all']) put.push({ kind: 'puzzles', key: 'all', data: JSON.stringify(pz) });
+  const stars = cfg.botStars || {};
+  if (Object.keys(stars).length && jhash(stars) !== sent['stars:all']) put.push({ kind: 'stars', key: 'all', data: JSON.stringify(stars) });
+  const have = new Set();
+  for (const id of store.get('ca.studies', [])) {
+    const s = store.get('ca.study.' + id, null);
+    if (!s) continue;
+    if (!s.sid) {
+      s.sid = [...crypto.getRandomValues(new Uint8Array(8))].map(b => b.toString(16).padStart(2, '0')).join('');
+      if (id === A.studyId && A.study) A.study.sid = s.sid;   // інакше автозбереження загубить sid
+      store.set('ca.study.' + id, s);
+    }
+    have.add(s.sid);
+    const data = JSON.stringify(s);
+    if (data.length <= SYNC_MAX_ITEM && jhash(s) !== sent['study:' + s.sid]) put.push({ kind: 'study', key: s.sid, data });
+  }
+  for (const hk of Object.keys(sent)) if (hk.startsWith('study:') && !have.has(hk.slice(6))) put.push({ kind: 'study', key: hk.slice(6), data: null });
+  if (put.length) {
+    const r2 = await accHttp('/acc/sync', { token: tok, put, get: false });
+    if (ACC.token !== tok) return;
+    if (r2.code === 401) { accSet('', null); return; }
+    if (r2.code !== 200) return;
+    for (const it of put) { const hk = it.kind + ':' + it.key; if (it.data == null) delete sent[hk]; else sent[hk] = jhash(JSON.parse(it.data)); }
+  }
+  st.since = r.d.now || '';
+  st.at = new Date().toTimeString().slice(0, 5);
+  accSave();
+}
+function accProfileText() {
+  const u = ACC.user || {}, pz = pzLoad();
+  const stars = Object.values(cfg.botStars || {}).reduce((a, b) => a + (+b || 0), 0);
+  const nSt = store.get('ca.studies', []).length, at = (ACC.sync || {}).at;
+  return [u.created ? pick(`📅 З нами з ${u.created}`, `📅 Member since ${u.created}`) : '',
+    pick(`🧩 Задачі: ${pz.list.length} у тренуванні, ${pz.done.length} вивчено`, `🧩 Puzzles: ${pz.list.length} in training, ${pz.done.length} learned`),
+    pick(`⭐ Зірок у ботів: ${stars}`, `⭐ Bot stars: ${stars}`),
+    pick(`📚 Досліджень: ${nSt}`, `📚 Studies: ${nSt}`),
+    pick(`🏆 Заявок на гру тижня: ${u.gotw || 0} (❤ ${u.likes || 0})`, `🏆 Game of the week submissions: ${u.gotw || 0} (❤ ${u.likes || 0})`),
+    at ? pick(`🔄 Синхронізовано о ${at}`, `🔄 Synced at ${at}`) : pick('🔄 Ще не синхронізовано', '🔄 Not synced yet')].filter(Boolean).join('\n');
+}
+
 const LOGIN_AI = () => pick('ШІ-тренер працює з безплатним акаунтом: увійдіть або створіть його.', 'The AI coach needs a free account: sign in or create one.');
 
 // ---------- адмін: заявки «Партія тижня» і звіти про помилки
@@ -3398,7 +3518,7 @@ function wire() {
   click('bNews', () => toggleBox('news'));
   click('bDonate', openDonate);
   click('bAcc', () => { if (A.boxKind === 'acc') closeBox(); else accOpen(); });   // 1.31.0
-  accChanged(); setTimeout(accRefresh, 1500);
+  accChanged(); setTimeout(accRefresh, 1500); setTimeout(syncRun, 5000); setInterval(syncRun, 300000);   // 1.31.1
   click('bCc', openChesscom); click('bBots', () => toggleBox('bots')); click('bPz', puzzleStart); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
