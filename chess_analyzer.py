@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.17"
+APP_VERSION = "1.31.18"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.18", "2026-11-23 18:42", [
+        ("ПК: в інтерфейсі майже без смайликів — лишились лише значки на кнопках",
+         "PC: almost no emoji in the interface — only the icon buttons keep them"),
+    ]),
     ("1.31.17", "2026-11-23 17:29", [
         ("Телефон: в інтерфейсі майже без смайликів — лишились лише значки на кнопках",
          "Phone: almost no emoji in the interface — only the icon buttons keep them"),
@@ -1787,6 +1791,7 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'PC: almost no emoji in the interface — only the icon buttons keep them': ('PC: quase sem emojis na interface — ficaram só os ícones dos botões', 'PC: casi sin emojis en la interfaz — solo quedan los iconos de los botones'),
     'Phone: almost no emoji in the interface — only the icon buttons keep them': ('Telefone: quase sem emojis na interface — ficaram só os ícones dos botões', 'Teléfono: casi sin emojis en la interfaz — solo quedan los iconos de los botones'),
     'Phone: in a game against a bot the moves are shown in one row under the board (tap a move to view it)': ('Telefone: numa partida contra um bot os lances aparecem numa linha sob o tabuleiro (toque num lance para vê-lo)', 'Teléfono: en una partida contra un bot las jugadas se ven en una fila bajo el tablero (toca una jugada para verla)'),
     'Phone: smaller gaps between the buttons, the player names and the board': ('Telefone: espaços menores entre os botões, os nomes dos jogadores e o tabuleiro', 'Teléfono: espacios más pequeños entre los botones, los nombres de los jugadores y el tablero'),
@@ -2544,18 +2549,31 @@ def ui_lang():
     return STATE.get("xl") or STATE["lang"]
 
 
+# 1.31.17 (користувач): у текстах інтерфейсу без смайликів. Лишаються шахові фігури, ★☆, ✓✗, стрілки; напис лише зі
+# значка (кнопки ⏮ ◀ ▶ ⏭, ☕) не чіпаємо.
+_EMOJI_RE = re.compile("[\U0001F000-\U0001FAFF\u2300-\u23FF\u2600-\u2604\u2607-\u2653\u2660-\u2712\u2714-\u2716"
+                       "\u2718-\u27BF\u2B00-\u2BFF\uFE0F\u200D]+[ \u00A0]*")
+
+
+def no_emoji(text):
+    if not isinstance(text, str):
+        return text
+    out = _EMOJI_RE.sub("", text)
+    return out if out.strip() else text
+
+
 def tr(uk):
     """Переклад рядка з українського оригіналу (для динамічних текстів)."""
-    return xl(TR_EN.get(uk, uk)) if STATE["lang"] == "en" else uk
+    return no_emoji(xl(TR_EN.get(uk, uk)) if STATE["lang"] == "en" else uk)
 
 
 def trd(uk, en):
     """Переклад для заголовків діалогів (без спільного словника)."""
-    return xl(en) if STATE["lang"] == "en" else uk
+    return no_emoji(xl(en) if STATE["lang"] == "en" else uk)
 
 
 def pick(uk, en):
-    return xl(en) if STATE["lang"] == "en" else uk
+    return no_emoji(xl(en) if STATE["lang"] == "en" else uk)
 
 
 def changelog_view(cl=None):
@@ -5955,7 +5973,7 @@ class RButton(tk.Canvas):
     def _render(self):
         s = self.spec
         spec = s["font"]()
-        w = self._measure(spec, self._text) + 2 * s["padx"]
+        w = self._measure(spec, no_emoji(self._text)) + 2 * s["padx"]
         if self._chars:
             w = max(w, self._measure(spec, "0") * int(self._chars) + 2 * s["padx"])
         w = max(w, s.get("minw", 0), 2 * s["r"] + 2)
@@ -5967,7 +5985,7 @@ class RButton(tk.Canvas):
         self._items = (self.create_image(0, 0, anchor="nw", image=cap_image(h, r, fill, self._bg, "left")),
                        self.create_image(w, 0, anchor="ne", image=cap_image(h, r, fill, self._bg, "right")),
                        self.create_rectangle(r, 0, w - r, h, fill=fill, width=0),
-                       self.create_text(w / 2, h / 2, text=self._text, fill=fg, font=spec))
+                       self.create_text(w / 2, h / 2, text=no_emoji(self._text), fill=fg, font=spec))
         self._fill = fill               # (не self._w - це ім'я віджета в Tk)
 
     def _paint(self, fill, fg=None):
@@ -8695,7 +8713,7 @@ class App(tk.Tk):
         # запитання гравця до цієї позиції і відповіді ШІ (1.23.5)
         thread = self._ask_threads.get(self._ask_key(), []) if self.ai_var.get() else []
         for it in thread:
-            t.insert("end", "❓ " + it["q"] + "\n", "q")
+            t.insert("end", it["q"] + "\n", "q")
             if it.get("a"):
                 t.insert("end", it["a"] + "\n", "ai")
             elif it.get("err"):
@@ -9053,9 +9071,10 @@ class App(tk.Tk):
             self._ask_hint(True)
         mp = {}                       # 1.30.0: будь-який відомий варіант напису (uk/en/pt/es) -> поточна мова
         for uk, en in TR_EN.items():
-            target = xl(en) if STATE["lang"] == "en" else uk
+            target = no_emoji(xl(en) if STATE["lang"] == "en" else uk)
             for k in (uk, en) + tuple(I18N.get(en, ())):
                 mp[k] = target
+                mp[no_emoji(k)] = target
         stack = [self]
         while stack:
             w = stack.pop()
@@ -9132,7 +9151,7 @@ class App(tk.Tk):
             return ""
         name = book.get(key)
         tail = f"  ·  {name[0]} {name[1]}" if name else ""
-        return "📖 " + pick("Теорія", "Theory") + ": " + ", ".join(sans[:8]) + tail
+        return pick("Теорія", "Theory") + ": " + ", ".join(sans[:8]) + tail
 
     def _recommend(self, fen, pe):
         """Текст «найкращий хід за Stockfish (оцінка)» для позиції."""
@@ -9514,7 +9533,7 @@ class App(tk.Tk):
         if 1 <= v["index"] <= len(v["rows"]) and v["rows"][v["index"] - 1] is row:
             self._show_var_state(v["index"], animate=False)
         if not self._pending_evals:
-            self._deep_text = (f"🔍 {pick('Stockfish думає глибше', 'Stockfish is thinking deeper')}: "
+            self._deep_text = (f"{pick('Stockfish думає глибше', 'Stockfish is thinking deeper')}: "
                                f"{pick('глибина', 'depth')} {d}")
             self.status_var.set(self._deep_text)
 
@@ -9865,7 +9884,7 @@ class App(tk.Tk):
 
     def _acc_btn_text(self):
         u = ACC["user"]
-        return f"👤  {u['nick']}" if u else pick("👤  Увійти", "👤  Sign in")
+        return u["nick"] if u else pick("Увійти", "Sign in")
 
     def _acc_changed(self):
         if hasattr(self, "acc_btn"):
@@ -10739,7 +10758,7 @@ class App(tk.Tk):
     def _gl_show_comment(self):
         sel = self.gl_tree.selection()
         g = next((x for x in self._gl_rows if sel and str(x["n"]) == sel[0]), None)
-        self.gl_comment.configure(text=("💬 " + g["comment"]) if g and g.get("comment") else "")
+        self.gl_comment.configure(text=(g["comment"]) if g and g.get("comment") else "")
         self._gl_like_text()
 
     def _gl_like(self):
@@ -12130,7 +12149,7 @@ class App(tk.Tk):
             self._set_names(h.get("White", "Білі"), h.get("WhiteElo", ""),
                             h.get("Black", "Чорні"), h.get("BlackElo", ""))
             self._show_results(res, save=False)
-        self.status_var.set(f"📚  {st.get('name') or '—'}  ·  {ch.get('name') or '—'}")
+        self.status_var.set(f"{st.get('name') or '—'}  ·  {ch.get('name') or '—'}")
         self._render_study_panel()
         self._show_note()
 
@@ -12692,7 +12711,7 @@ class App(tk.Tk):
         self.bots_record.configure(text=stars_text(self._bot_stars.get(spec["id"], 0)) + "   "
                                    + pick("ваш рекорд", "your record"))
         self.bots_desc.configure(text=pick(spec["d_uk"], spec["d_en"]))
-        self.bots_fact.configure(text="💡  " + pick(spec["fact_uk"], spec["fact_en"]))
+        self.bots_fact.configure(text=pick(spec["fact_uk"], spec["fact_en"]))
         self.bots_open.configure(text="♟  " + bot_openings_text(spec))
         i = self.bots_level_cb.current()
         if i < 0:
@@ -13176,13 +13195,13 @@ class App(tk.Tk):
         self._coach_last = ([], None, False, False, None)
         t.config(state="normal")
         t.delete("1.0", "end")
-        t.insert("end", f"💬 {bot_name(b['spec'])}\n", "head")
+        t.insert("end", f"{bot_name(b['spec'])}\n", "head")
         items = b["chat"]
         # 1.25.2: лише остання репліка; 1.27.11 - або остання розмова з гравцем і що бот сказав після неї
         me = max((i for i, x in enumerate(items) if isinstance(x, dict)), default=-1)
         for x in (items[me:] if me >= 0 and len(items) - me <= 3 else items[-1:]):
             if isinstance(x, dict):
-                t.insert("end", "🗨 " + pick("Ви", "You") + ": " + x["me"] + "\n", "q")
+                t.insert("end", pick("Ви", "You") + ": " + x["me"] + "\n", "q")
                 if x["a"]:
                     t.insert("end", x["a"] + "\n", "ai")
                 else:
@@ -13370,7 +13389,7 @@ class App(tk.Tk):
             j = next(i for i, r in enumerate(v["rows"]) if r is row) + 1
         except StopIteration:
             return
-        head = f"🎓 {row['label']}{row['san']} — {qname(row['quality'])}"
+        head = f"{row['label']}{row['san']} — {qname(row['quality'])}"
         args = (v["fens"][j - 1], row["uci"], row["quality"], row.get("best_san") or "", v["pes"][j - 1], v["pes"][j])
         fallback = pick(f"Кращий хід був {row['best_san']}.", f"The better move was {row['best_san']}.") \
             if row.get("best_san") and row.get("best_san") != row["san"] else ""
@@ -13679,10 +13698,10 @@ class App(tk.Tk):
         lines = []
         best = next((r for q in ("Геніальний", "Чудовий") for r in done if r["quality"] == q), None)
         if best:
-            lines.append("⭐  " + pick("Ваш найкращий хід: ", "Your best move: ") + f"{best['label']}{best['san']} ({qname(best['quality'])})")
+            lines.append(pick("Ваш найкращий хід: ", "Your best move: ") + f"{best['label']}{best['san']} ({qname(best['quality'])})")
         worst = max(done, key=lambda r: r.get("drop", 0), default=None)
         if worst and worst.get("drop", 0) >= 10:
-            lines.append("⚠  " + pick("Найдорожча помилка: ", "Costliest mistake: ")
+            lines.append(pick("Найдорожча помилка: ", "Costliest mistake: ")
                          + f"{worst['label']}{worst['san']} ({qname(worst['quality'])})")
         return "  ·  ".join(parts), "\n".join(lines), pending
 
@@ -13705,7 +13724,7 @@ class App(tk.Tk):
         self.be_stars.configure(text=stars_text(b["stars"]))
         self.be_record.configure(text=pick("Новий рекорд!", "A new record!") if b["record"] else
                                  pick("Ваш рекорд: ", "Your record: ") + stars_text(self._bot_stars.get(spec["id"], 0)))
-        self.be_who.configure(text="💬  " + name.upper())
+        self.be_who.configure(text=name.upper())
         self.be_quote.configure(text=b["quote"] or pick("Пише…", "Typing…"))
         stats, moves, pending = self._botend_stats()
         self.be_stats.configure(text=stats)
@@ -14321,7 +14340,7 @@ class App(tk.Tk):
         self.new_study_var.set("")
         self.studies_box.hide()
         self._show_study_panel()
-        self.status_var.set(f"📚  {name}: {pick('дослідження створено', 'study created')}")
+        self.status_var.set(f"{name}: {pick('дослідження створено', 'study created')}")
 
     # ---------- оновлення програми (релізи GitHub)
     def _build_update_box(self):
