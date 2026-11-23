@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.11"
+APP_VERSION = "1.31.12"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.12", "2026-11-23 13:26", [
+        ("Боти: перемикач «🎓 Тренер» — після вашої помилки бот не відповідає одразу, а показує кращий хід і пропонує повернути свій",
+         "Bots: «🎓 Coach» switch — after your mistake the bot does not answer right away, it shows the better move and offers to take your move back"),
+    ]),
     ("1.31.11", "2026-11-23 12:45", [
         ("Телефон: коли аналіз закінчено, пише «✅ Аналіз завершено» і по центру питає, чи відкрити оцінку партії (можна вимкнути в ⚙ Налаштуваннях)",
          "Phone: when the analysis ends, «✅ Analysis complete» is shown and a window in the center asks whether to open the game review (can be turned off in ⚙ Settings)"),
@@ -1745,6 +1749,12 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'Bots: «🎓 Coach» switch — after your mistake the bot does not answer right away, it shows the better move and offers to take your move back': ('Bots: interruptor «🎓 Treinador» — após o seu erro o bot não responde de imediato, mostra o melhor lance e oferece voltar o seu', 'Bots: interruptor «🎓 Entrenador» — tras tu error el bot no responde enseguida, muestra la mejor jugada y ofrece deshacer la tuya'),
+    'Keep playing': ('Continuar jogando', 'Seguir jugando'),
+    '🎓  Coach': ('🎓  Treinador', '🎓  Entrenador'),
+    '🎓 Coach: after a mistake, pauses the game and offers a takeback': ('🎓 Treinador: após um erro, pausa o jogo e oferece voltar o lance', '🎓 Entrenador: tras un error, pausa la partida y ofrece deshacer la jugada'),
+    '{0} is a {1}. The better move was {2}. Take it back and try again?': ('{0} é {1}. O melhor lance era {2}. Voltar o lance e tentar de novo?', '{0} es {1}. La mejor jugada era {2}. ¿Deshacer y probar otra vez?'),
+    '🎓 Coach: {0} is a {1}. The better move was {2}. Take it back and try again?': ('🎓 Treinador: {0} é {1}. O melhor lance era {2}. Voltar o lance e tentar de novo?', '🎓 Entrenador: {0} es {1}. La mejor jugada era {2}. ¿Deshacer y probar otra vez?'),
     'No': ('Não', 'No'),
     'Phone: when the analysis ends, «✅ Analysis complete» is shown and a window in the center asks whether to open the game review (can be turned off in ⚙ Settings)': ('Telefone: quando a análise termina, aparece «✅ Análise concluída» e uma janela no centro pergunta se deseja abrir a avaliação da partida (pode ser desativado em ⚙ Configurações)', 'Teléfono: cuando termina el análisis, aparece «✅ Análisis completado» y una ventana en el centro pregunta si abrir la valoración de la partida (se puede desactivar en ⚙ Ajustes)'),
     'Phone: the board is a little smaller — more room for the coach at the bottom': ('Telefone: o tabuleiro ficou um pouco menor — mais espaço para o treinador embaixo', 'Teléfono: el tablero es un poco más pequeño — más espacio para el entrenador abajo'),
@@ -7379,6 +7389,7 @@ class App(tk.Tk):
         self.bot, self._botq, self._bot_rng, self._bot_inject = None, queue.Queue(), random.Random(), False
         self._bot_sel, self._bot_color_i, self._bot_level_i = BOTS[0]["id"], 0, 0
         self._bot_stars, self._bot_photo_cache, self._bot_ui_on = {}, {}, False   # 1.25.0
+        self._bot_trainer = False             # 1.31.12: бот-тренер (пропонує повернути помилковий хід)
         self._botsayq, self._credit_links = queue.Queue(), []
         # «документ» на дошці: партія + збережені варіанти + коментарі + стрілки/кола
         self.lines = []            # варіанти гравця (кожен відходить від позиції основної лінії)
@@ -8051,6 +8062,7 @@ class App(tk.Tk):
                 self._cc_user = cfg["chesscom_user"]
                 if hasattr(self, "cc_user_var"):
                     self.cc_user_var.set(self._cc_user)
+            self._bot_trainer = cfg.get("bot_trainer") is True
             if isinstance(cfg.get("bot_stars"), dict):
                 self._bot_stars = {k: int(v) for k, v in cfg["bot_stars"].items() if isinstance(v, int)}
             bc = cfg.get("bot")
@@ -8081,7 +8093,7 @@ class App(tk.Tk):
                            "shape_color": self.shape_color_var.get(),
                            "chesscom_user": self._cc_user,
                            "bot": [self._bot_sel, self._bot_color_i, self._bot_level_i],
-                           "bot_stars": self._bot_stars}, f)
+                           "bot_stars": self._bot_stars, "bot_trainer": self._bot_trainer}, f)
         except Exception:
             pass
 
@@ -11980,6 +11992,11 @@ class App(tk.Tk):
         self.bots_rules = tk.Label(right, bg=PANEL, fg=FG, font=("Segoe UI", 9), justify="left", anchor="w",
                                    wraplength=440)
         self.bots_rules.pack(anchor="w", pady=(10, 0))
+        self.bot_trainer_var = tk.BooleanVar(value=self._bot_trainer)
+        self.bot_trainer_var.trace_add("write", lambda *a: (setattr(self, "_bot_trainer", bool(self.bot_trainer_var.get())),
+                                                            self._save_config()))
+        self.bot_trainer_sw = Switch(right, "", self.bot_trainer_var, bg=PANEL)
+        self.bot_trainer_sw.pack(anchor="w", pady=(10, 0))
         btns = tk.Frame(right, bg=PANEL)
         btns.pack(side="bottom", fill="x")
         self.bots_play_btn = RButton(btns, text="⚔  Почати гру", kind="play", command=self.bot_play)
@@ -12221,6 +12238,8 @@ class App(tk.Tk):
             btn.configure(text=(pick("♔  Білими", "♔  White"), pick("♚  Чорними", "♚  Black"),
                                 pick("🎲  Випадково", "🎲  Random"))[k])
         self.bots_play_btn.configure(text=pick("⚔  Почати гру", "⚔  Start game"))
+        self.bot_trainer_sw.lbl.configure(text=pick("🎓 Тренер: після помилки зупиняє гру й пропонує переходити",
+                                                    "🎓 Coach: after a mistake, pauses the game and offers a takeback"))
         self.bots_note.configure(text=pick(
             "Бот грає дебюти цього шахіста й наслідує його стиль, а силу гри дає Stockfish; репліки пише ШІ. Це імітація, "
             "із самими гравцями вона не пов'язана. Під час партії аналізу немає; після неї видно оцінку кожного ходу.",
@@ -12782,7 +12801,8 @@ class App(tk.Tk):
         self.bot = {"spec": spec, "color": chess.BLACK if user_white else chess.WHITE, "elo": elo, "over": False,
                     "thinking": False, "token": 0, "res": self.result, "result": "*", "reason": "",
                     "undos": 0, "hints": 0, "hint": None, "chat": [], "said_at": 0, "bot_moves": 0, "stars": 0,
-                    "record": False, "quote": ""}
+                    "record": False, "quote": "",
+                    "trainer": self._bot_trainer, "trainer_ask": False}
         tele_count("bot.games")
         tele_count("bot.g." + spec["id"])
         s = self.result["summary"]
@@ -12943,7 +12963,7 @@ class App(tk.Tk):
     def _bot_kick(self):
         """Якщо на дошці кінець лінії: партія закінчилась - підсумок; хід бота - бот думає."""
         b = self.bot
-        if not self._bot_live() or b["thinking"]:
+        if not self._bot_live() or b["thinking"] or b.get("trainer_ask"):
             return
         v = self.var
         if v is not None and v["index"] != len(v["rows"]):
@@ -12954,8 +12974,58 @@ class App(tk.Tk):
         over = bot_game_over(board)
         if over:
             self._bot_finish(*over)
-        elif board.turn == b["color"]:
+        elif board.turn == b["color"] and not self._trainer_wait():
             self._bot_think(board)
+
+    TRAINER_BAD = ("Помилка", "Груба помилка", "Пропуск")
+
+    def _trainer_wait(self):
+        """1.31.12: бот-тренер - після помилки гравця бот не відповідає, а пропонує повернути хід. True - чекаємо."""
+        b, v = self.bot, self.var
+        if not b.get("trainer") or v is None or not v["rows"]:
+            return False
+        row = v["rows"][-1]
+        if row["label"].endswith(".") != (b["color"] == chess.BLACK) or row.get("trainer_seen"):
+            return False                                  # це хід бота або вже перевірений
+        if row.get("pending"):
+            self.after(300, self._bot_kick)               # чекаємо оцінку Stockfish
+            return True
+        row["trainer_seen"] = True
+        if row.get("quality") not in self.TRAINER_BAD:
+            return False
+        b["trainer_ask"] = True
+        if getattr(self, "trainer_box", None) is None:
+            self.trainer_box = OverlayBox(self, "🎓")
+            inner = tk.Frame(self.trainer_box.box, bg=PANEL)
+            inner.pack(fill="both", expand=True, padx=22, pady=(10, 16))
+            self.tr_text = tk.Label(inner, bg=PANEL, fg=FG, font=("Segoe UI", 12), justify="left", anchor="w", wraplength=480)
+            self.tr_text.pack(anchor="w", fill="x")
+            row_b = tk.Frame(inner, bg=PANEL)
+            row_b.pack(fill="x", pady=(16, 0))
+            self.tr_back = RButton(row_b, text="", kind="play", command=lambda: self._trainer_answer(True))
+            self.tr_back.pack(side="left")
+            self.tr_go = RButton(row_b, text="", kind="seg", command=lambda: self._trainer_answer(False))
+            self.tr_go.pack(side="left", padx=(10, 0))
+        mv, q, best = row["label"] + row["san"], qname(row["quality"]).lower(), row.get("best_san") or "?"
+        self.trainer_box.title.configure(text=pick("🎓  Тренер", "🎓  Coach"))
+        self.tr_text.configure(text=pick(f"{mv} — {q}. Кращий хід був {best}. Повернути хід і спробувати ще?",
+                                         f"{mv} is a {q}. The better move was {best}. Take it back and try again?"))
+        self.tr_back.configure(text=pick("↶  Повернути хід", "↶  Take back"))
+        self.tr_go.configure(text=pick("Грати далі", "Keep playing"))
+        self.trainer_box.show()
+        return True
+
+    def _trainer_answer(self, back):
+        b = self.bot
+        self.trainer_box.hide()
+        if b:
+            b["trainer_ask"] = False
+        if not self._bot_live():
+            return
+        if back:
+            self._bot_undo()
+        else:
+            self._bot_kick()
 
     def _bot_think(self, board):
         b = self.bot

@@ -2452,6 +2452,7 @@ function botsRenderBody() {
     + `<label class="f">${esc(pick('Сила гри', 'Strength'))}</label><select id="btLevel">`
     + [pick(`Як у шахіста (${spec.elo})`, `Like the player (${spec.elo})`), ...D.BOT_LEVELS].map((l, i) => opt(i, String(l), levelI)).join('') + '</select>'
     + `<div class="botrules" id="btRules">${esc(botRules(spec, levelI === 0))}</div>`
+    + `<label class="check"><input type="checkbox" id="btTrainer"${cfg.botTrainer ? ' checked' : ''}>${esc(pick('🎓 Тренер: після помилки зупиняє гру й пропонує переходити', '🎓 Coach: after a mistake, pauses the game and offers a takeback'))}</label>`
     + `<button id="btPlay" class="primary big">${esc(pick('⚔ Почати гру', '⚔ Start game'))}</button>`
     + `<div class="hint">${esc(pick('Бот грає дебюти цього шахіста й наслідує його стиль, а силу гри дає Stockfish; репліки пише ШІ. Це імітація, '
       + 'із самими гравцями вона не пов\'язана. Під час партії аналізу немає; після неї видно оцінку кожного ходу.',
@@ -2473,6 +2474,7 @@ function botsRenderBody() {
   });
   $('btLevel').addEventListener('change', e => { cfg.bot[2] = +e.target.value; saveCfg(); $('btRules').textContent = botRules(spec, cfg.bot[2] === 0); });
   $('btPlay').addEventListener('click', botPlay);
+  $('btTrainer').addEventListener('change', e => { cfg.botTrainer = e.target.checked; saveCfg(); });
   const cur = $('btList').querySelector('.cur');
   if (cur && !done) cur.scrollIntoView({ block: 'nearest' });
   alienKick();
@@ -2533,7 +2535,8 @@ function botPlay() {
   tele('bot.games'); tele('bot.g.' + spec.id);
   if (board.flipped === userWhite) flipBoard();           // гравець завжди внизу дошки
   A.bot = { spec, color: userWhite ? 'b' : 'w', elo, over: false, thinking: false, token: 0, res: A.res, result: '*', reason: '',
-    undos: 0, hints: 0, hint: null, hintWait: false, chat: [], saidAt: 0, botMoves: 0, stars: 0, record: false, quote: '' };
+    undos: 0, hints: 0, hint: null, hintWait: false, chat: [], saidAt: 0, botMoves: 0, stars: 0, record: false, quote: '',
+    trainer: !!cfg.botTrainer, trainerAsk: false };
   const s = A.res.summary;
   [s.white, s.black] = userWhite ? ['You', spec.en + ' (bot)'] : [spec.en + ' (bot)', 'You'];
   if (userWhite) setNames('Ви', '', spec.uk, String(elo)); else setNames(spec.uk, String(elo), 'Ви', '');
@@ -2607,13 +2610,35 @@ function botTick() { botUiSync(); if (A.bot) botKick(); }
 /** На дошці кінець лінії: партія закінчилась - підсумок; хід бота - бот думає. */
 function botKick() {
   const b = A.bot;
-  if (!botLive() || b.thinking) return;
+  if (!botLive() || b.thinking || b.trainerAsk) return;
   const v = A.v;
   if (v && v.index !== v.rows.length) return;               // гравець переглядає попередні ходи
   const ucis = botMoves(), st = botState(A.res.fens[0], ucis);
   if (!st) return;
   if (st.over) botFinish(st.over[0], st.over[1]);
-  else if (st.turn === b.color) botThink(ucis, st.fen);
+  else if (st.turn === b.color && !trainerWait()) botThink(ucis, st.fen);
+}
+
+// 1.31.12: бот-тренер - після помилки гравця бот не відповідає, а пропонує повернути хід (кращий хід показує)
+const TRAINER_BAD = ['Помилка', 'Груба помилка', 'Пропуск'];
+function trainerWait() {
+  const b = A.bot, v = A.v;
+  if (!b.trainer || !v || !v.rows.length) return false;
+  const row = v.rows[v.rows.length - 1];
+  if (row.label.endsWith('.') !== (b.color === 'b') || row.trainerSeen) return false;     // це хід бота або вже перевірений
+  if (row.pending) { setTimeout(botKick, 300); return true; }                             // чекаємо оцінку Stockfish
+  row.trainerSeen = true;
+  if (!TRAINER_BAD.includes(row.quality)) return false;
+  b.trainerAsk = true;
+  const mv = row.label + row.san, q = qname(row.quality).toLowerCase(), best = row.best_san || '?';
+  modal(pick(`🎓 Тренер: ${mv} — ${q}. Кращий хід був ${best}. Повернути хід і спробувати ще?`,
+    `🎓 Coach: ${mv} is a ${q}. The better move was ${best}. Take it back and try again?`),
+  [[pick('Грати далі', 'Keep playing'), false], [pick('↶ Повернути хід', '↶ Take back'), true]]).then(ok => {
+    b.trainerAsk = false;
+    if (A.bot !== b || !botLive()) return;
+    if (ok) botUndo(); else botKick();
+  });
+  return true;
 }
 
 async function botThink(ucis, fen) {
