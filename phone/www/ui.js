@@ -177,9 +177,8 @@ function layout() {
   $('evalbar').hidden = !showEval;
   const evalW = showEval ? 20 : 0;
   const top = $('top').offsetHeight + $('actions').offsetHeight;
-  const fixed = 52 + $('nav').offsetHeight + $('movesCard').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
-  const bar = $('bottomBar').offsetHeight;          // 1.31.11: нижня панель і більше місця тренерові (210 px)
-  let size = wide ? Math.min(H - top - fixed - bar, W * 0.55 - evalW) : Math.min(W - 20 - evalW, H - top - fixed - bar - 210);
+  const fixed = 52 + $('nav').offsetHeight + ($('drawBar').hidden ? 0 : 32) + ($('botBar').hidden ? 0 : $('botBar').offsetHeight + 6) + 8;
+  let size = wide ? Math.min(H - top - fixed, W * 0.55 - evalW) : Math.min(W - 20 - evalW, H - top - fixed - 150);   // 1.31.13: розмір дошки як до 1.31.11
   size = Math.max(200, Math.floor(size / 8) * 8);
   board.setSize(size);
   $('evalbar').style.height = size + 'px';
@@ -2088,7 +2087,13 @@ function ccCount() {
 // аналізу немає (шкала, графік, «Оцінка партії», оцінки ходів). Після партії - зірки й звичайний аналізатор.
 const botById = id => D.BOTS.find(b => b.id === id) || D.BOTS[0];
 const botName = b => pick(b.uk, b.en);
-const botPhoto = id => 'data:image/png;base64,' + D.BOT_PHOTOS[id];
+// 1.31.13: бот «Тренер» - без фото шахіста, значок 🎓
+const COACH_PHOTO = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="48" fill="#81b64c"/><text x="48" y="64" font-size="48" text-anchor="middle">🎓</text></svg>');
+const botPhoto = id => (D.BOT_PHOTOS[id] ? 'data:image/png;base64,' + D.BOT_PHOTOS[id] : COACH_PHOTO);
+function coachSpec(elo) {
+  return { id: 'coach', uk: 'Тренер', en: 'Coach', elo, years: pick('гра з навчанням', 'learning game'), cat: 'coach', w: [], b: [], risk: 0, aggr: 0,
+    d_uk: 'Шаховий тренер: пояснює кожен ваш хід і після помилки пропонує переходити.', d_en: 'A chess coach: explains each of your moves and offers a takeback after a mistake.' };
+}
 // 1.26.0: «тривожний» Witty Alien (задум автора програми) - поки його видно, фото інколи «збоїть»;
 // наведення або дотик - він «дивиться» (очі горять). Картинки з data-alien - картка партії, меню ботів.
 const ALIEN = 'wittyalien';
@@ -2438,6 +2443,11 @@ function botsRenderBody() {
   const groups = [['modern', pick('СУЧАСНІ ЗІРКИ', "TODAY'S STARS")], ['legend', pick('ЛЕГЕНДИ', 'LEGENDS')], ['streamer', pick('СТРІМЕРИ', 'STREAMERS')]];
   const cat = { modern: pick('сучасна зірка', "today's star"), legend: pick('легенда', 'legend'), streamer: pick('стрімер', 'streamer') }[spec.cat] || '';
   $('boxBody').innerHTML = (done ? `<div class="botres" style="white-space:pre-line">${esc(botResultText())}</div>` : '')
+    + `<div class="coachbox"><div class="bothead"><img src="${COACH_PHOTO}" alt=""><div><b>${esc(pick('🎓 Тренер', '🎓 Coach'))}</b><br>`
+    + `<small>${esc(pick('Пояснює кожен ваш хід (ШІ без ліміту), після помилки пропонує переходити.', 'Explains each of your moves (AI without a limit), offers a takeback after a mistake.'))}</small></div></div>`
+    + `<div class="row"><label class="f" style="margin:0;align-self:center">${esc(pick('Сила (Ело)', 'Strength (Elo)'))}</label>`
+    + `<input id="coElo" type="number" min="400" max="3000" step="50" value="${cfg.coachElo || 1200}" style="width:90px">`
+    + `<button id="coPlay" class="primary">${esc(pick('🎓 Грати з тренером', '🎓 Play the coach'))}</button></div></div>`
     + `<div class="botgal" id="btList">${groups.map(([c, t]) => `<div class="gh">${esc(t)}</div><div class="gg">`
       + D.BOTS.filter(x => x.cat === c).map(card).join('') + '</div>').join('')}</div>`
     + `<div class="botsel"><div class="bothead"><img src="${botPhoto(spec.id)}" alt=""${alien(spec)}><div><b>${esc(botName(spec))}</b><br>`
@@ -2473,7 +2483,11 @@ function botsRenderBody() {
     for (const x of $('btColor').children) x.classList.toggle('on', x === bt);
   });
   $('btLevel').addEventListener('change', e => { cfg.bot[2] = +e.target.value; saveCfg(); $('btRules').textContent = botRules(spec, cfg.bot[2] === 0); });
-  $('btPlay').addEventListener('click', botPlay);
+  $('btPlay').addEventListener('click', () => botPlay());
+  $('coPlay').addEventListener('click', () => {
+    const e = Math.max(400, Math.min(3000, Math.round((+$('coElo').value || 1200) / 50) * 50));
+    cfg.coachElo = e; saveCfg(); botPlay(e);
+  });
   $('btTrainer').addEventListener('change', e => { cfg.botTrainer = e.target.checked; saveCfg(); });
   const cur = $('btList').querySelector('.cur');
   if (cur && !done) cur.scrollIntoView({ block: 'nearest' });
@@ -2514,11 +2528,12 @@ function renderBotCard() {
   const side = b.color === 'w' ? pick('білими', 'White') : pick('чорними', 'Black');
   const al = spec.id === ALIEN && A.alienMode;
   $('botCard').innerHTML = `<img src="${al ? alienSrc(A.alienHover ? 'stare' : 'base') : botPhoto(spec.id)}" alt=""${al ? ' data-alien="1"' : ''}><div class="bi">`
-    + `<div class="bn"><span>${esc(botName(spec))}</span>${creditLink()}</div>`
+    + `<div class="bn"><span>${esc(botName(spec))}</span>${b.coach ? '' : creditLink()}</div>`
     + `<div class="bm">${esc(spec.years)} · ${esc(pick('грає', 'plays'))} ${esc(side)} · ${esc(pick('сила', 'strength'))} ${b.elo}</div>`
-    + `<div class="st">${starsText((cfg.botStars || {})[spec.id] || 0)} <small style="color:var(--muted)">${esc(pick('ваш рекорд', 'your record'))}</small></div>`
+    + (b.coach ? `<div class="goal">${esc(pick('🎓 Пояснює кожен ваш хід', '🎓 Explains each of your moves'))}</div></div>` :   // 1.31.13
+      `<div class="st">${starsText((cfg.botStars || {})[spec.id] || 0)} <small style="color:var(--muted)">${esc(pick('ваш рекорд', 'your record'))}</small></div>`
     + `<div class="goal">${esc(pick('Для ★★★: ', 'For ★★★: '))}${esc(pick('сила', 'strength'))} ${spec.elo} ${real ? ok : no} · `
-    + `${esc(pick('без повернень', 'no takebacks'))} ${b.undos ? no : ok} · ${esc(pick('без підказки', 'no hint'))} ${b.hints ? no : ok}</div></div>`;
+    + `${esc(pick('без повернень', 'no takebacks'))} ${b.undos ? no : ok} · ${esc(pick('без підказки', 'no hint'))} ${b.hints ? no : ok}</div></div>`);
   $('bbUndo').textContent = pick('↶ Повернути хід', '↶ Take back');
   $('bbHint').textContent = pick('💡 Підказка', '💡 Hint') + (b.hints ? ' (0)' : ' (1)');
   $('bbHint').disabled = !!b.hints || !!b.hintWait;
@@ -2526,17 +2541,17 @@ function renderBotCard() {
   if (al) alienKick();
 }
 
-function botPlay() {
-  const spec = botById(cfg.bot[0]);
+function botPlay(coachElo = null) {
+  const spec = coachElo ? coachSpec(coachElo) : botById(cfg.bot[0]);       // 1.31.13: coachElo - бот «Тренер»
   const userWhite = [true, false, Math.random() < 0.5][cfg.bot[1]] ?? true;
-  const elo = cfg.bot[2] >= 1 && D.BOT_LEVELS[cfg.bot[2] - 1] ? D.BOT_LEVELS[cfg.bot[2] - 1] : spec.elo;
+  const elo = coachElo || (cfg.bot[2] >= 1 && D.BOT_LEVELS[cfg.bot[2] - 1] ? D.BOT_LEVELS[cfg.bot[2] - 1] : spec.elo);
   closeBox();
   startFree();
   tele('bot.games'); tele('bot.g.' + spec.id);
   if (board.flipped === userWhite) flipBoard();           // гравець завжди внизу дошки
   A.bot = { spec, color: userWhite ? 'b' : 'w', elo, over: false, thinking: false, token: 0, res: A.res, result: '*', reason: '',
     undos: 0, hints: 0, hint: null, hintWait: false, chat: [], saidAt: 0, botMoves: 0, stars: 0, record: false, quote: '',
-    trainer: !!cfg.botTrainer, trainerAsk: false };
+    trainer: !!cfg.botTrainer || !!coachElo, trainerAsk: false, coach: !!coachElo };
   const s = A.res.summary;
   [s.white, s.black] = userWhite ? ['You', spec.en + ' (bot)'] : [spec.en + ' (bot)', 'You'];
   if (userWhite) setNames('Ви', '', spec.uk, String(elo)); else setNames(spec.uk, String(elo), 'Ви', '');
@@ -2565,6 +2580,7 @@ async function botSay(event, ucis = null) {
   const b = A.bot;
   if (!b) return;
   let text = null;
+  if (b.coach && event === 'move') return;            // тренер говорить поясненнями ходів (coachExplain)
   if (!['undo', 'hint'].includes(event) && cfg.ai && !A.aiOff) {
     try {
       const facts = botChatFacts(event, A.res.fens[0], ucis || botMoves(), b.color, b.result);
@@ -2619,6 +2635,23 @@ function botKick() {
   else if (st.turn === b.color && !trainerWait()) botThink(ucis, st.fen);
 }
 
+/** 1.31.13: бот «Тренер» - ШІ пояснює кожен хід гравця (без денного ліміту, потрібен акаунт). */
+async function coachExplain(b, v, row) {
+  const j = v.rows.indexOf(row) + 1;
+  if (j < 1) return;
+  const head = `🎓 ${row.label}${row.san} — ${qname(row.quality)}`;
+  let text = null;
+  if (!ACC.token) text = pick('ШІ-пояснення працюють з акаунтом: увійдіть (👤).', 'AI explanations need an account: sign in (👤).');
+  else if (cfg.ai) {
+    try { text = await fetchAiCoach(aiFacts(v.fens[j - 1], row.uci, row.quality, row.best_san || '', v.pes[j - 1], v.pes[j]), uiLang(), null, null, null, 'trainer'); }
+    catch (_) { text = null; }
+  }
+  if (!text && row.best_san && row.best_san !== row.san) text = pick(`Кращий хід був ${row.best_san}.`, `The better move was ${row.best_san}.`);
+  if (A.bot !== b) return;
+  b.chat.push(head + (text ? '\n' + text : ''));
+  if (botLive()) showCoach(A.coachLines);
+}
+
 // 1.31.12: бот-тренер - після помилки гравця бот не відповідає, а пропонує повернути хід (кращий хід показує)
 const TRAINER_BAD = ['Помилка', 'Груба помилка', 'Пропуск'];
 function trainerWait() {
@@ -2628,6 +2661,7 @@ function trainerWait() {
   if (row.label.endsWith('.') !== (b.color === 'b') || row.trainerSeen) return false;     // це хід бота або вже перевірений
   if (row.pending) { setTimeout(botKick, 300); return true; }                             // чекаємо оцінку Stockfish
   row.trainerSeen = true;
+  if (b.coach) coachExplain(b, v, row);
   if (!TRAINER_BAD.includes(row.quality)) return false;
   b.trainerAsk = true;
   const mv = row.label + row.san, q = qname(row.quality).toLowerCase(), best = row.best_san || '?';

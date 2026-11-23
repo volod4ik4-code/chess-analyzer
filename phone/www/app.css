@@ -355,3 +355,7 @@ button.big { width: 100%; padding: 13px; font-size: 16px; margin-top: 12px; bord
 .cclist .cc-win .ccres { color: #9bd36a; }
 .cclist .cc-loss .ccres { color: #ec7c6a; }
 .cclist .cc-draw .ccres { color: var(--muted); }
+
+/* 1.31.13: бот «Тренер» у вікні ботів */
+.coachbox { border: 1px solid var(--accent); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; }
+.coachbox .row { align-items: center; gap: 8px; margin-top: 6px; }

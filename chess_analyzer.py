@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.12.1"
+APP_VERSION = "1.31.13"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,12 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.13", "2026-11-23 13:36", [
+        ("Новий бот «🎓 Тренер» у «Ботах»: будь-яка сила (Ело 400–3000); ШІ пояснює кожен ваш хід без денного ліміту (потрібен акаунт), а після помилки тренер пропонує переходити",
+         "New «🎓 Coach» bot in «Bots»: choose any strength (Elo 400–3000); the AI explains each of your moves without a daily limit (an account is needed), and after a mistake the coach offers a takeback"),
+        ("Телефон: розмір дошки знову звичайний",
+         "Phone: the board size is back to normal"),
+    ]),
     ("1.31.12.1", "2026-11-23 13:29", [
         ("Small fixes", "Small fixes"),
     ]),
@@ -1752,6 +1758,18 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'New «🎓 Coach» bot in «Bots»: choose any strength (Elo 400–3000); the AI explains each of your moves without a daily limit (an account is needed), and after a mistake the coach offers a takeback': ('Novo bot «🎓 Treinador» em «Bots»: qualquer força (Elo 400–3000); a IA explica cada lance seu sem limite diário (é preciso uma conta), e após um erro o treinador oferece voltar o lance', 'Nuevo bot «🎓 Entrenador» en «Bots»: cualquier fuerza (Elo 400–3000); la IA explica cada una de tus jugadas sin límite diario (se necesita una cuenta), y tras un error el entrenador ofrece deshacer'),
+    'Phone: the board size is back to normal': ('Telefone: o tamanho do tabuleiro voltou ao normal', 'Teléfono: el tamaño del tablero vuelve a ser el normal'),
+    'learning game': ('jogo com aprendizado', 'partida de aprendizaje'),
+    'A chess coach: explains each of your moves and offers a takeback after a mistake.': ('Um treinador de xadrez: explica cada lance seu e oferece voltar o lance após um erro.', 'Un entrenador de ajedrez: explica cada una de tus jugadas y ofrece deshacer tras un error.'),
+    'Explains each of your moves (AI without a limit), offers a takeback after a mistake.': ('Explica cada lance seu (IA sem limite), oferece voltar o lance após um erro.', 'Explica cada una de tus jugadas (IA sin límite), ofrece deshacer tras un error.'),
+    'Strength (Elo)': ('Força (Elo)', 'Fuerza (Elo)'),
+    '🎓 Play the coach': ('🎓 Jogar com o treinador', '🎓 Jugar con el entrenador'),
+    '🎓  Play the coach': ('🎓  Jogar com o treinador', '🎓  Jugar con el entrenador'),
+    'AI explanations need an account: sign in (👤).': ('As explicações da IA precisam de uma conta: entre (👤).', 'Las explicaciones de la IA requieren una cuenta: inicia sesión (👤).'),
+    'The better move was {0}.': ('O melhor lance era {0}.', 'La mejor jugada era {0}.'),
+    '🎓 Explains each of your moves': ('🎓 Explica cada lance seu', '🎓 Explica cada una de tus jugadas'),
+    '🎓 Coach — explains each of your moves (AI without a limit), offers a takeback after a mistake': ('🎓 Treinador — explica cada lance seu (IA sem limite), oferece voltar o lance após um erro', '🎓 Entrenador — explica cada una de tus jugadas (IA sin límite), ofrece deshacer tras un error'),
     'Bots: «🎓 Coach» switch — after your mistake the bot does not answer right away, it shows the better move and offers to take your move back': ('Bots: interruptor «🎓 Treinador» — após o seu erro o bot não responde de imediato, mostra o melhor lance e oferece voltar o seu', 'Bots: interruptor «🎓 Entrenador» — tras tu error el bot no responde enseguida, muestra la mejor jugada y ofrece deshacer la tuya'),
     'Keep playing': ('Continuar jogando', 'Seguir jugando'),
     '🎓  Coach': ('🎓  Treinador', '🎓  Entrenador'),
@@ -3730,7 +3748,7 @@ def ask_facts(fen, pe, sans=(), last=None):
     return "\n".join(out)[:4000]
 
 
-def fetch_ai_coach(facts, lang, timeout=40, question=None, history=None, bot=None):
+def fetch_ai_coach(facts, lang, timeout=40, question=None, history=None, bot=None, mode=None):
     """Пояснення від ШІ-тренера (або відповідь на запитання гравця - question, history [{q, a}]).
     Повертає текст; при помилці - RuntimeError("quota" | "rate" | "net" | ...)."""
     d = {"lang": lang, "facts": facts}
@@ -3740,6 +3758,8 @@ def fetch_ai_coach(facts, lang, timeout=40, question=None, history=None, bot=Non
         d["mode"], d["bot"] = "bot", bot
     elif ACC["token"]:                       # 1.31.0: ліміт пояснень рахується на акаунт
         d["token"] = ACC["token"]
+        if mode:
+            d["mode"] = mode                 # 1.31.13: "trainer" - бот «Тренер», пояснення без ліміту
     body = json.dumps(d).encode("utf-8")
     req = urllib.request.Request(AI_COACH_URL, data=body, method="POST",
                                  headers={"Content-Type": "application/json", "User-Agent": "ChessAnalyzer"})
@@ -3757,7 +3777,7 @@ def fetch_ai_coach(facts, lang, timeout=40, question=None, history=None, bot=Non
     text = (data.get("text") or "").strip()
     if not text:
         raise RuntimeError("empty")
-    if ACC["user"] is not None and isinstance(data.get("ai_left"), int):
+    if ACC["user"] is not None and not mode and isinstance(data.get("ai_left"), int):
         ACC["user"]["ai_left"] = data["ai_left"]
     return text
 
@@ -4535,6 +4555,15 @@ def bot_openings_text(bot):
             names = [pick(*_OPEN_NAMES.get((first, r), (f"1…{r}", f"1…{r}"))) for r in rs]
             parts.append(pick(f"на 1.{first} — ", f"vs 1.{first}: ") + ", ".join(names))
     return pick("Дебюти: ", "Openings: ") + parts[0] + "  ·  " + pick("чорними: ", "Black: ") + "; ".join(parts[1:])
+
+
+def coach_spec(elo):
+    """1.31.13: бот «Тренер» - будь-яке Ело, без дебютів і стилю; пояснює кожен хід гравця."""
+    return {"id": "coach", "uk": "Тренер", "en": "Coach", "elo": int(elo), "years": pick("гра з навчанням", "learning game"),
+            "cat": "coach", "w": [], "b": [], "risk": 0, "aggr": 0,
+            "d_uk": "Шаховий тренер: пояснює кожен ваш хід і після помилки пропонує переходити.",
+            "d_en": "A chess coach: explains each of your moves and offers a takeback after a mistake.",
+            "fact_uk": "", "fact_en": ""}
 
 
 def bot_by_id(bot_id):
@@ -11917,6 +11946,9 @@ class App(tk.Tk):
         """Кругле фото шахіста (96, 48 або 32 px)."""
         key = (bot_id, size)
         if key not in self._bot_photo_cache:
+            if bot_id not in BOT_PHOTOS:                 # 1.31.13: бот «Тренер» - без фото
+                self._bot_photo_cache[key] = circle_image(size, ACCENT, PANEL)
+                return self._bot_photo_cache[key]
             img = tk.PhotoImage(data=BOT_PHOTOS[bot_id])
             if size < 96:
                 img = img.subsample(96 // size)
@@ -11936,6 +11968,16 @@ class App(tk.Tk):
         inner = tk.Frame(body, bg=PANEL)
         inner.pack(fill="both", expand=True, padx=18, pady=(12, 14))
         self.bots_result = tk.Label(inner, bg=PANEL, fg=ACCENT, font=fsemi(12), justify="left", anchor="w", wraplength=980)
+        crow = tk.Frame(inner, bg=PANEL2, padx=14, pady=10)     # 1.31.13: бот «Тренер» з вибором Ело
+        crow.pack(fill="x", pady=(0, 12))
+        self.coach_lbl = tk.Label(crow, bg=PANEL2, fg=FG, font=fsemi(11), anchor="w", justify="left")
+        self.coach_lbl.pack(side="left")
+        self.coach_play_btn = RButton(crow, text="", kind="play", command=self._coach_play)
+        self.coach_play_btn.pack(side="right")
+        self.coach_elo_var = tk.StringVar(value="1200")
+        ttk.Spinbox(crow, from_=400, to=3000, increment=50, textvariable=self.coach_elo_var, width=6).pack(side="right", padx=(6, 12))
+        self.coach_elo_lbl = tk.Label(crow, bg=PANEL2, fg=MUTED, font=("Segoe UI", 10))
+        self.coach_elo_lbl.pack(side="right")
         row = tk.Frame(inner, bg=PANEL)
         row.pack(fill="both", expand=True)
         self._bots_row = row
@@ -12222,10 +12264,14 @@ class App(tk.Tk):
         self.botc_stars.configure(text=f"{stars_text(best)}   " + pick("ваш рекорд", "your record"))
         ok, no = "✓", "✗"
         real = b["elo"] == spec["elo"]
-        self.botc_goal.configure(text=pick("Для ★★★: ", "For ★★★: ")
-                                 + f"{pick('сила', 'strength')} {spec['elo']} {ok if real else no}   "
-                                 + f"{pick('без повернень', 'no takebacks')} {no if b['undos'] else ok}   "
-                                 + f"{pick('без підказки', 'no hint')} {no if b['hints'] else ok}")
+        if b.get("coach"):
+            self.botc_stars.configure(text="")
+            self.botc_goal.configure(text=pick("🎓 Пояснює кожен ваш хід", "🎓 Explains each of your moves"))
+        else:
+            self.botc_goal.configure(text=pick("Для ★★★: ", "For ★★★: ")
+                                     + f"{pick('сила', 'strength')} {spec['elo']} {ok if real else no}   "
+                                     + f"{pick('без повернень', 'no takebacks')} {no if b['undos'] else ok}   "
+                                     + f"{pick('без підказки', 'no hint')} {no if b['hints'] else ok}")
         self.bot_hint_btn.configure(text=pick("💡  Підказка", "💡  Hint") + (" (0)" if b["hints"] else " (1)"),
                                     state="disabled" if b["hints"] else "normal")
 
@@ -12238,6 +12284,10 @@ class App(tk.Tk):
             btn.configure(text=(pick("♔  Білими", "♔  White"), pick("♚  Чорними", "♚  Black"),
                                 pick("🎲  Випадково", "🎲  Random"))[k])
         self.bots_play_btn.configure(text=pick("⚔  Почати гру", "⚔  Start game"))
+        self.coach_lbl.configure(text=pick("🎓 Тренер — пояснює кожен ваш хід (ШІ без ліміту), після помилки пропонує переходити",
+                                           "🎓 Coach — explains each of your moves (AI without a limit), offers a takeback after a mistake"))
+        self.coach_elo_lbl.configure(text=pick("Сила (Ело)", "Strength (Elo)"))
+        self.coach_play_btn.configure(text=pick("🎓  Грати з тренером", "🎓  Play the coach"))
         self.bot_trainer_sw.lbl.configure(text=pick("🎓 Тренер: після помилки зупиняє гру й пропонує переходити",
                                                     "🎓 Coach: after a mistake, pauses the game and offers a takeback"))
         self.bots_note.configure(text=pick(
@@ -12780,20 +12830,30 @@ class App(tk.Tk):
         b = self.bot
         return bool(b and not b["over"] and self.result is b["res"])
 
-    def bot_play(self):
-        """«Почати гру»: нова партія з вибраним ботом."""
-        spec = bot_by_id(self._bot_sel)
+    def _coach_play(self):
+        try:
+            elo = int(float(self.coach_elo_var.get()))
+        except ValueError:
+            elo = 1200
+        elo = max(400, min(3000, round(elo / 50) * 50))
+        self.coach_elo_var.set(str(elo))
+        self.bot_play(coach_elo=elo)
+
+    def bot_play(self, coach_elo=None):
+        """«Почати гру»: нова партія з вибраним ботом (coach_elo - бот «Тренер», 1.31.13)."""
+        spec = coach_spec(coach_elo) if coach_elo else bot_by_id(self._bot_sel)
         path = self.engine_var.get().strip().strip('"')
         if not path or not os.path.exists(path):
             messagebox.showwarning(trd("Увага", "Warning"), tr("Вкажіть шлях до файлу Stockfish (.exe)."))
             return
-        self._bot_sel = spec["id"]
+        if not coach_elo:
+            self._bot_sel = spec["id"]
         if spec["id"] == "wittyalien":
             self._alien_audio_prepare()           # 1.26.11: звуки - заздалегідь, у фоні
         self._bot_color_i = self._bot_color_i if 0 <= self._bot_color_i <= 2 else 0
         self._bot_level_i = max(0, self.bots_level_cb.current())
         user_white = (True, False, self._bot_rng.random() < 0.5)[self._bot_color_i]
-        elo = spec["elo"] if self._bot_level_i == 0 else BOT_LEVELS[self._bot_level_i - 1]
+        elo = coach_elo or (spec["elo"] if self._bot_level_i == 0 else BOT_LEVELS[self._bot_level_i - 1])
         self.bots_box.hide()
         self._start_free()
         if self.board.flipped == user_white:           # гравець завжди внизу дошки
@@ -12802,7 +12862,7 @@ class App(tk.Tk):
                     "thinking": False, "token": 0, "res": self.result, "result": "*", "reason": "",
                     "undos": 0, "hints": 0, "hint": None, "chat": [], "said_at": 0, "bot_moves": 0, "stars": 0,
                     "record": False, "quote": "",
-                    "trainer": self._bot_trainer, "trainer_ask": False}
+                    "trainer": self._bot_trainer or bool(coach_elo), "trainer_ask": False, "coach": bool(coach_elo)}
         tele_count("bot.games")
         tele_count("bot.g." + spec["id"])
         s = self.result["summary"]
@@ -12857,6 +12917,8 @@ class App(tk.Tk):
         if not b:
             return
         alien = self._alien_mode                  # 1.27.6: моторошний Witty Alien
+        if b.get("coach") and event == "move":
+            return                                  # 1.31.13: тренер говорить поясненнями ходів (_coach_explain)
         if event in ("undo", "hint") or not self.ai_var.get() or self._ai_off:
             self._bot_said(b, bot_canned(event, self._bot_rng, alien), event)
             return
@@ -12991,6 +13053,8 @@ class App(tk.Tk):
             self.after(300, self._bot_kick)               # чекаємо оцінку Stockfish
             return True
         row["trainer_seen"] = True
+        if b.get("coach"):
+            self._coach_explain(b, v, row)
         if row.get("quality") not in self.TRAINER_BAD:
             return False
         b["trainer_ask"] = True
@@ -13014,6 +13078,32 @@ class App(tk.Tk):
         self.tr_go.configure(text=pick("Грати далі", "Keep playing"))
         self.trainer_box.show()
         return True
+
+    def _coach_explain(self, b, v, row):
+        """1.31.13: бот «Тренер» - ШІ пояснює хід гравця (без денного ліміту, потрібен акаунт)."""
+        try:
+            j = next(i for i, r in enumerate(v["rows"]) if r is row) + 1
+        except StopIteration:
+            return
+        head = f"🎓 {row['label']}{row['san']} — {qname(row['quality'])}"
+        args = (v["fens"][j - 1], row["uci"], row["quality"], row.get("best_san") or "", v["pes"][j - 1], v["pes"][j])
+        fallback = pick(f"Кращий хід був {row['best_san']}.", f"The better move was {row['best_san']}.") \
+            if row.get("best_san") and row.get("best_san") != row["san"] else ""
+        want_ai = bool(ACC["token"]) and self.ai_var.get()
+        no_acc = "" if ACC["token"] else pick("ШІ-пояснення працюють з акаунтом: увійдіть (👤).",
+                                              "AI explanations need an account: sign in (👤).")
+
+        def work():
+            text = None
+            if want_ai:
+                try:
+                    text = fetch_ai_coach(ai_facts(*args), ui_lang(), timeout=40, mode="trainer")
+                except Exception:  # noqa: BLE001
+                    text = None
+            text = text or no_acc or fallback
+            self._botsayq.put((b, "coach", head + ("\n" + text if text else "")))
+        threading.Thread(target=work, daemon=True).start()
+        self.after(150, self._bot_say_poll)
 
     def _trainer_answer(self, back):
         b = self.bot
@@ -13366,6 +13456,11 @@ class App(tk.Tk):
     def _botend_rematch(self):
         """Реванш: той самий шахіст і сила, кольори міняються."""
         b = self.bot
+        if b.get("coach"):                                  # 1.31.13: реванш з тим самим тренером
+            self._bot_color_i = 1 if b["color"] == chess.BLACK else 0
+            self.botend_box.hide()
+            self.bot_play(coach_elo=b["elo"])
+            return
         self._bot_sel = b["spec"]["id"]
         self._bot_color_i = 1 if b["color"] == chess.BLACK else 0
         self._bot_level_i = 0 if b["elo"] == b["spec"]["elo"] else (BOT_LEVELS.index(b["elo"]) + 1
