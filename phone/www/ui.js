@@ -365,7 +365,94 @@ function toggleList(show) {
   const p = $('gradesPage');
   p.hidden = typeof show === 'boolean' ? !show : !p.hidden;
   $('bGrades').classList.toggle('on', !p.hidden);
-  if (!p.hidden) { fillList(); markCurrent(); }
+  if (!p.hidden) { fillList(); markCurrent(); reviewRender(); }
+}
+
+// ---- 1.31.14: «🎓 Розбір з тренером»: аспекти гри гравця, урок ШІ, виправлення своїх помилок у цій партії
+function reviewSide() {
+  const s = (A.res && A.res.summary) || {}, nick = (CC.user || (ACC.user && ACC.user.chesscom) || '').trim().toLowerCase();
+  if (nick && nick === String(s.white || '').toLowerCase()) return true;
+  if (nick && nick === String(s.black || '').toLowerCase()) return false;
+  if (s.white === 'You') return true;
+  if (s.black === 'You') return false;
+  return A.reviewWhite ?? !board.flipped;          // невідомо хто - сторона внизу дошки
+}
+function reviewAspects(white) {
+  const r = A.res, ph = { opening: [], middle: [], end: [] }, cnt = {}, bad = [];
+  let missed = 0;
+  r.moves.forEach((m, i) => {
+    if ((r.fens[i].split(' ')[1] === 'w') !== white) return;
+    const pieces = r.fens[i].split(' ')[0].replace(/[pPkK\d\/]/g, '').length;   // фігури без пішаків і королів
+    const phase = i < 20 ? 'opening' : pieces <= 6 ? 'end' : 'middle';
+    if (typeof m.acc === 'number') ph[phase].push(m.acc);
+    cnt[m.quality] = (cnt[m.quality] || 0) + 1;
+    if (m.missed_bril || m.quality === 'Пропуск') missed++;
+    if (['Неточність', 'Помилка', 'Груба помилка', 'Пропуск'].includes(m.quality)) bad.push(m);
+  });
+  const acc = a => (a.length ? gameAccuracy(a) : null);
+  return { opening: acc(ph.opening), middle: acc(ph.middle), end: acc(ph.end), cnt, missed, bad };
+}
+function reviewRender() {
+  const el = $('reviewCard');
+  if (!A.res || A.res.free || A.res.partial || !A.res.moves.length) { el.hidden = true; return; }
+  el.hidden = false;
+  const white = reviewSide(), a = reviewAspects(white), key = A.res;
+  const pct = x => (x == null ? '—' : x.toFixed(0) + '%');
+  const phases = [['opening', pick('Дебют', 'Opening')], ['middle', pick('Мідлшпіль', 'Middlegame')], ['end', pick('Ендшпіль', 'Endgame')]];
+  const weak = phases.filter(([k]) => a[k] != null).sort((x, y) => a[x[0]] - a[y[0]])[0];
+  const fixes = puzzlesFromResult(A.res, white);
+  const lesson = A.review && A.review.key === key && A.review.white === white ? A.review.text : null;
+  el.innerHTML = `<div class="cardHead">${esc(pick('🎓 РОЗБІР З ТРЕНЕРОМ', '🎓 REVIEW WITH THE COACH'))}</div>`
+    + `<div class="seg" id="rvSide"><button data-w="1"${white ? ' class="on"' : ''}>${esc(pick('○ Білі', '○ White'))}</button><button data-w="0"${white ? '' : ' class="on"'}>${esc(pick('● Чорні', '● Black'))}</button></div>`
+    + `<div class="asp">${phases.map(([k, l]) => `<span>${esc(l)}</span><b>${pct(a[k])}</b>`).join('')}`
+    + `<span>${esc(pick('Тактика', 'Tactics'))}</span><b>${esc(a.missed ? pick(`пропущено можливостей: ${a.missed}`, `missed chances: ${a.missed}`) : pick('нічого не пропущено', 'nothing missed'))}</b>`
+    + `<span>${esc(pick('Помилки', 'Mistakes'))}</span><b>${esc(pick(`грубих ${a.cnt['Груба помилка'] || 0}, помилок ${a.cnt['Помилка'] || 0}, неточностей ${a.cnt['Неточність'] || 0}`, `blunders ${a.cnt['Груба помилка'] || 0}, mistakes ${a.cnt['Помилка'] || 0}, inaccuracies ${a.cnt['Неточність'] || 0}`))}</b></div>`
+    + (weak ? `<div class="hint">${esc(pick(`Найслабша частина: ${weak[1].toLowerCase()}.`, `Weakest part: ${weak[1].toLowerCase()}.`))}</div>` : '')
+    + (lesson ? `<div class="lesson">${esc(lesson)}</div>` : '')
+    + `<div class="row"><button id="rvLesson"${lesson ? ' hidden' : ''}>${esc(pick('🤖 Урок від тренера (ШІ)', '🤖 Lesson from the coach (AI)'))}</button>`
+    + `<button id="rvFix" class="primary"${fixes.length ? '' : ' disabled'}>${esc(pick(`✏️ Виправити мої помилки (${fixes.length})`, `✏️ Fix my mistakes (${fixes.length})`))}</button></div>`;
+  $('rvSide').addEventListener('click', e => { const b = e.target.closest('[data-w]'); if (b) { A.reviewWhite = b.dataset.w === '1'; reviewRender(); } });
+  $('rvLesson').addEventListener('click', () => reviewLesson(white, a));
+  $('rvFix').addEventListener('click', () => fixStart(fixes));
+}
+async function reviewLesson(white, a) {
+  const key = A.res, btn = $('rvLesson');
+  if (!ACC.token) { accOpen(pick('Урок від тренера працює з безплатним акаунтом: увійдіть або створіть його.', 'The coach lesson needs a free account: sign in or create one.')); return; }
+  btn.disabled = true; btn.textContent = pick('🤖 Тренер думає…', '🤖 The coach is thinking…');
+  const s = A.res.summary || {}, side = white ? 'White' : 'Black', p = x => (x == null ? 'n/a' : x.toFixed(0) + '%');
+  const facts = [`TASK: You are the player's chess coach. Using the data below, write a short lesson (5-7 sentences): which 2-3 aspects of play (opening, middlegame plans, tactics, endgame, blunder checks) this player should improve, with concrete practical advice based on their mistakes. Do not repeat the raw numbers.`,
+    `Game: ${s.white || '?'} vs ${s.black || '?'}, result ${s.result || '*'}${s.opening ? ', opening ' + s.opening.join(' ') : ''}. The player plays ${side}.`,
+    `Accuracy by phase: opening ${p(a.opening)}, middlegame ${p(a.middle)}, endgame ${p(a.end)}.`,
+    `Blunders ${a.cnt['Груба помилка'] || 0}, mistakes ${a.cnt['Помилка'] || 0}, inaccuracies ${a.cnt['Неточність'] || 0}, missed chances ${a.missed}.`,
+    'Worst moves (played -> better): ' + (a.bad.slice(0, 8).map(m => `${m.label}${m.san} (${m.quality === 'Груба помилка' ? 'blunder' : m.quality === 'Помилка' ? 'mistake' : m.quality === 'Пропуск' ? 'miss' : 'inaccuracy'}) -> ${m.best_san || '?'}`).join('; ') || 'none')].join('\n');
+  let text = null;
+  try { text = await fetchAiCoach(facts, uiLang(), null, null, null, 'trainer'); } catch (_) { text = null; }
+  if (A.res !== key) return;
+  if (!text) { btn.disabled = false; btn.textContent = pick('🤖 Не вдалося — спробувати ще', '🤖 Failed — try again'); return; }
+  A.review = { key, white, text };
+  reviewRender();
+}
+function fixStart(list) {
+  if (!list.length) return;
+  A.fix = { list, i: 0, back: { res: A.res, game: A.game, index: A.index, flipped: board.flipped } };
+  toggleList(false);
+  puzzleOpen(list[0], list.length);
+}
+function fixNext() {
+  const f = A.fix;
+  if (f.i + 1 >= f.list.length) { fixEnd(pick('🎓 Усі помилки цієї партії пройдено!', '🎓 You went through all the mistakes of this game!')); return; }
+  f.i++;
+  puzzleOpen(f.list[f.i], f.list.length - f.i);
+}
+function fixEnd(text = null) {
+  const back = A.fix.back;
+  A.fix = null;
+  puzzleHide();
+  A.game = back.game;
+  showResults(back.res, false);
+  if (board.flipped !== back.flipped) flipBoard();
+  goto(back.index, false);
+  if (text) msg(text);
 }
 
 function scrollToCurrent() {
@@ -1651,6 +1738,7 @@ function pzNext(d, now, skip) {
   return due[0] || null;
 }
 function pzResult(id, solved) {
+  if (A.fix) return;                                  // 1.31.14: виправлення помилок партії - не черга задач
   const d = pzLoad(), now = Date.now() / 1000, x = d.list.find(p => p.id === id);
   if (x) {
     if (solved) {
@@ -1676,7 +1764,9 @@ function puzzleStart() {
     if (cur) { cur.solved = true; puzzleRender(text); } else msg(text);
     return;
   }
-  const left = d.list.filter(x => (x.due || 0) <= now).length;
+  puzzleOpen(p, d.list.filter(x => (x.due || 0) <= now).length);
+}
+function puzzleOpen(p, left) {
   const res = { free: true, fens: [p.fen], evals: [0], pos_info: [null], moves: [], book_path: [false], depth: null,
     summary: { white: 'Білі', black: 'Чорні', white_rating: null, black_rating: null, white_acc: 0, black_acc: 0,
       white_counts: {}, black_counts: {}, result: '*', opening: null } };
@@ -1712,10 +1802,13 @@ function puzzleSan() { try { return new Pos(A.pz.fen).san(A.pz.best) || A.pz.bes
 function puzzleRender(text = null) {
   const pz = A.pz, white = pz.fen.split(' ')[1] === 'w';
   const qn = pz.q === 'missed' ? pick('пропущений геніальний', 'missed brilliant') : qname(pz.q).toLowerCase();
+  if (text == null && A.fix) text = pick(`Хід ${pz.move}: тут зіграно ${pz.played} (${qn}). Знайдіть кращий хід.`, `Move ${pz.move}: ${pz.played} was played here (${qn}). Find a better move.`);
   if (text == null) text = pick(`Знайдіть найкращий хід за ${white ? 'білих' : 'чорних'}.`, `Find the best move for ${white ? 'White' : 'Black'}.`)
     + '\n' + pick(`Партія ${pz.src}, хід ${pz.move} - там зіграно ${pz.played} (${qn}).`, `Game ${pz.src}, move ${pz.move} - ${pz.played} was played (${qn}).`);
   const off = pz.solved || pz.shown ? ' disabled' : '';
-  $('pzCard').innerHTML = `<div class="pzt">${esc(pick(`🧩 ТРЕНУВАННЯ · у черзі: ${pz.left}`, `🧩 TRAINING · in queue: ${pz.left}`))}</div>`
+  const head = A.fix ? pick(`🎓 ВИПРАВЛЕННЯ ПОМИЛОК · ${A.fix.i + 1} з ${A.fix.list.length}`, `🎓 FIXING MISTAKES · ${A.fix.i + 1} of ${A.fix.list.length}`)
+    : pick(`🧩 ТРЕНУВАННЯ · у черзі: ${pz.left}`, `🧩 TRAINING · in queue: ${pz.left}`);
+  $('pzCard').innerHTML = `<div class="pzt">${esc(head)}</div>`
     + `<div class="pzx">${esc(text)}</div><div class="row">`
     + `<button id="pzHint"${off}>${esc(pick('💡 Підказка', '💡 Hint'))}</button>`
     + `<button id="pzShow"${off}>${esc(pick("✔ Розв'язок", '✔ Solution'))}</button>`
@@ -1723,8 +1816,8 @@ function puzzleRender(text = null) {
     + `<button id="pzExit">${esc(pick('✕ Вийти', '✕ Exit'))}</button></div>`;
   $('pzHint').addEventListener('click', puzzleHint);
   $('pzShow').addEventListener('click', puzzleShow);
-  $('pzNext').addEventListener('click', puzzleStart);
-  $('pzExit').addEventListener('click', () => { puzzleHide(); startFree(); });
+  $('pzNext').addEventListener('click', () => (A.fix ? fixNext() : puzzleStart()));
+  $('pzExit').addEventListener('click', () => { if (A.fix) { fixEnd(); return; } puzzleHide(); startFree(); });
 }
 function pzTried() { if (!A.pz.tried) { A.pz.tried = true; pzResult(A.pz.id, false); } }
 function puzzleHint() {
