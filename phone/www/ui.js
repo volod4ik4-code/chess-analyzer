@@ -194,7 +194,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); try { accChanged(); } catch (_) { /* ще не готово */ } T('bNew', '♟ Нова', '♟ New'); T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); $('nList').title = pick('Список оцінених ходів', 'List of graded moves');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -359,13 +359,13 @@ function renderMoves() {
   fillList();
   scrollToCurrent();
 }
-// 1.31.6: кнопка 📜 - повний список ходів з оцінками під усім (копія рядка ходів у стовпчик)
-function fillList() { if (!$('listCard').hidden) $('movesFull').innerHTML = $('moves').innerHTML; }
-function toggleList() {
-  const c = $('listCard');
-  c.hidden = !c.hidden;
-  $('nList').classList.toggle('on', !c.hidden);
-  if (!c.hidden) { fillList(); c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }
+// 1.31.7: вкладка «📊 Оцінка партії» на весь екран: точність, кількість оцінок і всі ходи з оцінками
+function fillList() { if (!$('gradesPage').hidden) $('movesFull').innerHTML = $('moves').innerHTML; }
+function toggleList(show) {
+  const p = $('gradesPage');
+  p.hidden = typeof show === 'boolean' ? !show : !p.hidden;
+  $('bGrades').classList.toggle('on', !p.hidden);
+  if (!p.hidden) { fillList(); markCurrent(); }
 }
 
 function scrollToCurrent() {
@@ -3602,11 +3602,10 @@ function wire() {
     if (u) { if (bridge && bridge.openUrl) bridge.openUrl(u); else window.open(u, '_blank'); }
   });
   click('bPgn', () => toggleBox('pgn'));
-  click('bNew', () => { tele('f.free'); startFree(); });
   click('bStudies', () => { if (A.boxKind !== 'studies') tele('f.study'); toggleBox('studies'); });
   click('bRun', startAnalysis);
   click('nStart', goStart); click('nPrev', () => { stopPlay(); step(-1); }); click('nNext', () => { stopPlay(); step(1); });
-  click('nEnd', goEnd); click('nPlay', togglePlay); click('nFlip', flipBoard); click('nDraw', toggleDraw); click('nList', toggleList);
+  click('nEnd', goEnd); click('nPlay', togglePlay); click('nFlip', flipBoard); click('nDraw', toggleDraw); click('bGrades', () => toggleList()); click('gpX', () => toggleList(false));
   click('drawClear', () => { board.shapes = []; board.render(); onShapes([]); });
   click('vBack', exitVar); click('vUndo', undoVar); click('vDel', deleteVar);
   click('askBtn', askSend); click('askClear', askClear);
@@ -3628,9 +3627,10 @@ function wire() {
   });
   for (const mbox of [$('moves'), $('movesFull')]) mbox.addEventListener('click', e => {
     const ln = e.target.closest('[data-line]');
-    if (ln) { const line = lineById(ln.dataset.line); if (line && line !== A.v) openLine(line, 1); return; }
+    if (ln) { const line = lineById(ln.dataset.line); if (line && line !== A.v) openLine(line, 1); if (mbox.id === 'movesFull') toggleList(false); return; }
     const mv = e.target.closest('[data-k]');
     if (mv) { stopPlay(); const k = +mv.dataset.k; if (A.v || k !== A.index) jump(k); }
+    if (mbox.id === 'movesFull' && (ln || mv)) toggleList(false);     // вибрав хід у вкладці - назад до дошки
   });
   $('varMoves').addEventListener('click', e => {
     const c = e.target.closest('[data-j]');

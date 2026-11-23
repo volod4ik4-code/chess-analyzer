@@ -21,9 +21,6 @@
   <nav id="actions">
     <button id="bCc" class="cc"></button>
     <button id="bBots" class="bots"></button>
-    <button id="bPz"></button>
-    <button id="bStudies"></button>
-    <button id="bRun" class="primary"></button>
   </nav>
 
   <section id="boardArea">
@@ -36,7 +33,7 @@
     <div id="movesCard"><div id="moves"></div></div>
     <div id="nav">
       <button id="nStart">⏮</button><button id="nPrev">◀</button><button id="nNext">▶</button><button id="nEnd">⏭</button>
-      <button id="nPlay">⏯</button><button id="nFlip">⇅</button><button id="nDraw" hidden>✏️</button><button id="nDb">📖</button><button id="nGw" hidden>🏆</button><button id="bNew"></button><button id="nList">📜</button><button id="bPgn" aria-label="PGN">📋</button>
+      <button id="nPlay">⏯</button><button id="nFlip">⇅</button><button id="nDraw" hidden>✏️</button><button id="nDb">📖</button><button id="nGw" hidden>🏆</button><button id="bPgn" aria-label="PGN">📋</button>
     </div>
     <div id="botBar" class="row" hidden><button id="bbUndo"></button><button id="bbHint"></button><button id="bbResign"></button></div>
     <div id="drawBar" hidden>
@@ -76,8 +73,13 @@
       <div class="row wrap"><button id="stExport"></button><button id="stAll"></button></div>
     </div>
     <div class="card graphCard"><canvas id="graph"></canvas></div>
-    <div class="card" id="summaryCard"></div>
-    <div class="card" id="listCard" hidden><div class="cardHead" id="listTitle"></div><div id="movesFull"></div></div>  </main>
+  </main>
+  <!-- 1.31.7: нижня панель і вкладка «Оцінка партії» на весь екран -->
+  <nav id="bottomBar"><button id="bPz"></button><button id="bStudies"></button><button id="bGrades"></button><button id="bRun" class="primary"></button></nav>
+  <div id="gradesPage" hidden>
+    <div class="gpHead"><span id="gpTitle"></span><button class="x" id="gpX">✕</button></div>
+    <div id="gpBody"><div class="card" id="summaryCard"></div><div class="card"><div class="cardHead" id="listTitle"></div><div id="movesFull"></div></div></div>
+  </div>
 </div>
 
 <div id="overlay" hidden>
