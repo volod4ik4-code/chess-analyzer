@@ -194,7 +194,7 @@ function applyLang() {
   T('title', '♞ Аналізатор', '♞ Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
+  T('bCc', '♞ Партії Chess.com', '♞ Chess.com Games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bPz', '🧩 Задачі', '🧩 Puzzles'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
