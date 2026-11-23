@@ -19,7 +19,7 @@ const store = {
 
 // ------------------------------------------------------------ налаштування ---
 const DEF = { lang: 'en', board: D.DEFAULTS.board, depth: D.DEFAULTS.depth, arrow: D.DEFAULTS.arrow,
-  anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach,
+  review: true, anim: D.DEFAULTS.anim, coach: D.DEFAULTS.coach, evalbar: D.DEFAULTS.evalbar, ai: D.DEFAULTS.ai_coach,
   engine: window.AndroidBridge && window.AndroidBridge.engineStart ? 'native' : 'lite',
   bot: [D.BOTS[0].id, 0, 0], botStars: {} };      // останній вибір у «Ботах»: хто, колір (0 білі / 1 чорні / 2 випадково), сила
 const saved = store.get('ca.settings', null);
@@ -369,6 +369,7 @@ function toggleList(show) {
 }
 
 function scrollToCurrent() {
+  if (A.stripUser) return;                     // гравець саме гортає рядок пальцем
   const box = $('movesCard'), cur = $('moves').querySelector('.cur');
   if (!cur) return;
   box.scrollLeft = Math.max(0, cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2);   // 1.31.5: поточний хід - по центру рядка
@@ -1115,6 +1116,7 @@ async function startAnalysis() {
     if (doc === A.docId) {
       teleAnalysis(res);
       showResults(res);
+      if (cfg.review !== false && !res.free) toggleList(true);   // 1.31.8: одразу вкладка «Оцінка партії»
       // розбивка часу: увесь аналіз / сам рушій (щоб було видно, що гальмує)
       const all = (performance.now() - tAnalysis) / 1000, eng = (engine.searchMs || 0) / 1000;
       const base = A.statusFn();
@@ -2979,6 +2981,7 @@ function openBox(kind) {
         ['lite', pick('Stockfish 19 lite — швидший, слабший', 'Stockfish 19 lite — faster, weaker')]], cfg.engine)}`
       + (A.engDl ? `<div class="hint">${esc(pick('Рушій «усі ядра» завантажується…', 'The "all cores" engine is downloading…'))}</div>` : '')
       + `<label class="f">${esc(tr('Стрілка'))}</label>${sel('sArrow', D.ARROW_MODES.map(m => [m, pick(...ARROW_LABELS[m])]), cfg.arrow)}`
+      + chk('sReview', pick('Після аналізу відкривати оцінку партії', 'Open the game review after analysis'), cfg.review !== false)
       + chk('sAnim', tr('Анімація ходів'), cfg.anim) + chk('sCoach', tr('Тренер'), cfg.coach) + chk('sAi', tr('ШІ-тренер (потрібен інтернет)'), cfg.ai) + chk('sEval', tr('Шкала оцінки'), cfg.evalbar)
       + `<div class="row"><button id="sBench">${esc(pick('🔍 Перевірити швидкість рушія', '🔍 Test engine speed'))}</button></div>`
       + `<div class="row"><button id="sUpd">${esc(pick('⬆ Перевірити оновлення', '⬆ Check for updates'))}</button></div>`
@@ -2998,6 +3001,7 @@ function openBox(kind) {
     on('sEngine', 'change', e => { if (!A.engDl) pickEngine(e.target.value); else openBox('settings'); });
     on('sArrow', 'change', e => { cfg.arrow = e.target.value; saveCfg(); refreshView(); });
     on('sAnim', 'change', e => { cfg.anim = e.target.checked; saveCfg(); });
+    on('sReview', 'change', e => { cfg.review = e.target.checked; saveCfg(); });
     on('sCoach', 'change', e => { cfg.coach = e.target.checked; saveCfg(); refreshView(); if (!A.res) showCoach(null); });
     on('sAi', 'change', e => { cfg.ai = e.target.checked; saveCfg(); refreshView(); });
     on('sEval', 'change', e => { cfg.evalbar = e.target.checked; saveCfg(); layout(); });
@@ -3625,6 +3629,33 @@ function wire() {
     const it = e.target.closest('[data-ch]');
     if (it && A.study && A.study.chapters[+it.dataset.ch] !== A.chapter) openChapter(+it.dataset.ch);
   });
+  // 1.31.8: свайп рядка ходів міняє хід - поточним стає хід під центром рядка (і під час розгону після свайпу)
+  (() => {
+    const box = $('movesCard');
+    let idle = null, raf = 0, touching = false;
+    const pickCenter = () => {
+      raf = 0;
+      const mid = box.scrollLeft + box.clientWidth / 2;
+      let best = null, bd = 1e9;
+      for (const e of $('moves').querySelectorAll('.mv[data-k]')) {
+        const d = Math.abs(e.offsetLeft + e.offsetWidth / 2 - mid);
+        if (d < bd) { bd = d; best = e; }
+      }
+      if (best && (A.v || +best.dataset.k !== A.index)) { stopPlay(); jump(+best.dataset.k); }
+    };
+    const arm = () => { clearTimeout(idle); idle = setTimeout(() => { if (!touching) { A.stripUser = false; scrollToCurrent(); } }, 200); };
+    const start = () => { touching = true; A.stripUser = true; clearTimeout(idle); };
+    const end = () => { touching = false; arm(); };
+    box.addEventListener('touchstart', start, { passive: true });
+    box.addEventListener('touchend', end);
+    box.addEventListener('touchcancel', end);
+    box.addEventListener('wheel', () => { A.stripUser = true; arm(); }, { passive: true });
+    box.addEventListener('scroll', () => {
+      if (!A.stripUser) return;
+      if (!raf) raf = requestAnimationFrame(pickCenter);
+      if (!touching) arm();
+    }, { passive: true });
+  })();
   for (const mbox of [$('moves'), $('movesFull')]) mbox.addEventListener('click', e => {
     const ln = e.target.closest('[data-line]');
     if (ln) { const line = lineById(ln.dataset.line); if (line && line !== A.v) openLine(line, 1); if (mbox.id === 'movesFull') toggleList(false); return; }

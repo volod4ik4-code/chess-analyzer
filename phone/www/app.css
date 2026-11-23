@@ -194,6 +194,7 @@ button.x { background: transparent; padding: 2px 8px; font-size: 16px; color: va
 #moves .line .ev { display: none; }
 #moves .line.cur { outline: 2px solid var(--accent); }
 #moves .empty { color: var(--muted); padding: 6px 8px; font-size: 13px; }
+#moves::before, #moves::after { content: ""; flex: 0 0 40vw; height: 1px; }   /* 1.31.8: перший і останній хід теж стають по центру */
 #info { display: none !important; }   /* 1.31.5 (користувач): картку «Початкова позиція / Stockfish радить» прибрано */
 
 #summaryCard table { width: 100%; border-collapse: collapse; font-size: 13px; }
