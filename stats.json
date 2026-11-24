@@ -1,9 +1,9 @@
 {
- "updated": "2026-11-23 20:30",
+ "updated": "2026-11-24 12:00",
  "github": {
-  "views": 533,
-  "visitors": 209,
-  "uniques_14d": 194,
+  "views": 562,
+  "visitors": 225,
+  "uniques_14d": 208,
   "windows": [
    {
     "end": "2026-11-13",
@@ -122,13 +122,17 @@
    "2026-11-22": [
     38,
     21
+   ],
+   "2026-11-23": [
+    29,
+    16
    ]
   }
  },
  "telegram": {
   "channel": "https://t.me/chessanalyser",
   "subscribers": 16,
-  "views": 49,
+  "views": 50,
   "posts": 20
  }
 }
