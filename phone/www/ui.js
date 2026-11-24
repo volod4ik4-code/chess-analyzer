@@ -599,7 +599,7 @@ function showCoach(lines, ai = null) {
 }
 
 // 1.28.1 / 1.31.0: ліміт ШІ-тренера - AI_DAILY на день НА АКАУНТ (рахує Worker, адмін - без ліміту)
-const AI_DAILY = 5;
+const AI_DAILY = 20;   // 1.31.21
 const aiQuotaLeft = () => ACC.user ? (ACC.user.admin ? 99 : ACC.user.ai_left || 0) : 0;
 
 // ---------- 1.31.0: акаунти (нік + пароль на нашому Worker; пароль не зберігається - лише токен сесії)
