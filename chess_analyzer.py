@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.22"
+APP_VERSION = "1.31.23"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.23", "2026-11-25 19:46", [
+        ("ПК: вікно акаунта тепер усередині програми, а ніки chess.com і lichess у профілі вводяться",
+         "PC: the account window is now inside the program, and chess.com / lichess usernames can be typed in the profile"),
+    ]),
     ("1.31.22", "2026-11-25 09:10", [
         ("«Найкращий» тепер лише в того ходу, який Stockfish ставить першим; рівноцінні ходи — «Відмінний»",
          "«Best» is now given only to the move Stockfish ranks first; equally good moves are «Excellent»"),
@@ -1814,6 +1818,7 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'PC: the account window is now inside the program, and chess.com / lichess usernames can be typed in the profile': ('PC: a janela da conta agora fica dentro do programa, e os apelidos do chess.com / lichess podem ser digitados no perfil', 'PC: la ventana de la cuenta ahora está dentro del programa, y los apodos de chess.com / lichess se pueden escribir en el perfil'),
     '«Best» is now given only to the move Stockfish ranks first; equally good moves are «Excellent»': ('«Melhor» agora só para o lance que o Stockfish coloca em primeiro; lances igualmente bons são «Excelente»', '«Mejor» ahora solo para la jugada que Stockfish pone primero; las jugadas igual de buenas son «Excelente»'),
     'AI coach: 20 explanations a day instead of 5': ('Treinador IA: 20 explicações por dia em vez de 5', 'Entrenador IA: 20 explicaciones al día en lugar de 5'),
     'Sync runs right when the app opens (on the phone — also when you come back to the app)': ('A sincronização acontece logo ao abrir o app (no telefone — também quando você volta ao app)', 'La sincronización se hace al abrir la aplicación (en el teléfono — también al volver a la aplicación)'),
@@ -7535,21 +7540,27 @@ class OverlayBox:
     при перетягуванні лишав «сліди» - Windows не встигав перемальовувати те, що під ним.
     """
 
-    def __init__(self, app, title, on_close=None):
+    def __init__(self, app, title, on_close=None, embed=False):
         self.app = app
         self.on_close = on_close
         self.is_open = False
         self.off = (0, 0)                              # зсув квадрата від кута програми
         self._drag = None
-        box = tk.Toplevel(app, bg=BORDER, bd=0)       # тонка рамка (з 1.18.0 - спокійна, не зелена)
-        box.withdraw()
-        box.overrideredirect(True)                    # без заголовка і кнопок Windows
-        box.transient(app)                            # завжди над програмою
-        self.box = box
+        # 1.31.23: embed - квадрат усередині вікна програми (Frame через place, без перетягування):
+        # у окремому overrideredirect-вікні поля вводу на Windows не отримували клавіатуру
+        self.embed = embed
         app.__dict__.setdefault("_overlays", []).append(self)
-        app.bind("<Configure>", lambda e: e.widget is app and self.is_open and self.place(), add="+")
-        app.bind("<Unmap>", lambda e: e.widget is app and self.is_open and box.withdraw(), add="+")
-        app.bind("<Map>", lambda e: e.widget is app and self.is_open and box.deiconify(), add="+")
+        if embed:
+            box = self.box = tk.Frame(app, bg=BORDER, bd=0)
+        else:
+            box = tk.Toplevel(app, bg=BORDER, bd=0)       # тонка рамка (з 1.18.0 - спокійна, не зелена)
+            box.withdraw()
+            box.overrideredirect(True)                    # без заголовка і кнопок Windows
+            box.transient(app)                            # завжди над програмою
+            self.box = box
+            app.bind("<Configure>", lambda e: e.widget is app and self.is_open and self.place(), add="+")
+            app.bind("<Unmap>", lambda e: e.widget is app and self.is_open and box.withdraw(), add="+")
+            app.bind("<Map>", lambda e: e.widget is app and self.is_open and box.deiconify(), add="+")
 
         head = tk.Frame(box, bg=PANEL, cursor="fleur")
         head.pack(fill="x", padx=2, pady=(2, 0))
@@ -7564,6 +7575,9 @@ class OverlayBox:
         close.bind("<Leave>", lambda e: close.configure(fg=MUTED, bg=PANEL))
         tk.Frame(box, bg=BORDER, height=1).pack(fill="x", padx=2)      # лінія під заголовком
         for w in (head, self.title):                  # перетягування за заголовок
+            if embed:
+                w.configure(cursor="")
+                continue
             w.bind("<ButtonPress-1>", self.drag_start)
             w.bind("<B1-Motion>", self.drag)
 
@@ -7573,6 +7587,10 @@ class OverlayBox:
             if other is not self and other.is_open:
                 other.hide()
         self.is_open = True
+        if self.embed:
+            box.place(relx=0.5, rely=0.5, anchor="center")
+            box.lift()
+            return
         app.update_idletasks()
         bw, bh = box.winfo_reqwidth(), box.winfo_reqheight()
         self.off = ((app.winfo_width() - bw) // 2, (app.winfo_height() - bh) // 2)
@@ -7598,7 +7616,10 @@ class OverlayBox:
         if not self.is_open:
             return
         self.is_open = False
-        self.box.withdraw()
+        if self.embed:
+            self.box.place_forget()
+        else:
+            self.box.withdraw()
         if self.on_close:
             self.on_close()
 
@@ -10064,7 +10085,7 @@ class App(tk.Tk):
 
     def _build_account_box(self):
         """1.31.2: великий квадрат як «Боти»: ліворуч картка гравця, праворуч прив'язки, синхронізація, адмін."""
-        self.acc_box = OverlayBox(self, "👤  Акаунт")
+        self.acc_box = OverlayBox(self, "👤  Акаунт", embed=True)      # 1.31.23: усередині вікна - поля вводу працюють
         body = tk.Frame(self.acc_box.box, bg=PANEL)
         body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
         inner = tk.Frame(body, bg=PANEL)
@@ -10127,7 +10148,9 @@ class App(tk.Tk):
         r1.pack(fill="x", pady=(0, 6))
         lab(r1, text="chess.com", font=fsemi(11), width=10).pack(side="left")
         self.acc_cc = tk.StringVar()
-        ttk.Entry(r1, textvariable=self.acc_cc, width=22, font=("Segoe UI", 11)).pack(side="left", padx=(0, 8))
+        self.acc_cc_entry = ttk.Entry(r1, textvariable=self.acc_cc, width=22, font=("Segoe UI", 11))
+        self.acc_cc_entry.pack(side="left", padx=(0, 8))
+        self.acc_cc_entry.bind("<Return>", lambda e: self._acc_save_cc())
         self.acc_cc_btn = RButton(r1, text="Зберегти", kind="small", command=self._acc_save_cc)
         self.acc_cc_btn.pack(side="left")
         self.acc_cc_hint = lab(f, fg=MUTED, font=("Segoe UI", 9), wraplength=480)     # 1.31.3.1: що вписувати
@@ -10138,6 +10161,7 @@ class App(tk.Tk):
         self.acc_li = tk.StringVar()                   # 1.31.19: нік lichess вручну (раніше - вхід через lichess)
         self.acc_li_entry = ttk.Entry(r2, textvariable=self.acc_li, width=22, font=("Segoe UI", 11))
         self.acc_li_entry.pack(side="left", padx=(0, 8))
+        self.acc_li_entry.bind("<Return>", lambda e: self._acc_save_li())
         self.acc_li_btn = RButton(r2, text="Зберегти", kind="small", command=self._acc_save_li)
         self.acc_li_btn.pack(side="left")
         r6 = tk.Frame(f, bg=PANEL)
@@ -10228,7 +10252,8 @@ class App(tk.Tk):
         prof = self._acc_profile_text().split("\n")
         self.acc_prof.configure(text="\n".join(x for x in prof if not x.startswith("🔄")))
         self.acc_h_links.configure(text=pick("ПРИВ'ЯЗАНІ АКАУНТИ", "LINKED ACCOUNTS"))
-        self.acc_cc.set(u.get("chesscom") or "")
+        if self.focus_get() is not self.acc_cc_entry:      # 1.31.23: не стирати нік, поки його вводять
+            self.acc_cc.set(u.get("chesscom") or "")
         self.acc_cc_btn.configure(text=pick("Зберегти", "Save"))
         self.acc_cc_hint.configure(text=pick("↑ Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть "
                                              "«Зберегти» — тоді «Останні партії» одразу показуватимуть ваші партії.",
