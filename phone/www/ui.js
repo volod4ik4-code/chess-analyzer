@@ -654,7 +654,7 @@ function accErr(d) {
   })[d.error] || pick('Не вдалося. Спробуйте пізніше.', 'Failed. Try later.');
 }
 function accStatus(t) { const e = $('acStatus'); if (e) e.textContent = t; }
-function accOpen(reason = null) { A.accReason = reason; if (!A.gState) A.accStep = null; openBox('acc'); }
+function accOpen(reason = null) { A.accReason = reason; A.pwOpen = false; if (!A.gState) A.accStep = null; openBox('acc'); }
 function accBody() {
   const u = ACC.user;
   if (!u) {
@@ -689,8 +689,10 @@ function accBody() {
     + `<div class="hint">${esc(pick('Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть «Зберегти» — тоді «Останні партії» одразу показуватимуть ваші партії.', 'Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «Last games» will show your games right away.'))}</div>`
     + `<label class="f">Google</label><div class="row"><span style="flex:1;align-self:center">${esc(u.google ? pick('підключено', 'connected') : pick('не підключено', 'not connected'))}</span>${u.google ? '' : `<button id="acGoogle">${esc(pick('Підключити', 'Connect'))}</button>`}</div>`
     + (u.google ? '' : `<div class="hint">${esc(pick('Підключіть Google — тоді увійдете, навіть якщо забудете пароль.', 'Connect Google — then you can sign in even if you forget the password.'))}</div>`)
-    + `<label class="f">${esc(pick('Новий пароль', 'New password'))}</label><input id="acNp" type="password" maxlength="200" autocomplete="new-password">`
-    + `<div class="row ccrow"><input id="acNp2" type="password" maxlength="200" autocomplete="new-password" placeholder="${esc(pick('ще раз', 'again'))}"><button id="acPw">${esc(u.haspass === false ? pick('Задати', 'Set') : pick('Змінити', 'Change'))}</button></div>`
+    + (A.pwOpen     // 1.31.27.1: спершу кнопка «Новий пароль»
+      ? `<label class="f">${esc(pick('Новий пароль', 'New password'))}</label><input id="acNp" type="password" maxlength="200" autocomplete="new-password">`
+        + `<div class="row ccrow"><input id="acNp2" type="password" maxlength="200" autocomplete="new-password" placeholder="${esc(pick('ще раз', 'again'))}"><button id="acPw">${esc(u.haspass === false ? pick('Задати', 'Set') : pick('Змінити', 'Change'))}</button><button id="acPwX">${esc(pick('Скасувати', 'Cancel'))}</button></div>`
+      : `<div class="row"><button id="acPwOpen">${esc(u.haspass === false ? pick('Задати пароль', 'Set a password') : pick('Новий пароль', 'New password'))}</button></div>`)
     + `<label class="f">lichess</label><div class="row ccrow"><input id="acLiNick" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на lichess', 'your lichess username'))}" value="${esc(u.lichess || '')}"><button id="acLiSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
       + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button><button id="acAdmT">${esc(pick('Тікети', 'Tickets'))}</button></div>`
@@ -711,11 +713,13 @@ function accWire() {
   };
   on('acGo', go);
   ['acPass', 'acPass2'].forEach(id => { if ($(id)) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } }); });
+  on('acPwOpen', () => { A.pwOpen = true; openBox('acc'); const e = $('acNp'); if (e) e.focus(); });
+  on('acPwX', () => { A.pwOpen = false; openBox('acc'); });
   on('acPw', () => {     // 1.31.26: новий пароль (старий не потрібен - ви вже увійшли)
     const p = $('acNp').value;
     if (p.length < 6) { accStatus(pick('Пароль — від 6 символів.', 'Password must be 6+ characters.')); return; }
     if (p !== $('acNp2').value) { accStatus(pick('Паролі не збігаються.', 'The passwords do not match.')); return; }
-    accCall('/acc/password', { pass: p }, d => { accTake(d); accStatus(pick('✓ Пароль збережено. На інших пристроях треба увійти знову.', '✓ Password saved. Other devices need to sign in again.')); });
+    accCall('/acc/password', { pass: p }, d => { A.pwOpen = false; accTake(d); accStatus(pick('✓ Пароль збережено. На інших пристроях треба увійти знову.', '✓ Password saved. Other devices need to sign in again.')); });
   });
   on('acOut', () => { const tok = ACC.token; accSet('', null); accHttp('/acc/logout', { token: tok }); });
   on('acCcSave', () => accCall('/acc/chesscom', { chesscom: $('acCc').value.trim() }, d => {
