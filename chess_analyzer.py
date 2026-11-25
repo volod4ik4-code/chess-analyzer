@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.26"
+APP_VERSION = "1.31.27"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.27", "2026-11-25 20:41", [
+        ("Підтримка: у профілі можна написати автору програми, а відповідь з'явиться там же, у «Моїх зверненнях»",
+         'Support: write to the author of the app from your profile; the reply appears right there, in «My requests»'),
+    ]),
     ("1.31.26", "2026-11-25 20:33", [
         ('Акаунт: спершу кнопки «Увійти» і «Створити акаунт»; при створенні пароль треба ввести двічі',
          'Account: first just «Sign in» and «Create account» buttons; when creating an account, the password is typed twice'),
@@ -1832,6 +1836,30 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'Support: write to the author of the app from your profile; the reply appears right there, in «My requests»': ('Suporte: escreva ao autor do app pelo seu perfil; a resposta aparece ali mesmo, em «Meus pedidos»', 'Soporte: escribe al autor de la aplicación desde tu perfil; la respuesta aparece ahí mismo, en «Mis solicitudes»'),
+    'Support': ('Suporte', 'Soporte'),
+    'Support tickets': ('Tickets de suporte', 'Tickets de soporte'),
+    'Tickets': ('Tickets', 'Tickets'),
+    'MY REQUESTS': ('MEUS PEDIDOS', 'MIS SOLICITUDES'),
+    'Write to the author of the app: a question, an idea or a problem. The reply will appear here, in «My requests».': ('Escreva ao autor do app: uma dúvida, uma ideia ou um problema. A resposta aparecerá aqui, em «Meus pedidos».', 'Escribe al autor de la aplicación: una pregunta, una idea o un problema. La respuesta aparecerá aquí, en «Mis solicitudes».'),
+    'Write a message.': ('Escreva uma mensagem.', 'Escribe un mensaje.'),
+    '✓ Sent! The reply will appear below.': ('✓ Enviado! A resposta aparecerá abaixo.', '✓ ¡Enviado! La respuesta aparecerá abajo.'),
+    'No requests yet.': ('Ainda não há pedidos.', 'Aún no hay solicitudes.'),
+    'Reply: ': ('Resposta: ', 'Respuesta: '),
+    'Waiting for a reply': ('Aguardando resposta', 'Esperando respuesta'),
+    'Closed': ('Fechado', 'Cerrado'),
+    'closed': ('fechado', 'cerrado'),
+    'open': ('aberto', 'abierto'),
+    'Status': ('Estado', 'Estado'),
+    'From': ('De', 'De'),
+    'Reply': ('Responder', 'Responder'),
+    'Your reply': ('Sua resposta', 'Tu respuesta'),
+    'Close / reopen': ('Fechar / reabrir', 'Cerrar / reabrir'),
+    'Reopen': ('Reabrir', 'Reabrir'),
+    '✓ Reply sent.': ('✓ Resposta enviada.', '✓ Respuesta enviada.'),
+    'Your reply (the player will see it in «Support»):': ('Sua resposta (o jogador verá em «Suporte»):', 'Tu respuesta (el jugador la verá en «Soporte»):'),
+    'New reply from support: {0}': ('Nova resposta do suporte: {0}', 'Nueva respuesta del soporte: {0}'),
+    'Sign in to write to support.': ('Entre na conta para escrever ao suporte.', 'Inicia sesión para escribir al soporte.'),
     'Account: first just «Sign in» and «Create account» buttons; when creating an account, the password is typed twice': ('Conta: primeiro só os botões «Entrar» e «Criar conta»; ao criar a conta, a senha é digitada duas vezes', 'Cuenta: primero solo los botones «Iniciar sesión» y «Crear cuenta»; al crear la cuenta, la contraseña se escribe dos veces'),
     "Profile: you can change the password (the old one is not needed) and a tip to connect Google so you don't lose the account": ('Perfil: dá para mudar a senha (a antiga não é necessária) e uma dica para conectar o Google e não perder a conta', 'Perfil: puedes cambiar la contraseña (no hace falta la antigua) y un consejo para conectar Google y no perder la cuenta'),
     'NEW ACCOUNT': ('NOVA CONTA', 'NUEVA CUENTA'),
@@ -10287,6 +10315,8 @@ class App(tk.Tk):
         self.acc_adm_gotw.pack(side="left")
         self.acc_adm_bugs = RButton(r3, text="🐞  Звіти", command=lambda: self.toggle_admin("bugs"))
         self.acc_adm_bugs.pack(side="left", padx=(8, 0))
+        self.acc_adm_tix = RButton(r3, text="Тікети", command=lambda: self.toggle_admin("tickets"))     # 1.31.27
+        self.acc_adm_tix.pack(side="left", padx=(8, 0))
         r4 = tk.Frame(self.acc_admin, bg=PANEL)
         r4.pack(fill="x", pady=(0, 14))
         self.acc_ban_nick = tk.StringVar()
@@ -10299,6 +10329,8 @@ class App(tk.Tk):
         self.acc_bottom.pack(fill="x", side="bottom")
         self.acc_logout_btn = RButton(self.acc_bottom, text="Вийти", kind="small", command=self._acc_logout)
         self.acc_logout_btn.pack(side="left")
+        self.acc_sup_btn = RButton(self.acc_bottom, text="Підтримка", kind="small", command=self.toggle_support)    # 1.31.27
+        self.acc_sup_btn.pack(side="left", padx=(8, 0))
         self.acc_status = lab(right, fg=MUTED, font=("Segoe UI", 10), wraplength=480)
         self.acc_status.pack(side="bottom", anchor="w", pady=(10, 0))
 
@@ -10416,6 +10448,8 @@ class App(tk.Tk):
         else:
             self.acc_admin.pack_forget()
         self.acc_logout_btn.configure(text=pick("Вийти з акаунта", "Sign out"))
+        self.acc_sup_btn.configure(text=pick("Підтримка", "Support") + (f"  ({u['support_new']})" if u.get("support_new") else ""))
+        self.acc_adm_tix.configure(text=pick("Тікети підтримки", "Support tickets"))
         self.acc_in.pack(fill="both", expand=True)
 
     def _acc_err(self, d):
@@ -10758,6 +10792,95 @@ class App(tk.Tk):
         self._acc_call("/admin/ban", {"nick": nick, "on": on}, lambda d: self.acc_status.configure(
             text=(pick(f"⛔ {nick} заблоковано.", f"⛔ {nick} banned.") if on else pick(f"✓ {nick} розблоковано.", f"✓ {nick} unbanned."))))
 
+    # ---------- 1.31.27: підтримка
+    def toggle_support(self):
+        if not ACC["token"]:
+            self.toggle_account(pick("Щоб написати в підтримку, увійдіть в акаунт.", "Sign in to write to support."))
+            return
+        if not hasattr(self, "sup_box"):
+            self.sup_box = OverlayBox(self, "Підтримка", embed=True)
+            body = tk.Frame(self.sup_box.box, bg=PANEL)
+            body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+            inner = tk.Frame(body, bg=PANEL)
+            inner.pack(fill="both", expand=True, padx=18, pady=(12, 14))
+            self.sup_hint = tk.Label(inner, bg=PANEL, fg=MUTED, font=("Segoe UI", 10), wraplength=640, justify="left", anchor="w")
+            self.sup_hint.pack(anchor="w", fill="x")
+            self.sup_text = tk.Text(inner, width=80, height=6, wrap="word", bg="#2b2926", fg=FG, bd=0, relief="flat", padx=8,
+                                    pady=6, font=("Segoe UI", 11), highlightthickness=1, highlightbackground=BORDER,
+                                    insertbackground=FG)
+            self.sup_text.pack(fill="x", pady=(8, 8))
+            row = tk.Frame(inner, bg=PANEL)
+            row.pack(fill="x")
+            self.sup_send = RButton(row, text="Надіслати", kind="play", command=self._sup_send)
+            self.sup_send.pack(side="left")
+            self.sup_status = tk.Label(row, bg=PANEL, fg=MUTED, font=("Segoe UI", 10), anchor="w")
+            self.sup_status.pack(side="left", padx=(12, 0))
+            self.sup_h = tk.Label(inner, bg=PANEL, fg=MUTED, font=fsemi(10), anchor="w")
+            self.sup_h.pack(anchor="w", pady=(16, 4))
+            self.sup_list = tk.Text(inner, width=80, height=12, wrap="word", bg=PANEL2, fg=FG, bd=0, relief="flat", padx=8,
+                                    pady=6, font=("Segoe UI", 10), highlightthickness=0)
+            self.sup_list.pack(fill="both", expand=True)
+            self.sup_list.tag_configure("me", foreground=MUTED)
+            self.sup_list.tag_configure("rep", foreground=ACCENT)
+        if self.sup_box.is_open:
+            self.sup_box.hide()
+            return
+        self.sup_box.title.configure(text=pick("Підтримка", "Support"))
+        self.sup_hint.configure(text=pick("Напишіть автору програми: питання, ідею чи проблему. Відповідь з'явиться тут, "
+                                          "у «Моїх зверненнях».",
+                                          "Write to the author of the app: a question, an idea or a problem. The reply will "
+                                          "appear here, in «My requests»."))
+        self.sup_send.configure(text=pick("Надіслати", "Send"))
+        self.sup_h.configure(text=pick("МОЇ ЗВЕРНЕННЯ", "MY REQUESTS"))
+        self.sup_status.configure(text="")
+        self.sup_box.show()
+        self.sup_text.focus_set()
+        self._sup_load()
+
+    def _sup_load(self):
+        def done(r):
+            code, d = r
+            lst = self.sup_list
+            lst.configure(state="normal")
+            lst.delete("1.0", "end")
+            if code != 200:
+                lst.insert("end", self._acc_err(d))
+            elif not d.get("tickets"):
+                lst.insert("end", pick("Звернень ще немає.", "No requests yet."))
+            for t in d.get("tickets") or []:
+                lst.insert("end", f"{(t.get('at') or '')[:16].replace('T', ' ')}\n", "me")
+                lst.insert("end", (t.get("text") or "") + "\n")
+                if t.get("reply"):
+                    lst.insert("end", pick("Відповідь: ", "Reply: ") + t["reply"] + "\n", "rep")
+                else:
+                    lst.insert("end", (pick("Закрито", "Closed") if t.get("status") == "closed"
+                                       else pick("Чекає відповіді", "Waiting for a reply")) + "\n", "me")
+                lst.insert("end", "\n")
+            lst.configure(state="disabled")
+            if code == 200 and (ACC["user"] or {}).get("support_new"):
+                ACC["user"]["support_new"] = 0
+                acc_save()
+                self._acc_changed()
+        self._bg(lambda: acc_http("/acc/tickets", {"token": ACC["token"]}), done)
+
+    def _sup_send(self):
+        text = self.sup_text.get("1.0", "end").strip()
+        if len(text) < 3:
+            self.sup_status.configure(text=pick("Напишіть повідомлення.", "Write a message."))
+            return
+        self.sup_status.configure(text=pick("Надсилаю…", "Sending…"))
+
+        def done(r):
+            code, d = r
+            if code == 200:
+                self.sup_text.delete("1.0", "end")
+                self.sup_status.configure(text=pick("✓ Надіслано! Відповідь з'явиться нижче.", "✓ Sent! The reply will appear below."))
+                tele_count("f.support")
+                self._sup_load()
+            else:
+                self.sup_status.configure(text=self._acc_err(d))
+        self._bg(lambda: acc_http("/acc/ticket", {"token": ACC["token"], "text": text, "p": "pc", "v": APP_VERSION}), done)
+
     def _acc_gate(self):
         """Перед аналізом партії: без акаунта - FREE_ANALYSES пробних. True - можна аналізувати."""
         if ACC["token"]:
@@ -10913,6 +11036,8 @@ class App(tk.Tk):
         out.append(pick(f"📚 Досліджень: {n_st}", f"📚 Studies: {n_st}"))
         out.append(pick(f"🏆 Заявок на гру тижня: {u.get('gotw', 0)} (❤ {u.get('likes', 0)})",
                         f"🏆 Game of the week submissions: {u.get('gotw', 0)} (❤ {u.get('likes', 0)})"))
+        if u.get("support_new"):
+            out.append(pick("Нова відповідь від підтримки: {0}", "New reply from support: {0}").format(u["support_new"]))
         at = (ACC.get("sync") or {}).get("at")
         out.append(pick(f"🔄 Синхронізовано о {at}", f"🔄 Synced at {at}") if at else
                    pick("🔄 Ще не синхронізовано", "🔄 Not synced yet"))
@@ -10929,7 +11054,7 @@ class App(tk.Tk):
         self._adm_load()
 
     def _build_admin_box(self):
-        self.adm_box = OverlayBox(self, "🛡  Адмін")
+        self.adm_box = OverlayBox(self, "🛡  Адмін", embed=True)      # 1.31.27: поле відповіді - як у вікні акаунта
         body = ttk.Frame(self.adm_box.box, style="Panel.TFrame", padding=(18, 12))
         body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
         tv = ttk.Treeview(body, columns=("n", "a", "b", "c", "d"), show="headings", selectmode="browse", height=13)
@@ -10942,6 +11067,10 @@ class App(tk.Tk):
         self.adm_text = tk.Text(body, width=90, height=6, wrap="word", bg="#2b2926", fg=FG, bd=0, relief="flat",
                                 padx=8, pady=6, font=("Segoe UI", 10), highlightthickness=1, highlightbackground=BORDER)
         self.adm_text.pack(fill="x", pady=(8, 0))
+        self.adm_reply_lbl = ttk.Label(body, style="PanelMuted.TLabel")          # 1.31.27: лише для тікетів
+        self.adm_reply = tk.Text(body, width=90, height=4, wrap="word", bg="#2b2926", fg=FG, bd=0, relief="flat",
+                                 padx=8, pady=6, font=("Segoe UI", 10), highlightthickness=1, highlightbackground=BORDER,
+                                 insertbackground=FG)
         bot = ttk.Frame(body, style="Panel.TFrame")
         bot.pack(fill="x", pady=(10, 0))
         self.adm_status = ttk.Label(bot, style="PanelMuted.TLabel")
@@ -10955,21 +11084,35 @@ class App(tk.Tk):
         self._adm_rows = {}
 
     def _adm_load(self):
-        gotw = self._adm_mode == "gotw"
+        gotw, tix = self._adm_mode == "gotw", self._adm_mode == "tickets"
         self.adm_box.title.configure(text=pick("🛡  Заявки «Партія тижня»", "🛡  Game of the week submissions") if gotw
+                                     else pick("Тікети підтримки", "Support tickets") if tix
                                      else pick("🛡  Звіти про помилки", "🛡  Bug reports"))
         heads = (("№", pick("Від", "From"), pick("Партія", "Game"), pick("Точність · ❤", "Accuracy · ❤"), pick("Дата", "Date"))
-                 if gotw else ("№", pick("Платформа", "Platform"), pick("Текст", "Text"), pick("Контакт", "Contact"), pick("Дата", "Date")))
+                 if gotw else ("№", pick("Від", "From"), pick("Текст", "Text"), pick("Стан", "Status"), pick("Дата", "Date"))
+                 if tix else ("№", pick("Платформа", "Platform"), pick("Текст", "Text"), pick("Контакт", "Contact"), pick("Дата", "Date")))
         for c, h in zip(("n", "a", "b", "c", "d"), heads):
             self.adm_tree.heading(c, text=h)
         self.adm_open_btn.configure(text=pick("♟ Відкрити", "♟ Open"))
-        self.adm_choose.configure(text=pick("✓ Вибрати", "✓ Choose"))
-        self.adm_del.configure(text=pick("🗑 Видалити", "🗑 Delete"))
+        self.adm_choose.configure(text=pick("Відповісти", "Reply") if tix else pick("✓ Вибрати", "✓ Choose"))
+        self.adm_del.configure(text=pick("Закрити / відкрити", "Close / reopen") if tix else pick("🗑 Видалити", "🗑 Delete"))
         for b in (self.adm_choose, self.adm_del):
-            if gotw and not b.winfo_manager():
+            if (gotw or tix) and not b.winfo_manager():
                 b.pack(side="right", padx=(0, 8), before=self.adm_open_btn)
-            elif not gotw:
+            elif not (gotw or tix):
                 b.pack_forget()
+        if tix:                                  # 1.31.27: PGN немає; поле відповіді
+            self.adm_open_btn.pack_forget()
+            if not self.adm_reply.winfo_manager():
+                self.adm_reply_lbl.pack(anchor="w", pady=(8, 0), after=self.adm_text)
+                self.adm_reply.pack(fill="x", pady=(2, 0), after=self.adm_reply_lbl)
+            self.adm_reply_lbl.configure(text=pick("Ваша відповідь (гравець побачить її в «Підтримці»):",
+                                                   "Your reply (the player will see it in «Support»):"))
+        else:
+            self.adm_reply_lbl.pack_forget()
+            self.adm_reply.pack_forget()
+            if not self.adm_open_btn.winfo_manager():
+                self.adm_open_btn.pack(side="right", padx=(0, 8))
         self.adm_tree.delete(*self.adm_tree.get_children())
         self.adm_text.delete("1.0", "end")
         self.adm_status.configure(text=pick("Завантаження…", "Loading…"))
@@ -10983,10 +11126,14 @@ class App(tk.Tk):
                 self.adm_status.configure(text=self._acc_err(d))
                 return
             self._adm_rows = {}
-            for g in d.get("games" if mode == "gotw" else "bugs") or []:
+            for g in d.get({"gotw": "games", "tickets": "tickets"}.get(mode, "bugs")) or []:
                 iid = str(g["n"])
                 self._adm_rows[iid] = g
-                if mode == "gotw":
+                if mode == "tickets":
+                    vals = (g["n"], g.get("nick") or "—", (g.get("text") or "").replace("\n", " ")[:80],
+                            pick("закрито", "closed") if g.get("status") == "closed" else pick("відкрито", "open"),
+                            (g.get("at") or "")[:10])
+                elif mode == "gotw":
                     acc = "%s / %s" % tuple("–" if g.get(k) is None else f"{g[k]:.1f}" for k in ("white_acc", "black_acc"))
                     vals = (g["n"], ("✓ " if g.get("chosen") else "") + (g.get("nick") or "—"),
                             f"{g.get('white') or '?'} – {g.get('black') or '?'}  {g.get('result') or ''}",
@@ -10996,7 +11143,8 @@ class App(tk.Tk):
                             (g.get("text") or "").replace("\n", " ")[:80], g.get("contact") or "", (g.get("at") or "")[:10])
                 self.adm_tree.insert("", "end", iid=iid, values=vals)
             self.adm_status.configure(text=pick(f"Усього: {len(self._adm_rows)}", f"Total: {len(self._adm_rows)}"))
-        self._bg(lambda: acc_http("/admin/gotw" if mode == "gotw" else "/admin/bugs", {"token": ACC["token"]}), done)
+        self._bg(lambda: acc_http({"gotw": "/admin/gotw", "tickets": "/admin/tickets"}.get(mode, "/admin/bugs"),
+                                  {"token": ACC["token"]}), done)
 
     def _adm_sel(self):
         sel = self.adm_tree.selection()
@@ -11007,7 +11155,12 @@ class App(tk.Tk):
         self.adm_text.delete("1.0", "end")
         if not g:
             return
-        if self._adm_mode == "gotw":
+        if self._adm_mode == "tickets":
+            self.adm_text.insert("end", f"{g.get('nick') or '—'} · {g.get('platform') or ''} {g.get('version') or ''} · "
+                                 f"{(g.get('at') or '')[:16].replace('T', ' ')}\n\n{g.get('text') or ''}")
+            self.adm_reply.delete("1.0", "end")
+            self.adm_reply.insert("end", g.get("reply") or "")
+        elif self._adm_mode == "gotw":
             self.adm_text.insert("end", g.get("comment") or pick("(без коментаря)", "(no comment)"))
         else:
             self.adm_text.insert("end", (g.get("text") or "") + (f"\n\n{g['contact']}" if g.get("contact") else "")
@@ -11038,6 +11191,9 @@ class App(tk.Tk):
         self._adm_fetch_pgn(g, then)
 
     def _adm_choose(self):
+        if self._adm_mode == "tickets":
+            self._adm_reply_send()
+            return
         g = self._adm_sel()
         if not g or self._adm_mode != "gotw":
             return
@@ -11064,7 +11220,34 @@ class App(tk.Tk):
                      lambda r: ok(r) if r[0] == 200 else self.adm_status.configure(text=self._acc_err(r[1])))
         self._adm_fetch_pgn(g, then)
 
+    def _adm_reply_send(self):
+        g = self._adm_sel()
+        text = self.adm_reply.get("1.0", "end").strip()
+        if not g or not text:
+            return
+
+        def done(r):
+            if r[0] != 200:
+                self.adm_status.configure(text=self._acc_err(r[1]))
+                return
+            g.update(reply=text, status="closed")
+            self.adm_tree.set(str(g["n"]), "c", pick("закрито", "closed"))
+            self.adm_status.configure(text=pick("✓ Відповідь надіслано.", "✓ Reply sent."))
+        self._bg(lambda: acc_http("/admin/ticket/reply", {"token": ACC["token"], "n": g["n"], "reply": text}), done)
+
     def _adm_delete(self):
+        if self._adm_mode == "tickets":                 # 1.31.27: тут - закрити / відкрити тікет
+            g = self._adm_sel()
+            if not g:
+                return
+            on = g.get("status") != "closed"
+
+            def done(r):
+                if r[0] == 200:
+                    g["status"] = "closed" if on else "open"
+                    self.adm_tree.set(str(g["n"]), "c", pick("закрито", "closed") if on else pick("відкрито", "open"))
+            self._bg(lambda: acc_http("/admin/ticket/close", {"token": ACC["token"], "n": g["n"], "on": on}), done)
+            return
         g = self._adm_sel()
         if not g or self._adm_mode != "gotw":
             return

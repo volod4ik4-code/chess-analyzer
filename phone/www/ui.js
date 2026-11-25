@@ -693,9 +693,10 @@ function accBody() {
     + `<div class="row ccrow"><input id="acNp2" type="password" maxlength="200" autocomplete="new-password" placeholder="${esc(pick('ще раз', 'again'))}"><button id="acPw">${esc(u.haspass === false ? pick('Задати', 'Set') : pick('Змінити', 'Change'))}</button></div>`
     + `<label class="f">lichess</label><div class="row ccrow"><input id="acLiNick" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на lichess', 'your lichess username'))}" value="${esc(u.lichess || '')}"><button id="acLiSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
-      + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button></div>`
+      + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button><button id="acAdmT">${esc(pick('Тікети', 'Tickets'))}</button></div>`
       + `<div class="row"><input id="acBanNick" type="text" maxlength="20" autocapitalize="off" spellcheck="false" placeholder="${esc(pick('нік', 'nickname'))}"><button id="acBan">${esc(pick('⛔ Бан', '⛔ Ban'))}</button><button id="acUnban">${esc(pick('Розбан', 'Unban'))}</button></div>` : '')
     + `<div class="hint" id="acStatus"></div>`
+    + `<div class="row"><button id="acSup">${esc(pick('Підтримка', 'Support') + (u.support_new ? ` (${u.support_new})` : ''))}</button></div>`     // 1.31.27
     + `<div class="row"><button id="acSync">${esc(pick('🔄 Синхронізувати', '🔄 Sync now'))}</button><button id="acOut">${esc(pick('Вийти', 'Sign out'))}</button></div>`;
 }
 function accWire() {
@@ -729,9 +730,37 @@ function accWire() {
   on('acSync', syncRun);
   on('acAdmG', () => { A.admMode = 'gotw'; openBox('admin'); });
   on('acAdmB', () => { A.admMode = 'bugs'; openBox('admin'); });
+  on('acAdmT', () => { A.admMode = 'tickets'; openBox('admin'); });
+  on('acSup', () => openBox('support'));
   const ban = v => { const n = $('acBanNick').value.trim(); if (n) accCall('/admin/ban', { nick: n, on: v }, () => accStatus(v ? pick(`⛔ ${n} заблоковано.`, `⛔ ${n} banned.`) : pick(`✓ ${n} розблоковано.`, `✓ ${n} unbanned.`))); };
   on('acBan', () => ban(true));
   on('acUnban', () => ban(false));
+}
+// ---------- 1.31.27: підтримка
+async function supLoad() {
+  const { code, d } = await accHttp('/acc/tickets', { token: ACC.token });
+  const el = $('supList');
+  if (A.boxKind !== 'support' || !el) return;
+  if (code !== 200) { el.textContent = accErr(d); return; }
+  const list = d.tickets || [];
+  el.innerHTML = list.length ? list.map(t => `<div class="glrow" style="display:block"><small>${esc((t.at || '').slice(0, 16).replace('T', ' '))}</small>`
+    + `<div style="white-space:pre-wrap;color:var(--fg)">${esc(t.text || '')}</div>`
+    + (t.reply ? `<div style="white-space:pre-wrap;color:var(--accent)">${esc(pick('Відповідь: ', 'Reply: ') + t.reply)}</div>`
+      : `<small>${esc(t.status === 'closed' ? pick('Закрито', 'Closed') : pick('Чекає відповіді', 'Waiting for a reply'))}</small>`) + `</div>`).join('')
+    : esc(pick('Звернень ще немає.', 'No requests yet.'));
+  if (ACC.user && ACC.user.support_new) { ACC.user.support_new = 0; accSave(); accChanged(); }
+}
+async function supSend() {
+  const text = $('supText').value.trim(), st = $('supStatus');
+  if (text.length < 3) { st.textContent = pick('Напишіть повідомлення.', 'Write a message.'); return; }
+  st.textContent = pick('Надсилаю…', 'Sending…');
+  const { code, d } = await accHttp('/acc/ticket', { token: ACC.token, text, p: 'phone', v: D.APP_VERSION });
+  if (A.boxKind !== 'support') return;
+  if (code !== 200) { st.textContent = accErr(d); return; }
+  $('supText').value = '';
+  st.textContent = pick("✓ Надіслано! Відповідь з'явиться нижче.", '✓ Sent! The reply will appear below.');
+  tele('f.support');
+  supLoad();
 }
 function accTake(d) { if (d.user) { ACC.user = d.user; accSave(); accChanged(); } }
 async function accCall(path, body, ok) {
@@ -944,6 +973,7 @@ function accProfileText() {
     pick(`⭐ Зірок у ботів: ${stars}`, `⭐ Bot stars: ${stars}`),
     pick(`📚 Досліджень: ${nSt}`, `📚 Studies: ${nSt}`),
     pick(`🏆 Заявок на гру тижня: ${u.gotw || 0} (❤ ${u.likes || 0})`, `🏆 Game of the week submissions: ${u.gotw || 0} (❤ ${u.likes || 0})`),
+    u.support_new ? pick('Нова відповідь від підтримки: {0}', 'New reply from support: {0}').replace('{0}', u.support_new) : '',
     at ? pick(`🔄 Синхронізовано о ${at}`, `🔄 Synced at ${at}`) : pick('🔄 Ще не синхронізовано', '🔄 Not synced yet')].filter(Boolean).join('\n');
 }
 
@@ -953,14 +983,23 @@ const LOGIN_AI = () => pick('ШІ-тренер працює з безплатн�
 const ADM = { rows: [] };
 async function admLoad() {
   const mode = A.admMode, list = $('admList');
-  const { code, d } = await accHttp(mode === 'gotw' ? '/admin/gotw' : '/admin/bugs', { token: ACC.token });
+  const { code, d } = await accHttp({ gotw: '/admin/gotw', tickets: '/admin/tickets' }[mode] || '/admin/bugs', { token: ACC.token });
   if (A.boxKind !== 'admin' || A.admMode !== mode) return;
   if (code !== 200) { list.textContent = accErr(d); return; }
-  ADM.rows = (mode === 'gotw' ? d.games : d.bugs) || [];
+  ADM.rows = (mode === 'gotw' ? d.games : mode === 'tickets' ? d.tickets : d.bugs) || [];
   admRender();
 }
 function admRender() {
   const gotw = A.admMode === 'gotw';
+  if (A.admMode === 'tickets') {        // 1.31.27: тікети підтримки - відповідь і закрити / відкрити
+    $('admList').innerHTML = ADM.rows.length ? ADM.rows.map(t => `<div class="glrow"><div><b>№${t.n}</b> ${esc(`${t.nick || '—'} · ${t.platform || ''} ${t.version || ''} · ${(t.at || '').slice(0, 16).replace('T', ' ')} · `)}`
+      + `<b>${esc(t.status === 'closed' ? pick('закрито', 'closed') : pick('відкрито', 'open'))}</b>`
+      + `<div style="white-space:pre-wrap">${esc(t.text || '')}</div></div>`
+      + `<textarea data-tk-text="${t.n}" rows="3" maxlength="2000" placeholder="${esc(pick('Ваша відповідь', 'Your reply'))}">${esc(t.reply || '')}</textarea>`
+      + `<div class="row"><button data-tk-reply="${t.n}" class="primary">${esc(pick('Відповісти', 'Reply'))}</button><button data-tk-close="${t.n}">${esc(t.status === 'closed' ? pick('Відкрити', 'Reopen') : pick('Закрити', 'Close'))}</button></div></div>`).join('')
+      : esc(pick('Порожньо.', 'Empty.'));
+    return;
+  }
   $('admList').innerHTML = ADM.rows.length ? ADM.rows.map(g => gotw
     ? `<div class="glrow"><div><b>№${g.n}</b> ${g.chosen ? '✓ ' : ''}${esc(`${g.white || '?'} – ${g.black || '?'} ${g.result || ''}`)}`
       + `<div class="hint">${esc(`${g.nick || '—'} · ${(g.at || '').slice(0, 10)} · ❤${g.likes || 0}`)}${g.comment ? '<br>' + esc(g.comment) : ''}</div></div>`
@@ -971,6 +1010,25 @@ function admRender() {
     : esc(pick('Порожньо.', 'Empty.'));
 }
 async function admClick(e) {
+  const t = e.target.closest('[data-tk-reply],[data-tk-close]');
+  if (t) {             // 1.31.27
+    const n = +(t.dataset.tkReply || t.dataset.tkClose), row = ADM.rows.find(x => x.n === n);
+    if (t.dataset.tkReply) {
+      const reply = document.querySelector(`[data-tk-text="${n}"]`).value.trim();
+      if (!reply) return;
+      const { code, d } = await accHttp('/admin/ticket/reply', { token: ACC.token, n, reply });
+      if (code !== 200) { msg(accErr(d)); return; }
+      if (row) Object.assign(row, { reply, status: 'closed' });
+      msg(pick('✓ Відповідь надіслано.', '✓ Reply sent.'));
+    } else {
+      const on = !row || row.status !== 'closed';
+      const { code, d } = await accHttp('/admin/ticket/close', { token: ACC.token, n, on });
+      if (code !== 200) { msg(accErr(d)); return; }
+      if (row) row.status = on ? 'closed' : 'open';
+    }
+    admRender();
+    return;
+  }
   const b = e.target.closest('[data-adm-open],[data-adm-choose],[data-adm-del]');
   if (!b) return;
   const gotw = A.admMode === 'gotw';
@@ -3325,8 +3383,18 @@ function openBox(kind) {
     $('boxTitle').textContent = pick('👤  Акаунт', '👤  Account');
     body.innerHTML = accBody();
     accWire();
+  } else if (kind === 'support') {      // 1.31.27: підтримка
+    $('boxTitle').textContent = pick('Підтримка', 'Support');
+    body.innerHTML = `<div class="hint">${esc(pick("Напишіть автору програми: питання, ідею чи проблему. Відповідь з'явиться тут, у «Моїх зверненнях».", 'Write to the author of the app: a question, an idea or a problem. The reply will appear here, in «My requests».'))}</div>`
+      + `<textarea id="supText" rows="5" maxlength="2000"></textarea>`
+      + `<div class="hint" id="supStatus"></div>`
+      + `<div class="row"><button id="supBack">${esc(pick('← Акаунт', '← Account'))}</button><button id="supSend" class="primary">${esc(pick('Надіслати', 'Send'))}</button></div>`
+      + `<label class="f">${esc(pick('МОЇ ЗВЕРНЕННЯ', 'MY REQUESTS'))}</label><div id="supList" class="hint">${esc(pick('Завантаження…', 'Loading…'))}</div>`;
+    $('supBack').addEventListener('click', () => openBox('acc'));
+    $('supSend').addEventListener('click', supSend);
+    supLoad();
   } else if (kind === 'admin') {
-    $('boxTitle').textContent = A.admMode === 'gotw' ? pick('🛡  Заявки «Партія тижня»', '🛡  Game of the week submissions') : pick('🛡  Звіти про помилки', '🛡  Bug reports');
+    $('boxTitle').textContent = A.admMode === 'gotw' ? pick('🛡  Заявки «Партія тижня»', '🛡  Game of the week submissions') : A.admMode === 'tickets' ? pick('Тікети підтримки', 'Support tickets') : pick('🛡  Звіти про помилки', '🛡  Bug reports');
     body.innerHTML = `<div id="admList" style="max-height:60vh;overflow:auto">${esc(pick('Завантаження…', 'Loading…'))}</div>`
       + `<div class="row"><button id="admBack">${esc(pick('← Акаунт', '← Account'))}</button></div>`;
     $('admList').addEventListener('click', admClick);
