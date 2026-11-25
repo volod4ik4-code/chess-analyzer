@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.23"
+APP_VERSION = "1.31.24"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.24", "2026-11-25 19:59", [
+        ("«Партії тижня»: вкладки «Турнір», «Партії тижнів» і «Усі заявки». Партію 1 тижня обирає автор; далі партія з найбільшою кількістю лайків за тиждень стає партією наступного тижня",
+         "«Games of the week»: tabs «Tournament», «Weekly winners» and «All submissions». The game of week 1 is chosen by the author; after that, the game with the most likes of the week becomes the game of the next week"),
+    ]),
     ("1.31.23", "2026-11-25 19:46", [
         ("ПК: вікно акаунта тепер усередині програми, а ніки chess.com і lichess у профілі вводяться",
          "PC: the account window is now inside the program, and chess.com / lichess usernames can be typed in the profile"),
@@ -1818,6 +1822,29 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    '«Games of the week»: tabs «Tournament», «Weekly winners» and «All submissions». The game of week 1 is chosen by the author; after that, the game with the most likes of the week becomes the game of the next week': ('«Partidas da semana»: abas «Torneio», «Vencedoras da semana» e «Todas as inscrições». A partida da semana 1 é escolhida pelo autor; depois, a partida com mais curtidas da semana vira a partida da semana seguinte', '«Partidas de la semana»: pestañas «Torneo», «Ganadoras semanales» y «Todas las solicitudes». La partida de la semana 1 la elige el autor; después, la partida con más me gusta de la semana pasa a ser la partida de la semana siguiente'),
+    'Tournament': ('Torneio', 'Torneo'),
+    'Weekly winners': ('Vencedoras da semana', 'Ganadoras semanales'),
+    'All submissions': ('Todas as inscrições', 'Todas las solicitudes'),
+    'Week': ('Semana', 'Semana'),
+    'How chosen': ('Como foi escolhida', 'Cómo se eligió'),
+    '{0} d {1} h': ('{0} d {1} h', '{0} d {1} h'),
+    '{0} h {1} min': ('{0} h {1} min', '{0} h {1} min'),
+    'Tournament for the game of week {0}. Submit your game (after the analysis - «Apply for game of the week») and like other games. The game with the most likes at {1} becomes the game of week {0}. Time left: {2}.': ('Torneio pela partida da semana {0}. Envie sua partida (após a análise - «Inscrever na partida da semana») e curta outras partidas. A partida com mais curtidas em {1} vira a partida da semana {0}. Tempo restante: {2}.', 'Torneo por la partida de la semana {0}. Envía tu partida (tras el análisis - «Solicitar partida de la semana») y da me gusta a otras. La partida con más me gusta a las {1} será la partida de la semana {0}. Tiempo restante: {2}.'),
+    "The game of week 1 is chosen by the author. After that, each week's game is the winner of the previous week's like tournament. Double-click to open a game.": ('A partida da semana 1 é escolhida pelo autor. Depois, a partida de cada semana é a vencedora do torneio de curtidas da semana anterior. Clique duas vezes para abrir uma partida.', 'La partida de la semana 1 la elige el autor. Después, la partida de cada semana es la ganadora del torneo de me gusta de la semana anterior. Doble clic para abrir una partida.'),
+    "The game of week 1 is chosen by the author. After that, each week's game is the winner of the previous week's like tournament.": ('A partida da semana 1 é escolhida pelo autor. Depois, a partida de cada semana é a vencedora do torneio de curtidas da semana anterior.', 'La partida de la semana 1 la elige el autor. Después, la partida de cada semana es la ganadora del torneo de me gusta de la semana anterior.'),
+    'Week {0}': ('Semana {0}', 'Semana {0}'),
+    'tournament running': ('torneio em andamento', 'torneo en curso'),
+    '{0} left': ('faltam {0}', 'quedan {0}'),
+    'leader: {0}': ('líder: {0}', 'líder: {0}'),
+    'not chosen yet': ('ainda não escolhida', 'aún no elegida'),
+    'no submissions': ('sem inscrições', 'sin solicitudes'),
+    "author's pick": ('escolha do autor', 'elección del autor'),
+    '{0} likes · {1}': ('{0} curtidas · {1}', '{0} me gusta · {1}'),
+    "This week's tournament is over - likes no longer count.": ('O torneio desta semana acabou - as curtidas não contam mais.', 'El torneo de esta semana terminó - los me gusta ya no cuentan.'),
+    'All games sent by players.': ('Todas as partidas enviadas pelos jogadores.', 'Todas las partidas enviadas por los jugadores.'),
+    '✓ This is the game of week {0}.': ('✓ Esta é a partida da semana {0}.', '✓ Esta es la partida de la semana {0}.'),
+    'This is the game of week {0}.': ('Esta é a partida da semana {0}.', 'Esta es la partida de la semana {0}.'),
     'PC: the account window is now inside the program, and chess.com / lichess usernames can be typed in the profile': ('PC: a janela da conta agora fica dentro do programa, e os apelidos do chess.com / lichess podem ser digitados no perfil', 'PC: la ventana de la cuenta ahora está dentro del programa, y los apodos de chess.com / lichess se pueden escribir en el perfil'),
     '«Best» is now given only to the move Stockfish ranks first; equally good moves are «Excellent»': ('«Melhor» agora só para o lance que o Stockfish coloca em primeiro; lances igualmente bons são «Excelente»', '«Mejor» ahora solo para la jugada que Stockfish pone primero; las jugadas igual de buenas son «Excelente»'),
     'AI coach: 20 explanations a day instead of 5': ('Treinador IA: 20 explicações por dia em vez de 5', 'Entrenador IA: 20 explicaciones al día en lugar de 5'),
@@ -10881,6 +10908,9 @@ class App(tk.Tk):
                 return
 
             def ok(r):
+                if r[1].get("week"):
+                    self.after(2500, lambda: self.adm_status.configure(
+                        text=pick("✓ Це партія {0} тижня.", "✓ This is the game of week {0}.").format(r[1]["week"])))
                 g["chosen"] = 1
                 self.adm_tree.set(str(g["n"]), "a", "✓ " + (g.get("nick") or "—"))
                 self.adm_status.configure(text=pick(f"✓ Збережено в «Партії тижня»: {os.path.basename(path)}",
@@ -10915,6 +10945,7 @@ class App(tk.Tk):
             self.gl_box.hide()
             return
         tele_count("f.gotwlist")
+        self._gl_mode = "tour"
         self.gl_box.show()
         self._gl_render_lang()
         self._gl_load()
@@ -10923,7 +10954,16 @@ class App(tk.Tk):
         self.gl_box = OverlayBox(self, "🏆  Партії тижня")
         body = ttk.Frame(self.gl_box.box, style="Panel.TFrame", padding=(18, 12))
         body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
-        top = ttk.Frame(body, style="Panel.TFrame")
+        tabs = ttk.Frame(body, style="Panel.TFrame")      # 1.31.24: вкладки
+        tabs.pack(fill="x", pady=(0, 10))
+        self.gl_tabs = {}
+        for k in ("tour", "weeks", "all"):
+            b = RButton(tabs, text=k, kind="seg", command=lambda k=k: self._gl_tab(k))
+            b.pack(side="left", padx=(0, 6))
+            self.gl_tabs[k] = b
+        self.gl_info = ttk.Label(body, style="Panel.TLabel", wraplength=780, justify="left")
+        self.gl_info.pack(anchor="w", pady=(0, 6))
+        top = self.gl_sortrow = ttk.Frame(body, style="Panel.TFrame")
         top.pack(fill="x")
         self.gl_new_btn = RButton(top, text="🆕", kind="seg", command=lambda: self._gl_sort("new"))
         self.gl_new_btn.pack(side="left")
@@ -10952,7 +10992,7 @@ class App(tk.Tk):
         self.gl_like_btn.pack(side="right", padx=(0, 8))
         self.gl_close_btn = RButton(bot, text="✕", style="Small.TButton", command=self.gl_box.hide)
         self.gl_close_btn.pack(side="right", padx=(0, 8))
-        self._gl_sortkey, self._gl_rows, self._gl_seq = "new", [], 0
+        self._gl_sortkey, self._gl_rows, self._gl_seq, self._gl_mode, self._gl_wk = "new", [], 0, "tour", None
         self._likes = likes_load()
         self.glq = queue.Queue()
 
@@ -10962,11 +11002,22 @@ class App(tk.Tk):
         self.gl_top_btn.configure(text=pick("❤  Найкращі", "❤  Best"))
         self.gl_new_btn.set_kind("segon" if self._gl_sortkey == "new" else "seg")
         self.gl_top_btn.set_kind("segon" if self._gl_sortkey == "top" else "seg")
+        for k, t in (("tour", pick("Турнір", "Tournament")), ("weeks", pick("Партії тижнів", "Weekly winners")),
+                     ("all", pick("Усі заявки", "All submissions"))):
+            self.gl_tabs[k].configure(text=t)
+            self.gl_tabs[k].set_kind("segon" if self._gl_mode == k else "seg")
+        if self._gl_mode == "all":
+            if not self.gl_sortrow.winfo_manager():
+                self.gl_sortrow.pack(fill="x", after=self.gl_info)
+        else:
+            self.gl_sortrow.pack_forget()
         self.gl_hint.configure(text=pick("Партії, які надіслали гравці. Подвійний клік - відкрити й проаналізувати.",
                                          "Games sent by players. Double-click to open and analyze."))
         for c, t in zip(("lk", "wh", "bl", "res", "acc", "by", "dt"),
-                        ("❤", pick("Білі", "White"), pick("Чорні", "Black"), pick("Рез.", "Res."),
-                         pick("Точність", "Accuracy"), pick("Надіслав", "Sent by"), pick("Дата", "Date"))):
+                        (pick("Тиждень", "Week") if self._gl_mode == "weeks" else "❤", pick("Білі", "White"),
+                         pick("Чорні", "Black"), pick("Рез.", "Res."), pick("Точність", "Accuracy"),
+                         pick("Як обрано", "How chosen") if self._gl_mode == "weeks" else pick("Надіслав", "Sent by"),
+                         pick("Дата", "Date"))):
             self.gl_tree.heading(c, text=t)
         self.gl_open_btn.configure(text=pick("▶  Відкрити", "▶  Open"))
         self.gl_close_btn.configure(text=pick("Закрити", "Close"))
@@ -10974,9 +11025,10 @@ class App(tk.Tk):
 
     def _gl_like_text(self):
         sel = self.gl_tree.selection()
+        sel = [x for x in sel if x.isdigit()]
         liked = bool(sel) and int(sel[0]) in self._likes["liked"]
         self.gl_like_btn.configure(text=pick("💔  Прибрати ❤", "💔  Unlike") if liked else pick("❤  Подобається", "❤  Like"),
-                                   state="normal" if sel else "disabled")
+                                   state="normal" if sel and self._gl_mode != "weeks" else "disabled")
 
     def _gl_sort(self, key):
         self._gl_sortkey = key
@@ -10992,7 +11044,7 @@ class App(tk.Tk):
             try:
                 self.glq.put((seq, done, fn(), None))
             except urllib.error.HTTPError as e:
-                self.glq.put((seq, done, None, "rate" if e.code == 429 else "err"))
+                self.glq.put((seq, done, None, {429: "rate", 409: "closed"}.get(e.code, "err")))
             except Exception:  # noqa: BLE001
                 self.glq.put((seq, done, None, "net"))
         threading.Thread(target=work, daemon=True).start()
@@ -11006,17 +11058,87 @@ class App(tk.Tk):
             return
         if data is None:
             self.gl_status.configure(text={"rate": pick("Забагато запитів - спробуйте за хвилину.", "Too many requests - try in a minute."),
-                                           "net": pick("Немає з'єднання з інтернетом.", "No internet connection.")}
+                                           "net": pick("Немає з'єднання з інтернетом.", "No internet connection."),
+                                           "closed": pick("Турнір цього тижня вже закінчився - лайки більше не рахуються.",
+                                                          "This week's tournament is over - likes no longer count.")}
                                      .get(err, pick("Сервер зараз недоступний.", "The server is unavailable right now.")))
             return
         done(data)
 
+    def _gl_tab(self, mode):
+        self._gl_mode = mode
+        self._gl_render_lang()
+        self.gl_tree.selection_set(())
+        self._gl_load()
+
     def _gl_load(self):
         self.gl_status.configure(text=pick("Завантажую…", "Loading…"))
+        if self._gl_mode != "all":
+            self._gl_net(lambda: gotw_http("/weeks"), self._gl_weeks)
+            return
         key = self._gl_sortkey
+        self.gl_info.configure(text=pick("Усі партії, які надіслали гравці.", "All games sent by players."))
         self._gl_net(lambda: gotw_http(f"/list?sort={key}"), self._gl_fill)
 
-    def _gl_fill(self, data):
+    @staticmethod
+    def _gl_when(iso):
+        """ISO UTC -> (місцева дата «дд.мм ГГ:ХХ», залишок «N д M год»)."""
+        try:
+            t = datetime.datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            return "?", "?"
+        left = max(0, int((t - datetime.datetime.now(datetime.timezone.utc)).total_seconds()))
+        d, h, m = left // 86400, left % 86400 // 3600, left % 3600 // 60
+        return (t.astimezone().strftime("%d.%m %H:%M"),
+                pick("{0} д {1} год", "{0} d {1} h").format(d, h) if d else pick("{0} год {1} хв", "{0} h {1} min").format(h, m))
+
+    def _gl_weeks(self, data):
+        """1.31.24: «Турнір» (заявки цього тижня за ❤) або «Партії тижнів» (переможці по тижнях)."""
+        self._gl_wk = data
+        nxt = int(data.get("week") or 1) + 1
+        when, left = self._gl_when(data.get("ends"))
+        lead = (data.get("tournament") or [None])[0]
+        if self._gl_mode == "tour":
+            self.gl_info.configure(text=pick(
+                "Турнір за партію {0} тижня. Подайте свою партію (після аналізу - «Подати заявку на гру тижня») і ставте лайки "
+                "іншим. Партія з найбільшою кількістю лайків на {1} стане партією {0} тижня. Залишилось: {2}.",
+                "Tournament for the game of week {0}. Submit your game (after the analysis - «Apply for game of the week») "
+                "and like other games. The game with the most likes at {1} becomes the game of week {0}. Time left: {2}.")
+                .format(nxt, when, left))
+            self._gl_fill({"games": data.get("tournament") or []}, rank=True)
+            return
+        self.gl_info.configure(text=pick(
+            "Партію 1 тижня обирає автор програми. Далі партія кожного тижня - переможець турніру лайків за попередній "
+            "тиждень. Подвійний клік - відкрити партію.",
+            "The game of week 1 is chosen by the author. After that, each week's game is the winner of the previous "
+            "week's like tournament. Double-click to open a game."))
+        tv = self.gl_tree
+        tv.delete(*tv.get_children())
+        self._gl_rows = []
+        tv.insert("", "end", iid="t", values=(pick("{0} тиждень", "Week {0}").format(nxt),
+                  pick("турнір триває", "tournament running"), "", "",
+                  pick("ще {0}", "{0} left").format(left),
+                  pick("лідер: {0}", "leader: {0}").format(lead.get("nick") or "—") if lead else "—", when[:5]))
+        for w in data.get("weeks") or []:
+            g = w.get("game")
+            n, frm = w["week"], (w.get("from") or "")[:10]
+            dt = f"{frm[8:10]}.{frm[5:7]}" if frm else ""
+            if not g:
+                tv.insert("", "end", iid=f"w{n}", values=(pick("{0} тиждень", "Week {0}").format(n),
+                          pick("ще не обрано", "not chosen yet") if n == 1 else pick("заявок не було", "no submissions"),
+                          "", "", "", "—", dt))
+                continue
+            self._gl_rows.append(g)
+            acc = (f"{g['white_acc']:.0f}% / {g['black_acc']:.0f}%" if g.get("white_acc") is not None
+                   and g.get("black_acc") is not None else "–")
+            by = (pick("обрав автор", "author's pick") if w.get("by") == "admin"
+                  else pick("лайків: {0} · {1}", "{0} likes · {1}").format(g.get("likes", 0), g.get("nick") or "—"))
+            tv.insert("", "end", iid=str(g["n"]), values=(pick("{0} тиждень", "Week {0}").format(n), g.get("white") or "?",
+                      g.get("black") or "?", g.get("result") or "", acc, by, dt))
+        self.gl_status.configure(text="")
+        self._gl_show_comment()
+
+    def _gl_fill(self, data, rank=False):
         self._gl_rows = data.get("games") or []
         tv = self.gl_tree
         keep = tv.selection()
@@ -11025,11 +11147,13 @@ class App(tk.Tk):
             acc = (f"{g['white_acc']:.0f}% / {g['black_acc']:.0f}%" if g.get("white_acc") is not None
                    and g.get("black_acc") is not None else "–")
             heart = ("❤ " if g["n"] in self._likes["liked"] else "♡ ") + str(g.get("likes", 0))
+            if rank and g is self._gl_rows[0] and g.get("likes"):
+                heart = "1. " + heart          # лідер турніру
             tv.insert("", "end", iid=str(g["n"]), values=(heart, g.get("white") or "?", g.get("black") or "?",
                       g.get("result") or "", acc, g.get("nick") or "—", (g.get("at") or "")[:10]))
         if keep and tv.exists(keep[0]):
             tv.selection_set(keep[0])
-        self.gl_status.configure(text=pick(f"Партій: {len(self._gl_rows)}", f"Games: {len(self._gl_rows)}")
+        self.gl_status.configure(text=pick("Партій: {0}", "Games: {0}").format(len(self._gl_rows))
                                  if self._gl_rows else pick("Ще ніхто не подав заявку - будьте першим!",
                                                             "No applications yet - be the first!"))
         self._gl_show_comment()
@@ -11042,7 +11166,7 @@ class App(tk.Tk):
 
     def _gl_like(self):
         sel = self.gl_tree.selection()
-        if not sel:
+        if not sel or not sel[0].isdigit() or self._gl_mode == "weeks":
             return
         n = int(sel[0])
         on = n not in self._likes["liked"]
@@ -11057,13 +11181,16 @@ class App(tk.Tk):
             for g in self._gl_rows:
                 if g["n"] == n:
                     g["likes"] = data.get("likes", g.get("likes", 0))
-            self._gl_fill({"games": self._gl_rows})
+            self._gl_fill({"games": self._gl_rows}, rank=self._gl_mode == "tour")
         tele_count("gotw.like")
         self._gl_net(lambda: gotw_http("/like", {"n": n, "id": lid, "on": on}), done)
 
     def _gl_open(self):
         sel = self.gl_tree.selection()
-        if not sel:
+        if sel and sel[0] == "t":
+            self._gl_tab("tour")
+            return
+        if not sel or not sel[0].isdigit():
             return
         n = sel[0]
         self.gl_status.configure(text=pick("Завантажую партію…", "Loading the game…"))

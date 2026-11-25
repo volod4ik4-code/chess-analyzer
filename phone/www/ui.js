@@ -954,7 +954,8 @@ async function admClick(e) {
     if (code !== 200) { msg(accErr(d)); return; }
     const g = ADM.rows.find(x => x.n === n); if (g) g.chosen = 1;
     admRender();
-    msg(pick('✓ Вибрано. PGN у папку «Партії тижня» зберігає ПК (адмін-вікно або gotw.ps1 save).', '✓ Chosen. The PC saves the PGN to the «Партії тижня» folder (admin window or gotw.ps1 save).'));
+    msg(pick('✓ Вибрано. PGN у папку «Партії тижня» зберігає ПК (адмін-вікно або gotw.ps1 save).', '✓ Chosen. The PC saves the PGN to the «Партії тижня» folder (admin window or gotw.ps1 save).')
+      + (d.week ? ' ' + pick('Це партія {0} тижня.', 'This is the game of week {0}.').replace('{0}', d.week) : ''));   // 1.31.24
   } else if (b.dataset.admDel) {
     const n = +b.dataset.admDel;
     if (!confirm(pick(`Видалити заявку №${n} назавжди?`, `Delete submission #${n} forever?`))) return;
@@ -3285,6 +3286,7 @@ function openBox(kind) {
     $('tNo').addEventListener('click', () => { closeBox(); teleSet(false); });
   } else if (kind === 'gotwlist') {     // 1.29.1: «Партії тижня»
     $('boxTitle').textContent = pick('🏆  Партії тижня', '🏆  Games of the week');
+    GL.mode = 'tour'; GL.rows = [];
     glLoad();
   } else if (kind === 'db') {           // 1.29.0: база партій майстрів
     $('boxTitle').textContent = pick('📖  База партій майстрів', '📖  Masters games database');
@@ -3403,7 +3405,7 @@ function openBox(kind) {
 }
 function reopenBox() { if (A.boxKind) { const k = A.boxKind; const b = $('box'), l = b.style.left, t = b.style.top; openBox(k); b.style.left = l; b.style.top = t; clampBox(); } }
 // 1.29.1: вкладка «Партії тижня» - заявки гравців і лайки
-const GL = { sort: 'new', rows: [], err: null, loading: false };
+const GL = { sort: 'new', rows: [], err: null, loading: false, mode: 'tour', wk: null };   // 1.31.24: mode tour|weeks|all
 function glLikes() {
   let d = store.get('ca.likes', null);
   if (!d || !/^[0-9a-f]{32}$/.test(d.id || '')) {
@@ -3416,9 +3418,11 @@ function glLikes() {
 async function glLoad() {
   GL.loading = true; GL.err = null; glRender();
   try {
-    const r = await fetch(`${D.AI_COACH_URL}/gotw/list?sort=${GL.sort}`);
+    const r = await fetch(GL.mode === 'all' ? `${D.AI_COACH_URL}/gotw/list?sort=${GL.sort}` : `${D.AI_COACH_URL}/gotw/weeks`);
     if (!r.ok) throw new Error(r.status === 429 ? 'rate' : 'err');
-    GL.rows = (await r.json()).games || [];
+    const d = await r.json();
+    if (GL.mode === 'all') GL.rows = d.games || [];
+    else { GL.wk = d; GL.rows = d.tournament || []; }
   } catch (e) { GL.err = e.message === 'rate' ? 'rate' : 'net'; }
   GL.loading = false; glRender();
 }
@@ -3426,14 +3430,35 @@ function glRender() {
   if (A.boxKind !== 'gotwlist') return;
   const L = glLikes();
   const seg = (k, l) => `<button data-glsort="${k}" class="${GL.sort === k ? 'primary' : ''}">${esc(l)}</button>`;
-  let html = `<div class="row">${seg('new', pick('🆕 Нові', '🆕 Newest'))}${seg('top', pick('❤ Найкращі', '❤ Best'))}</div>`
+  const tab = (k, l) => `<button data-gltab="${k}" class="${GL.mode === k ? 'primary' : ''}">${esc(l)}</button>`;
+  let html = `<div class="row gltabs">${tab('tour', pick('Турнір', 'Tournament'))}${tab('weeks', pick('Партії тижнів', 'Weekly winners'))}${tab('all', pick('Усі заявки', 'All'))}</div>`;
+  const wk = GL.wk, nxt = ((wk && wk.week) || 1) + 1;
+  const ends = wk ? new Date(wk.ends) : null, ms = ends ? Math.max(0, ends - Date.now()) : 0;
+  const dd = Math.floor(ms / 864e5), hh = Math.floor(ms % 864e5 / 36e5), mm = Math.floor(ms % 36e5 / 6e4);
+  const left = dd ? pick('{0} д {1} год', '{0} d {1} h').replace('{0}', dd).replace('{1}', hh) : pick('{0} год {1} хв', '{0} h {1} min').replace('{0}', hh).replace('{1}', mm);
+  const when = ends ? `${String(ends.getDate()).padStart(2, '0')}.${String(ends.getMonth() + 1).padStart(2, '0')} ${String(ends.getHours()).padStart(2, '0')}:${String(ends.getMinutes()).padStart(2, '0')}` : '?';
+  if (GL.mode === 'all') html += `<div class="row">${seg('new', pick('🆕 Нові', '🆕 Newest'))}${seg('top', pick('❤ Найкращі', '❤ Best'))}</div>`
     + `<div class="hint">${esc(pick('Партії, які надіслали гравці. Торкніться партії, щоб відкрити, або ♡, щоб поставити лайк.', 'Games sent by players. Tap a game to open it, or ♡ to like it.'))}</div>`;
+  else if (GL.mode === 'tour' && wk) html += `<div class="hint">${esc(pick('Турнір за партію {0} тижня. Подайте свою партію (після аналізу - «Подати заявку на гру тижня») і ставте лайки іншим. Партія з найбільшою кількістю лайків на {1} стане партією {0} тижня. Залишилось: {2}.',
+    'Tournament for the game of week {0}. Submit your game (after the analysis - «Apply for game of the week») and like other games. The game with the most likes at {1} becomes the game of week {0}. Time left: {2}.').split('{0}').join(nxt).replace('{1}', when).replace('{2}', left))}</div>`;
+  else if (GL.mode === 'weeks' && wk) html += `<div class="hint">${esc(pick('Партію 1 тижня обирає автор програми. Далі партія кожного тижня - переможець турніру лайків за попередній тиждень.',
+    "The game of week 1 is chosen by the author. After that, each week's game is the winner of the previous week's like tournament."))}</div>`;
+  const wl = n => pick('{0} тиждень', 'Week {0}').replace('{0}', n);
   if (GL.loading) html += `<div class="hint">${esc(pick('Завантажую…', 'Loading…'))}</div>`;
   else if (GL.err) html += `<div class="hint">${esc(GL.err === 'rate' ? pick('Забагато запитів - спробуйте за хвилину.', 'Too many requests - try in a minute.') : pick("Немає з'єднання з інтернетом.", 'No internet connection.'))}</div>`;
+  else if (GL.mode === 'weeks' && wk) html += `<div class="list gllist">`
+    + `<div class="it glit" data-gltab="tour"><div class="glheart">⚔</div><div class="glmain">${esc(`${wl(nxt)} · ${pick('турнір триває', 'tournament running')}`)}<small>${esc(pick('ще {0}', '{0} left').replace('{0}', left) + (GL.rows[0] ? ' · ' + pick('лідер: {0}', 'leader: {0}').replace('{0}', GL.rows[0].nick || '—') : ''))}</small></div></div>`
+    + (wk.weeks || []).map(w => {
+      const g = w.game;
+      if (!g) return `<div class="it glit"><div class="glheart">🏆</div><div class="glmain">${esc(wl(w.week))}<small>${esc(w.week === 1 ? pick('ще не обрано', 'not chosen yet') : pick('заявок не було', 'no submissions'))}</small></div></div>`;
+      const by = w.by === 'admin' ? pick('обрав автор', "author's pick") : pick('лайків: {0} · {1}', '{0} likes · {1}').replace('{0}', g.likes || 0).replace('{1}', g.nick || '—');
+      return `<div class="it glit" data-gln="${g.n}"><div class="glheart">🏆</div><div class="glmain">${esc(`${wl(w.week)}: ${g.white || '?'} – ${g.black || '?'} ${g.result || ''}`)}<small>${esc(by)}</small>`
+        + (g.comment ? `<small class="glc">💬 ${esc(g.comment)}</small>` : '') + `</div></div>`;
+    }).join('') + `</div>`;
   else if (!GL.rows.length) html += `<div class="hint">${esc(pick('Ще ніхто не подав заявку - будьте першим!', 'No applications yet - be the first!'))}</div>`;
-  else html += `<div class="list gllist">` + GL.rows.map(g => {
+  else html += `<div class="list gllist">` + GL.rows.map((g, i) => {
     const liked = L.liked.includes(g.n), acc = g.white_acc != null && g.black_acc != null ? ` · ${Math.round(g.white_acc)}% / ${Math.round(g.black_acc)}%` : '';
-    return `<div class="it glit" data-gln="${g.n}"><button class="glheart${liked ? ' on' : ''}" data-gllike="${g.n}">${liked ? '❤' : '♡'} ${g.likes || 0}</button>`
+    return `<div class="it glit" data-gln="${g.n}"><button class="glheart${liked ? ' on' : ''}" data-gllike="${g.n}">${GL.mode === 'tour' && i === 0 && g.likes ? '1. ' : ''}${liked ? '❤' : '♡'} ${g.likes || 0}</button>`
       + `<div class="glmain">${esc(`${g.white || '?'} – ${g.black || '?'} ${g.result || ''}`)}<small>${esc(`${g.nick || '—'} · ${(g.at || '').slice(0, 10)}${acc}`)}</small>`
       + (g.comment ? `<small class="glc">💬 ${esc(g.comment)}</small>` : '') + `</div></div>`;
   }).join('') + `</div>`;
@@ -3441,6 +3466,7 @@ function glRender() {
   $('boxBody').innerHTML = html;
   $('glClose').addEventListener('click', closeBox);
   $('boxBody').querySelectorAll('[data-glsort]').forEach(b => b.addEventListener('click', () => { GL.sort = b.dataset.glsort; glLoad(); }));
+  $('boxBody').querySelectorAll('[data-gltab]').forEach(b => b.addEventListener('click', () => { GL.mode = b.dataset.gltab; GL.rows = []; glLoad(); }));
   $('boxBody').querySelectorAll('[data-gllike]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); glLike(+b.dataset.gllike); }));
   $('boxBody').querySelectorAll('[data-gln]').forEach(it => it.addEventListener('click', () => glOpen(+it.dataset.gln)));
 }
@@ -3449,6 +3475,7 @@ async function glLike(n) {
   tele('gotw.like');
   try {
     const r = await fetch(`${D.AI_COACH_URL}/gotw/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ n, id: L.id, on }) });
+    if (r.status === 409) { msg(pick('Турнір цього тижня вже закінчився - лайки більше не рахуються.', "This week's tournament is over - likes no longer count.")); return; }
     if (!r.ok) throw new Error('x');
     const d = await r.json();
     L.liked = on ? [...L.liked, n] : L.liked.filter(x => x !== n);
