@@ -654,19 +654,30 @@ function accErr(d) {
   })[d.error] || pick('Не вдалося. Спробуйте пізніше.', 'Failed. Try later.');
 }
 function accStatus(t) { const e = $('acStatus'); if (e) e.textContent = t; }
-function accOpen(reason = null) { A.accReason = reason; openBox('acc'); }
+function accOpen(reason = null) { A.accReason = reason; if (!A.gState) A.accStep = null; openBox('acc'); }
 function accBody() {
   const u = ACC.user;
   if (!u) {
-    return (A.accReason ? `<div class="hint" style="color:inherit;font-weight:600">${esc(A.accReason)}</div>` : '')
-      + `<div class="row"><button id="acGoogle" class="google">${esc(pick('G   Увійти через Google', 'G   Sign in with Google'))}</button></div>`
+    // 1.31.26: спершу лише кнопки; форма - після вибору (A.accStep 'login' | 'reg')
+    const reason = A.accReason ? `<div class="hint" style="color:inherit;font-weight:600">${esc(A.accReason)}</div>` : '';
+    const step = A.accStep, reg = step === 'reg', gnick = !!A.gState;
+    if (!step) return reason
+      + `<div class="accchoose"><button id="acToLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button>`
+      + `<button id="acToReg">${esc(pick('Створити акаунт', 'Create account'))}</button>`
+      + `<button id="acGoogle" class="google">${esc(pick('G   Увійти через Google', 'G   Sign in with Google'))}</button></div>`
+      + `<div class="hint" id="acStatus"></div>`;
+    return reason
+      + `<div class="hint" style="font-weight:700">${esc(reg ? pick('НОВИЙ АКАУНТ', 'NEW ACCOUNT') : pick('ВХІД', 'SIGN IN'))}</div>`
       + `<label class="f">${esc(pick('Нік:', 'Nickname:'))}</label><input id="acNick" type="text" maxlength="20" autocapitalize="off" autocomplete="username" spellcheck="false">`
-      + `<label class="f">${esc(pick('Пароль (від 6 символів):', 'Password (6+ characters):'))}</label><input id="acPass" type="password" maxlength="200" autocomplete="current-password">`
+      + (gnick ? '' : `<label class="f">${esc(reg ? pick('Пароль (від 6 символів):', 'Password (6+ characters):') : pick('Пароль:', 'Password:'))}</label><input id="acPass" type="password" maxlength="200" autocomplete="${reg ? 'new-password' : 'current-password'}">`)
+      + (reg && !gnick ? `<label class="f">${esc(pick('Пароль ще раз:', 'Password again:'))}</label><input id="acPass2" type="password" maxlength="200" autocomplete="new-password">` : '')
       + `<div id="acCodeRow" hidden><label class="f">${esc(pick('Код для цього ніка:', 'Code for this nickname:'))}</label><input id="acCode" type="text" maxlength="40" autocapitalize="characters" autocomplete="off"></div>`
-      + `<div class="hint">${esc(pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
-        'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered, remember it.'))}</div>`
+      + `<div class="hint">${esc(reg ? pick('Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, лише його захищений відбиток — відновити його неможливо. Порада: після реєстрації підключіть Google у профілі — тоді увійдете, навіть якщо забудете пароль.',
+        'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered. Tip: after signing up, connect Google in your profile — then you can sign in even if you forget the password.')
+        : pick('Забули пароль? Якщо підключено Google — увійдіть через Google. Якщо ви ще увійшли на іншому пристрої — змініть пароль там у профілі.',
+          'Forgot the password? If Google is connected, sign in with Google. If you are still signed in on another device, change the password in the profile there.'))}</div>`
       + `<div class="hint" id="acStatus"></div>`
-      + `<div class="row"><button id="acReg">${esc(pick('Створити акаунт', 'Create account'))}</button><button id="acLogin" class="primary">${esc(pick('Увійти', 'Sign in'))}</button></div>`;
+      + `<div class="row"><button id="acBack">${esc(pick('Назад', 'Back'))}</button><button id="acGo" class="primary">${esc(reg ? pick('Створити акаунт', 'Create account') : pick('Увійти', 'Sign in'))}</button></div>`;
   }
   const daily = u.ai_daily || AI_DAILY;
   return (A.accReason ? `<div class="hint" style="color:var(--accent);font-weight:700">${esc(A.accReason)}</div>` : '')
@@ -677,6 +688,9 @@ function accBody() {
     + `<label class="f">chess.com</label><div class="row ccrow"><input id="acCc" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на chess.com', 'your chess.com username'))}" value="${esc(u.chesscom || '')}"><button id="acCcSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
     + `<div class="hint">${esc(pick('Впишіть свій нік на chess.com (як у вашому профілі chess.com, напр. Hikaru) і натисніть «Зберегти» — тоді «Останні партії» одразу показуватимуть ваші партії.', 'Type your chess.com username (as in your chess.com profile, e.g. Hikaru) and press «Save» — then «Last games» will show your games right away.'))}</div>`
     + `<label class="f">Google</label><div class="row"><span style="flex:1;align-self:center">${esc(u.google ? pick('підключено', 'connected') : pick('не підключено', 'not connected'))}</span>${u.google ? '' : `<button id="acGoogle">${esc(pick('Підключити', 'Connect'))}</button>`}</div>`
+    + (u.google ? '' : `<div class="hint">${esc(pick('Підключіть Google — тоді увійдете, навіть якщо забудете пароль.', 'Connect Google — then you can sign in even if you forget the password.'))}</div>`)
+    + `<label class="f">${esc(pick('Новий пароль', 'New password'))}</label><input id="acNp" type="password" maxlength="200" autocomplete="new-password">`
+    + `<div class="row ccrow"><input id="acNp2" type="password" maxlength="200" autocomplete="new-password" placeholder="${esc(pick('ще раз', 'again'))}"><button id="acPw">${esc(u.haspass === false ? pick('Задати', 'Set') : pick('Змінити', 'Change'))}</button></div>`
     + `<label class="f">lichess</label><div class="row ccrow"><input id="acLiNick" type="text" maxlength="30" autocapitalize="off" autocomplete="off" spellcheck="false" placeholder="${esc(pick('ваш нік на lichess', 'your lichess username'))}" value="${esc(u.lichess || '')}"><button id="acLiSave">${esc(pick('Зберегти', 'Save'))}</button></div>`
     + (u.admin ? `<label class="f">${esc(pick('Адмін', 'Admin'))}</label>`
       + `<div class="row"><button id="acAdmG">${esc(pick('🏆 Заявки', '🏆 Submissions'))}</button><button id="acAdmB">${esc(pick('🐞 Звіти', '🐞 Bug reports'))}</button></div>`
@@ -686,9 +700,22 @@ function accBody() {
 }
 function accWire() {
   const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn); };
-  on('acLogin', () => accAuth('login'));
-  on('acReg', () => accAuth('register'));
-  if ($('acPass')) $('acPass').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); accAuth('login'); } });
+  const step = st => { A.accStep = st; if (!st) A.gState = null; openBox('acc'); const n = $('acNick'); if (n) n.focus(); };
+  on('acToLogin', () => step('login'));
+  on('acToReg', () => step('reg'));
+  on('acBack', () => step(null));
+  const go = () => {
+    if (A.accStep === 'reg' && $('acPass2') && $('acPass').value !== $('acPass2').value) { accStatus(pick('Паролі не збігаються.', 'The passwords do not match.')); return; }
+    accAuth(A.accStep === 'reg' ? 'register' : 'login');
+  };
+  on('acGo', go);
+  ['acPass', 'acPass2'].forEach(id => { if ($(id)) $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } }); });
+  on('acPw', () => {     // 1.31.26: новий пароль (старий не потрібен - ви вже увійшли)
+    const p = $('acNp').value;
+    if (p.length < 6) { accStatus(pick('Пароль — від 6 символів.', 'Password must be 6+ characters.')); return; }
+    if (p !== $('acNp2').value) { accStatus(pick('Паролі не збігаються.', 'The passwords do not match.')); return; }
+    accCall('/acc/password', { pass: p }, d => { accTake(d); accStatus(pick('✓ Пароль збережено. На інших пристроях треба увійти знову.', '✓ Password saved. Other devices need to sign in again.')); });
+  });
   on('acOut', () => { const tok = ACC.token; accSet('', null); accHttp('/acc/logout', { token: tok }); });
   on('acCcSave', () => accCall('/acc/chesscom', { chesscom: $('acCc').value.trim() }, d => {
     accTake(d);
@@ -723,6 +750,7 @@ async function accAuth(kind) {
   if (A.boxKind !== 'acc') return;
   if (code === 200 && d.token) {
     tele(kind === 'login' ? 'f.login' : 'f.register');
+    A.accStep = null;
     const reason = A.accReason;
     accSet(d.token, d.user);
     accStatus(pick('✓ Готово!', '✓ Done!'));
@@ -756,12 +784,15 @@ async function accGoogle() {
 function accGoogleDone({ code, d }, state) {
   if (code === 200 && d.need_nick) {
     A.gState = state;
+    A.accStep = 'reg';
+    if (A.boxKind === 'acc') openBox('acc');
     if ($('acNick')) $('acNick').value = d.suggest || '';
     accStatus(pick('Google підтвердив. Придумайте нік і натисніть «Створити акаунт» (пароль не потрібен).', 'Google confirmed. Choose a nickname and press «Create account» (no password needed).'));
     return;
   }
   if (code === 200 && d.token) {
     A.gState = null;
+    A.accStep = null;
     const reason = A.accReason;
     accSet(d.token, d.user);
     accStatus(pick('✓ Готово!', '✓ Done!'));

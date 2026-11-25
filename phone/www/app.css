@@ -368,3 +368,7 @@ button.big { width: 100%; padding: 13px; font-size: 16px; margin-top: 12px; bord
 
 /* 1.31.14: поля без білого фону й жовтої рамки */
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+/* 1.31.26: вхід/реєстрація - спершу кнопки */
+.accchoose { display: flex; flex-direction: column; gap: 10px; margin: 6px 0; }
+.accchoose button { width: 100%; padding: 12px; }

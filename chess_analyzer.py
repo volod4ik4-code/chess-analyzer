@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.25"
+APP_VERSION = "1.31.26"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,12 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.26", "2026-11-25 20:33", [
+        ('Акаунт: спершу кнопки «Увійти» і «Створити акаунт»; при створенні пароль треба ввести двічі',
+         'Account: first just «Sign in» and «Create account» buttons; when creating an account, the password is typed twice'),
+        ('Профіль: можна змінити пароль (старий не потрібен) і порада підключити Google, щоб не втратити акаунт',
+         "Profile: you can change the password (the old one is not needed) and a tip to connect Google so you don't lose the account"),
+    ]),
     ("1.31.25", "2026-11-25 20:23", [
         ("Налаштування → Статистика: скільки акаунтів створено (замість розв'язаних задач)",
          "Settings → Statistics: how many accounts have been created (instead of solved puzzles)"),
@@ -1826,6 +1832,27 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    'Account: first just «Sign in» and «Create account» buttons; when creating an account, the password is typed twice': ('Conta: primeiro só os botões «Entrar» e «Criar conta»; ao criar a conta, a senha é digitada duas vezes', 'Cuenta: primero solo los botones «Iniciar sesión» y «Crear cuenta»; al crear la cuenta, la contraseña se escribe dos veces'),
+    "Profile: you can change the password (the old one is not needed) and a tip to connect Google so you don't lose the account": ('Perfil: dá para mudar a senha (a antiga não é necessária) e uma dica para conectar o Google e não perder a conta', 'Perfil: puedes cambiar la contraseña (no hace falta la antigua) y un consejo para conectar Google y no perder la cuenta'),
+    'NEW ACCOUNT': ('NOVA CONTA', 'NUEVA CUENTA'),
+    'SIGN IN': ('ENTRAR', 'INICIAR SESIÓN'),
+    'Password': ('Senha', 'Contraseña'),
+    'Password:': ('Senha:', 'Contraseña:'),
+    'Password again': ('Senha de novo', 'Contraseña otra vez'),
+    'Password again:': ('Senha de novo:', 'Contraseña otra vez:'),
+    'Back': ('Voltar', 'Atrás'),
+    'The passwords do not match.': ('As senhas não coincidem.', 'Las contraseñas no coinciden.'),
+    'PASSWORD': ('SENHA', 'CONTRASEÑA'),
+    'New': ('Nova', 'Nueva'),
+    'Again': ('De novo', 'Otra vez'),
+    'again': ('de novo', 'otra vez'),
+    'New password': ('Nova senha', 'Nueva contraseña'),
+    'Change': ('Mudar', 'Cambiar'),
+    'Set': ('Definir', 'Establecer'),
+    '✓ Password saved. Other devices need to sign in again.': ('✓ Senha salva. Outros dispositivos precisam entrar de novo.', '✓ Contraseña guardada. Los otros dispositivos deben iniciar sesión de nuevo.'),
+    'Connect Google — then you can sign in even if you forget the password.': ('Conecte o Google — assim você entra mesmo se esquecer a senha.', 'Conecta Google — así podrás entrar aunque olvides la contraseña.'),
+    'Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected fingerprint — it cannot be recovered. Tip: after signing up, connect Google in your profile — then you can sign in even if you forget the password.': ('Apelido: 3–20 letras latinas, dígitos, _ ou -. Nunca guardamos sua senha, só uma impressão protegida — ela não pode ser recuperada. Dica: depois de se cadastrar, conecte o Google no perfil — assim você entra mesmo se esquecer a senha.', 'Apodo: 3–20 letras latinas, dígitos, _ o -. Nunca guardamos tu contraseña, solo una huella protegida — no se puede recuperar. Consejo: tras registrarte, conecta Google en tu perfil — así podrás entrar aunque olvides la contraseña.'),
+    'Forgot the password? If Google is connected, sign in with Google. If you are still signed in on another device, change the password in the profile there.': ('Esqueceu a senha? Se o Google estiver conectado, entre com o Google. Se você ainda estiver conectado em outro dispositivo, mude a senha no perfil lá.', '¿Olvidaste la contraseña? Si Google está conectado, entra con Google. Si aún tienes la sesión abierta en otro dispositivo, cambia la contraseña en el perfil allí.'),
     'Settings → Statistics: how many accounts have been created (instead of solved puzzles)': ('Configurações → Estatísticas: quantas contas foram criadas (em vez de problemas resolvidos)', 'Ajustes → Estadísticas: cuántas cuentas se han creado (en lugar de problemas resueltos)'),
     'Accounts created: {0}': ('Contas criadas: {0}', 'Cuentas creadas: {0}'),
     '«Games of the week»: tabs «Tournament», «Weekly winners» and «All submissions». The game of week 1 is chosen by the author; after that, the game with the most likes of the week becomes the game of the next week': ('«Partidas da semana»: abas «Torneio», «Vencedoras da semana» e «Todas as inscrições». A partida da semana 1 é escolhida pelo autor; depois, a partida com mais curtidas da semana vira a partida da semana seguinte', '«Partidas de la semana»: pestañas «Torneo», «Ganadoras semanales» y «Todas las solicitudes». La partida de la semana 1 la elige el autor; después, la partida con más me gusta de la semana pasa a ser la partida de la semana siguiente'),
@@ -10109,6 +10136,8 @@ class App(tk.Tk):
             self.acc_box.hide()
             return
         self._acc_reason = reason
+        if not getattr(self, "_g_state", None):
+            self._acc_step = None
         self.acc_status.configure(text="")
         self._acc_render()
         self.acc_box.show()
@@ -10141,35 +10170,52 @@ class App(tk.Tk):
         right = tk.Frame(row, bg=PANEL, width=500)
         right.pack(side="left", fill="both", expand=True, padx=(22, 0))
         self.acc_reason_lbl = lab(right, fg=ACCENT, font=fsemi(12), wraplength=480)
-        # не увійшли
+        # не увійшли. 1.31.26: спершу лише кнопки; форма - після вибору (вхід або новий акаунт)
         f = self.acc_out = tk.Frame(right, bg=PANEL)
-        self.acc_out_head = lab(f, fg=MUTED, font=fsemi(10))
+        ch = self.acc_choose = tk.Frame(f, bg=PANEL)
+        self.acc_ch_login = RButton(ch, text="Увійти", kind="play", command=lambda: self._acc_step_set("login"))
+        self.acc_ch_login.pack(anchor="w")
+        self.acc_ch_reg = RButton(ch, text="Створити акаунт", command=lambda: self._acc_step_set("reg"))
+        self.acc_ch_reg.pack(anchor="w", pady=(10, 0))
+        self.acc_google_btn = RButton(ch, text="G  Google", command=self._acc_google)      # 1.31.3
+        self.acc_google_btn.pack(anchor="w", pady=(10, 0))
+        fm = self.acc_form = tk.Frame(f, bg=PANEL)
+        self.acc_out_head = lab(fm, fg=MUTED, font=fsemi(10))
         self.acc_out_head.pack(anchor="w", pady=(0, 8))
-        self.acc_nick_lbl = lab(f)
+        self.acc_nick_lbl = lab(fm)
         self.acc_nick_lbl.pack(anchor="w")
         self.acc_nick = tk.StringVar()
-        ttk.Entry(f, textvariable=self.acc_nick, width=40, font=("Segoe UI", 12)).pack(anchor="w", fill="x", pady=(2, 10))
-        self.acc_pass_lbl = lab(f)
+        self.acc_nick_entry = ttk.Entry(fm, textvariable=self.acc_nick, width=40, font=("Segoe UI", 12))
+        self.acc_nick_entry.pack(anchor="w", fill="x", pady=(2, 10))
+        self.acc_pass_row = tk.Frame(fm, bg=PANEL)
+        self.acc_pass_row.pack(fill="x")
+        self.acc_pass_lbl = lab(self.acc_pass_row)
         self.acc_pass_lbl.pack(anchor="w")
         self.acc_pass = tk.StringVar()
-        pe = ttk.Entry(f, textvariable=self.acc_pass, width=40, show="•", font=("Segoe UI", 12))
+        pe = ttk.Entry(self.acc_pass_row, textvariable=self.acc_pass, width=40, show="•", font=("Segoe UI", 12))
         pe.pack(anchor="w", fill="x", pady=(2, 10))
-        pe.bind("<Return>", lambda e: self._acc_auth("login"))
-        self.acc_code_row = tk.Frame(f, bg=PANEL)       # лише для зарезервованого ніка (адмін)
+        pe.bind("<Return>", lambda e: self._acc_go())
+        self.acc_pass2_row = tk.Frame(fm, bg=PANEL)       # лише в реєстрації: пароль ще раз
+        self.acc_pass2_lbl = lab(self.acc_pass2_row)
+        self.acc_pass2_lbl.pack(anchor="w")
+        self.acc_pass2 = tk.StringVar()
+        pe2 = ttk.Entry(self.acc_pass2_row, textvariable=self.acc_pass2, width=40, show="•", font=("Segoe UI", 12))
+        pe2.pack(anchor="w", fill="x", pady=(2, 10))
+        pe2.bind("<Return>", lambda e: self._acc_go())
+        self.acc_code_row = tk.Frame(fm, bg=PANEL)       # лише для зарезервованого ніка (адмін)
         self.acc_code_lbl = lab(self.acc_code_row)
         self.acc_code_lbl.pack(anchor="w")
         self.acc_code = tk.StringVar()
         ttk.Entry(self.acc_code_row, textvariable=self.acc_code, width=40, font=("Segoe UI", 12)).pack(anchor="w", fill="x", pady=(2, 10))
-        self.acc_hint = lab(f, fg=MUTED, font=("Segoe UI", 9), wraplength=480)
+        self.acc_hint = lab(fm, fg=MUTED, font=("Segoe UI", 9), wraplength=480)
         self.acc_hint.pack(anchor="w", pady=(0, 14))
-        br = tk.Frame(f, bg=PANEL)
+        br = tk.Frame(fm, bg=PANEL)
         br.pack(fill="x")
-        self.acc_login_btn = RButton(br, text="Увійти", kind="play", command=lambda: self._acc_auth("login"))
-        self.acc_login_btn.pack(side="left")
-        self.acc_reg_btn = RButton(br, text="Створити акаунт", command=lambda: self._acc_auth("register"))
-        self.acc_reg_btn.pack(side="left", padx=(10, 0))
-        self.acc_google_btn = RButton(f, text="G  Google", command=self._acc_google)      # 1.31.3
-        self.acc_google_btn.pack(anchor="w", pady=(12, 0))
+        self.acc_go_btn = RButton(br, text="Увійти", kind="play", command=self._acc_go)
+        self.acc_go_btn.pack(side="left")
+        self.acc_back_btn = RButton(br, text="Назад", command=lambda: self._acc_step_set(None))
+        self.acc_back_btn.pack(side="left", padx=(10, 0))
+        self._acc_step = None
         # увійшли
         f = self.acc_in = tk.Frame(right, bg=PANEL)
         self.acc_h_links = lab(f, fg=MUTED, font=fsemi(10))
@@ -10194,7 +10240,7 @@ class App(tk.Tk):
         self.acc_li_entry.bind("<Return>", lambda e: self._acc_save_li())
         self.acc_li_btn = RButton(r2, text="Зберегти", kind="small", command=self._acc_save_li)
         self.acc_li_btn.pack(side="left")
-        r6 = tk.Frame(f, bg=PANEL)
+        r6 = self.acc_r6 = tk.Frame(f, bg=PANEL)
         r6.pack(fill="x", pady=(0, 14), before=r2)
         r2.pack_configure(pady=(0, 6))
         lab(r6, text="Google", font=fsemi(11), width=10).pack(side="left")
@@ -10202,6 +10248,24 @@ class App(tk.Tk):
         self.acc_g.pack(side="left", padx=(0, 8))
         self.acc_g_btn = RButton(r6, text="Підключити", kind="small", command=self._acc_google)
         self.acc_g_btn.pack(side="left")
+        self.acc_g_hint = lab(f, fg=MUTED, font=("Segoe UI", 9), wraplength=480)     # 1.31.26: якщо Google не підключено
+        self.acc_h_pw = lab(f, fg=MUTED, font=fsemi(10))                               # 1.31.26: новий пароль
+        self.acc_h_pw.pack(anchor="w", pady=(0, 4))
+        self.acc_np, self.acc_np2 = tk.StringVar(), tk.StringVar()
+        r7 = tk.Frame(f, bg=PANEL)
+        r7.pack(fill="x", pady=(0, 6))
+        self.acc_np_lbl = lab(r7, font=("Segoe UI", 11), width=10)
+        self.acc_np_lbl.pack(side="left")
+        ttk.Entry(r7, textvariable=self.acc_np, width=22, show="•", font=("Segoe UI", 11)).pack(side="left", padx=(0, 8))
+        r8 = tk.Frame(f, bg=PANEL)
+        r8.pack(fill="x", pady=(0, 14))
+        self.acc_np2_lbl = lab(r8, font=("Segoe UI", 11), width=10)
+        self.acc_np2_lbl.pack(side="left")
+        e = ttk.Entry(r8, textvariable=self.acc_np2, width=22, show="•", font=("Segoe UI", 11))
+        e.pack(side="left", padx=(0, 8))
+        e.bind("<Return>", lambda ev: self._acc_save_pw())
+        self.acc_pw_btn = RButton(r8, text="Змінити", kind="small", command=self._acc_save_pw)
+        self.acc_pw_btn.pack(side="left")
         self.acc_h_ai = lab(f, fg=MUTED, font=fsemi(10))
         self.acc_h_ai.pack(anchor="w", pady=(0, 4))
         self.acc_ai = lab(f, font=("Segoe UI", 11))
@@ -10263,17 +10327,41 @@ class App(tk.Tk):
             if reason:
                 self.acc_reason_lbl.configure(text=reason)
                 self.acc_reason_lbl.pack(anchor="w", pady=(0, 12))
-            self.acc_out_head.configure(text=pick("ВХІД АБО РЕЄСТРАЦІЯ", "SIGN IN OR SIGN UP"))
+            reg = self._acc_step == "reg"
+            self.acc_out_head.configure(text=pick("НОВИЙ АКАУНТ", "NEW ACCOUNT") if reg else pick("ВХІД", "SIGN IN"))
             self.acc_nick_lbl.configure(text=pick("Нік", "Nickname"))
-            self.acc_pass_lbl.configure(text=pick("Пароль (від 6 символів)", "Password (6+ characters)"))
+            self.acc_pass_lbl.configure(text=pick("Пароль (від 6 символів)", "Password (6+ characters)") if reg
+                                        else pick("Пароль", "Password"))
+            self.acc_pass2_lbl.configure(text=pick("Пароль ще раз", "Password again"))
             self.acc_code_lbl.configure(text=pick("Код для цього ніка", "Code for this nickname"))
-            self.acc_hint.configure(text=pick("Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, "
-                                              "лише його захищений відбиток — відновити його неможливо, запам'ятайте.",
-                                              "Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, "
-                                              "only a protected fingerprint — it cannot be recovered, remember it."))
-            self.acc_login_btn.configure(text=pick("Увійти", "Sign in"))
-            self.acc_reg_btn.configure(text=pick("Створити акаунт", "Create account"))
+            self.acc_hint.configure(text=pick(
+                "Нік: 3–20 латинських літер, цифр, _ або -. Пароль ми не зберігаємо, лише його захищений відбиток — "
+                "відновити його неможливо. Порада: після реєстрації підключіть Google у профілі — тоді увійдете, "
+                "навіть якщо забудете пароль.",
+                "Nickname: 3–20 Latin letters, digits, _ or -. We never store your password, only a protected "
+                "fingerprint — it cannot be recovered. Tip: after signing up, connect Google in your profile — then you "
+                "can sign in even if you forget the password.") if reg else pick(
+                "Забули пароль? Якщо підключено Google — увійдіть через Google. Якщо ви ще увійшли на іншому пристрої — "
+                "змініть пароль там у профілі.",
+                "Forgot the password? If Google is connected, sign in with Google. If you are still signed in on another "
+                "device, change the password in the profile there."))
+            self.acc_ch_login.configure(text=pick("Увійти", "Sign in"))
+            self.acc_ch_reg.configure(text=pick("Створити акаунт", "Create account"))
             self.acc_google_btn.configure(text=pick("G   Увійти через Google", "G   Sign in with Google"))
+            self.acc_go_btn.configure(text=pick("Створити акаунт", "Create account") if reg else pick("Увійти", "Sign in"))
+            self.acc_back_btn.configure(text=pick("Назад", "Back"))
+            gnick = bool(getattr(self, "_g_state", None))          # Google підтвердив - потрібен лише нік
+            for w, on in ((self.acc_choose, self._acc_step is None), (self.acc_form, self._acc_step is not None)):
+                if on and not w.winfo_manager():
+                    w.pack(fill="x", anchor="w")
+                elif not on:
+                    w.pack_forget()
+            self.acc_pass_row.pack_forget()
+            self.acc_pass2_row.pack_forget()
+            if not gnick:
+                self.acc_pass_row.pack(fill="x", after=self.acc_nick_entry)
+                if reg:
+                    self.acc_pass2_row.pack(fill="x", after=self.acc_pass_row)
             self.acc_out.pack(fill="both", expand=True)
             return
         self.acc_who.configure(text=u["nick"])
@@ -10298,6 +10386,18 @@ class App(tk.Tk):
             self.acc_g_btn.pack_forget()
         elif not self.acc_g_btn.winfo_manager():
             self.acc_g_btn.pack(side="left")
+        if u.get("google"):
+            self.acc_g_hint.pack_forget()
+        else:
+            self.acc_g_hint.configure(text=pick("Підключіть Google — тоді увійдете, навіть якщо забудете пароль.",
+                                                "Connect Google — then you can sign in even if you forget the password."))
+            if not self.acc_g_hint.winfo_manager():
+                self.acc_g_hint.pack(anchor="w", pady=(0, 12), before=self.acc_h_pw)
+        has = u.get("haspass", True)
+        self.acc_h_pw.configure(text=pick("ПАРОЛЬ", "PASSWORD"))
+        self.acc_np_lbl.configure(text=pick("Новий", "New"))
+        self.acc_np2_lbl.configure(text=pick("Ще раз", "Again"))
+        self.acc_pw_btn.configure(text=pick("Змінити", "Change") if has else pick("Задати", "Set"))
         self.acc_h_ai.configure(text=pick("ШІ-ТРЕНЕР", "AI COACH"))
         left = u.get("ai_left", 0)
         self.acc_ai.configure(text=pick("🤖 Без ліміту", "🤖 Unlimited") if u.get("admin") else
@@ -10335,6 +10435,43 @@ class App(tk.Tk):
             "admin": pick("Адміна заблокувати не можна.", "An admin cannot be banned."),
         }.get(e, pick("Не вдалося. Спробуйте пізніше.", "Failed. Try later."))
 
+    def _acc_step_set(self, step):
+        self._acc_step = step
+        if step is None:
+            self._g_state = None
+        self.acc_pass.set("")
+        self.acc_pass2.set("")
+        self.acc_status.configure(text="")
+        self._acc_render()
+        if step:
+            self.acc_nick_entry.focus_set()
+
+    def _acc_go(self):
+        if self._acc_step == "reg":
+            if not getattr(self, "_g_state", None) and self.acc_pass.get() != self.acc_pass2.get():
+                self.acc_status.configure(text=pick("Паролі не збігаються.", "The passwords do not match."))
+                return
+            self._acc_auth("register")
+        else:
+            self._acc_auth("login")
+
+    def _acc_save_pw(self):
+        p, p2 = self.acc_np.get(), self.acc_np2.get()
+        if len(p) < 6:
+            self.acc_status.configure(text=pick("Пароль — від 6 символів.", "Password must be 6+ characters."))
+            return
+        if p != p2:
+            self.acc_status.configure(text=pick("Паролі не збігаються.", "The passwords do not match."))
+            return
+
+        def ok(d):
+            self.acc_np.set("")
+            self.acc_np2.set("")
+            self._acc_take_user(d)
+            self.acc_status.configure(text=pick("✓ Пароль збережено. На інших пристроях треба увійти знову.",
+                                                "✓ Password saved. Other devices need to sign in again."))
+        self._acc_call("/acc/password", {"pass": p}, ok)
+
     def _acc_auth(self, kind):
         if kind == "register" and getattr(self, "_g_state", None):      # 1.31.3: акаунт через Google - лише нік
             self._acc_google_finish(self.acc_nick.get().strip())
@@ -10347,6 +10484,8 @@ class App(tk.Tk):
         def done(r):
             code, d = r
             if code == 200 and d.get("token"):
+                self._acc_step = None
+                self.acc_pass2.set("")
                 self.acc_pass.set("")
                 self.acc_code.set("")
                 self.acc_code_row.pack_forget()
@@ -10583,12 +10722,15 @@ class App(tk.Tk):
     def _acc_google_result(self, code, d, state):
         if code == 200 and d.get("need_nick"):
             self._g_state = state
+            self._acc_step = "reg"
+            self._acc_render()
             self.acc_nick.set(d.get("suggest") or "")
             self.acc_status.configure(text=pick("Google підтвердив. Придумайте нік і натисніть «Створити акаунт» (пароль не потрібен).",
                                                 "Google confirmed. Choose a nickname and press «Create account» (no password needed)."))
             return
         if code == 200 and d.get("token"):
             self._g_state = None
+            self._acc_step = None
             acc_set(d["token"], d["user"])
             self.acc_status.configure(text=pick("✓ Готово!", "✓ Done!"))
             self._acc_changed()
