@@ -619,8 +619,9 @@ export async function evaluateMove(eng, depth, board, hist, uci, peBefore, prevD
   // 1.22.2: хід, рівноцінний найкращому (втрата до 0.5 очікуваних очок - шум рушія), - теж «Найкращий»;
   // але не тоді, коли в оцінці мат і він став гіршим (довший свій або ближчий чужий)
   const mateWorse = afterM < beforeM && Math.max(Math.abs(beforeM), Math.abs(afterM)) >= MATE - 100;
-  if (quality === 'Відмінний' && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse)))
-    quality = sacrifice >= 1 ? 'Геніальний' : 'Найкращий';     // 1.27.15: рівноцінний найкращому - теж
+  // 1.31.22: «Найкращий» - лише хід Stockfish; рівноцінний лишається «Відмінним» (рівноцінна жертва - «Геніальний», 1.27.15)
+  if (quality === 'Відмінний' && sacrifice >= 1 && (afterM >= beforeM || (drop <= D.BEST_TOLERANCE && !mateWorse)))
+    quality = 'Геніальний';
   if (quality === 'Геніальний' && afterM <= -(MATE - 100)) quality = 'Найкращий';   // 1.27.16: мат у будь-якому разі
   if (quality === 'Геніальний' && prevBril && afterM < -100) quality = 'Чудовий';   // 1.29.3.1: за оцінкою, гірше ніж на пішака   // 1.29.2: відповідь на «!!», позиція не зрівнялась
   if (quality === 'Геніальний' && zone(winA) === 0) quality = 'Найкращий';   // 1.31.11: жертва в програшній позиції - не «Геніальний»
