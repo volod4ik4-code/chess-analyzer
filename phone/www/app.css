@@ -266,7 +266,7 @@ button:active { transform: scale(.96); }
 /* chess.com (з 1.21.0): жовта, більша кнопка з самого лівого краю */
 #actions { flex-wrap: wrap; }
 #actions button.cc { flex: 1 0 56%; background: #ffdd00; color: #1f1a12; font-weight: 800; font-size: 15.5px; padding: 6px 10px; }
-#actions button.row2 { flex: 1 1 40%; min-width: 0; padding: 4px 4px; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+#actions button.row2 { flex: 1 1 28%; min-width: 0; padding: 4px 4px; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
 #actions button.bots { flex: 1 0 28%; font-weight: 800; font-size: 15.5px; padding: 6px 10px; }
 #app.wide #actions button.cc, #app.wide #actions button.bots { flex: 0 0 auto; }
 .aibtn { margin-top: 8px; width: 100%; }
@@ -372,3 +372,13 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 /* 1.31.26: вхід/реєстрація - спершу кнопки */
 .accchoose { display: flex; flex-direction: column; gap: 10px; margin: 6px 0; }
 .accchoose button { width: 100%; padding: 12px; }
+
+/* 1.31.28: редактор позиції */
+.edboard { display: grid; grid-template-columns: repeat(8, 1fr); width: min(100%, 360px); aspect-ratio: 1; margin: 0 auto 8px; }
+.edboard div, .edpal div { display: flex; align-items: center; justify-content: center; }
+.edboard img { width: 100%; height: 100%; pointer-events: none; }
+.edpal { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; margin-bottom: 8px; }
+.edpal div { aspect-ratio: 1; border-radius: 6px; background: var(--panel2, #2b2926); font-size: 18px; }
+.edpal div.on { outline: 2px solid var(--accent); }
+.edpal img { width: 100%; height: 100%; pointer-events: none; }
+.edcr { flex-wrap: wrap; gap: 10px; font-size: 13px; }

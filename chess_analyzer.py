@@ -796,7 +796,7 @@ DEFAULTS = {"depth": 14, "board": "Mint", "size": "Auto", "arrow": "all",
 # Номер версії - як у більшості програм (semantic versioning), МАЖОРНА.МІНОРНА.ПАТЧ:
 #   2.0.0 - велика переробка; 1.3.0 - нова можливість; 1.3.1 - дрібні виправлення/вигляд.
 # Кожне оновлення: підняти APP_VERSION і додати запис НАГОРУ CHANGELOG (українською і англійською).
-APP_VERSION = "1.31.27.1"
+APP_VERSION = "1.31.28"
 # Сторінка для донатів (Buy Me a Coffee) - кнопка «☕ Підтримати кавою» вгорі праворуч.
 DONATE_URL = ""
 DONATE_CARD = "4441 1144 3726 1967"     # картка автора для донатів (monobank) - кнопка «☕»
@@ -808,6 +808,10 @@ APP_ICON = {
     64: "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",
 }
 CHANGELOG = [
+    ("1.31.28", "2026-11-26 15:38", [
+        ('«Розставити позицію» (на телефоні — «Позиція»): розставте фігури, виберіть, хто ходить, або вставте FEN — і грайте з цієї позиції, Stockfish оцінює кожен хід',
+         '«Set up a position» (on the phone — «Position»): place the pieces, choose who moves or paste a FEN — and play from that position, Stockfish rates every move'),
+    ]),
     ("1.31.27.1", "2026-11-25 20:45", [
         ("Small fixes", "Small fixes"),
     ]),
@@ -1839,6 +1843,28 @@ LANGS = [("uk", "Українська"), ("en", "English"), ("pt", "Português")
 I18N = {
     '👤 Account': ('👤 Conta', '👤 Cuenta'),
     'My profile': ('Meu perfil', 'Mi perfil'),
+    '«Set up a position» (on the phone — «Position»): place the pieces, choose who moves or paste a FEN — and play from that position, Stockfish rates every move': ('«Montar posição» (no telefone — «Posição»): coloque as peças, escolha quem joga ou cole um FEN — e jogue a partir dessa posição, o Stockfish avalia cada lance', '«Colocar posición» (en el teléfono — «Posición»): coloca las piezas, elige quién mueve o pega un FEN — y juega desde esa posición, Stockfish valora cada jugada'),
+    'Set up a position': ('Montar posição', 'Colocar posición'),
+    'Position': ('Posição', 'Posición'),
+    'Weekly games': ('Partidas da semana', 'Partidas semanales'),
+    'W O-O': ('B O-O', 'B O-O'),
+    'W O-O-O': ('B O-O-O', 'B O-O-O'),
+    'B O-O': ('P O-O', 'N O-O'),
+    'B O-O-O': ('P O-O-O', 'N O-O-O'),
+    'Starting': ('Inicial', 'Inicial'),
+    'Flip': ('Virar', 'Girar'),
+    'Apply': ('Aplicar', 'Aplicar'),
+    'Play from this position': ('Jogar desta posição', 'Jugar desde esta posición'),
+    'Pick a piece on the right and click squares. Click with the same piece or the right button to remove. You can also paste a FEN.': ('Escolha uma peça à direita e clique nas casas. Clique com a mesma peça ou com o botão direito para remover. Também dá para colar um FEN.', 'Elige una pieza a la derecha y haz clic en las casillas. Clic con la misma pieza o con el botón derecho para quitarla. También puedes pegar un FEN.'),
+    'Pick a piece below and tap squares. Tap with the same piece or ✕ to remove.': ('Escolha uma peça abaixo e toque nas casas. Toque com a mesma peça ou ✕ para remover.', 'Elige una pieza abajo y toca las casillas. Toca con la misma pieza o ✕ para quitarla.'),
+    'The position is legal.': ('A posição é válida.', 'La posición es válida.'),
+    'Each side needs exactly one king.': ('Cada lado precisa de exatamente um rei.', 'Cada bando necesita exactamente un rey.'),
+    'Pawns cannot stand on the first or last rank.': ('Peões não podem ficar na primeira ou na última fileira.', 'Los peones no pueden estar en la primera ni en la última fila.'),
+    'The king of the side not to move is in check.': ('O rei do lado que não joga está em xeque.', 'El rey del bando que no mueve está en jaque.'),
+    'This position is not possible.': ('Esta posição é impossível.', 'Esta posición es imposible.'),
+    'The game is already over in this position.': ('Nesta posição a partida já acabou.', 'En esta posición la partida ya terminó.'),
+    'Invalid FEN.': ('FEN inválido.', 'FEN no válido.'),
+    'Position set: move the pieces, Stockfish rates every move.': ('Posição montada: mova as peças, o Stockfish avalia cada lance.', 'Posición colocada: mueve las piezas, Stockfish valora cada jugada.'),
     'Set a password': ('Definir senha', 'Establecer contraseña'),
     'Support: write to the author of the app from your profile; the reply appears right there, in «My requests»': ('Suporte: escreva ao autor do app pelo seu perfil; a resposta aparece ali mesmo, em «Meus pedidos»', 'Soporte: escribe al autor de la aplicación desde tu perfil; la respuesta aparece ahí mismo, en «Mis solicitudes»'),
     'Support': ('Suporte', 'Soporte'),
@@ -8026,6 +8052,7 @@ class App(tk.Tk):
         # 1.29.1: угорі, бо в рядку дій уже не вистачало місця для рядка стану
         RButton(top, text="🏆  Партії тижня", command=self.toggle_gotw_list).pack(side="right", padx=(0, 8))
         RButton(top, text="📖  База партій", command=self.toggle_masters).pack(side="right", padx=(0, 8))
+        RButton(top, text="Розставити позицію", command=self.toggle_editor).pack(side="right", padx=(0, 8))   # 1.31.28
         self._build_donate(top)            # 1.31.3.3: ☕ - найлівіша з правих кнопок
 
         # рядок дій: партія | аналіз, глибина, стан
@@ -8557,6 +8584,225 @@ class App(tk.Tk):
         self.status_var.set(tr("Грай з початкової позиції: перетягни фігуру або клікни її."))
         if self._book is None:   # база дебютів для міток «Теорія» вантажиться у фоні
             threading.Thread(target=self._preload_book, daemon=True).start()
+
+    # ---------- 1.31.28: редактор позиції
+    ED_SQ = 54
+
+    def toggle_editor(self):
+        if getattr(self, "ed_box", None) is not None and self.ed_box.is_open:
+            self.ed_box.hide()
+            return
+        if not hasattr(self, "ed_box"):
+            self._build_editor()
+        tele_count("f.editor")
+        cur = self.board.fen if getattr(self.board, "fen", None) else chess.STARTING_FEN
+        self._ed_set(chess.Board(cur))
+        self._ed_lang()
+        self.ed_box.show()
+
+    def _build_editor(self):
+        S = self.ED_SQ
+        self.ed_box = OverlayBox(self, "Розставити позицію", embed=True)
+        body = tk.Frame(self.ed_box.box, bg=PANEL)
+        body.pack(fill="both", expand=True, padx=2, pady=(0, 2))
+        inner = tk.Frame(body, bg=PANEL)
+        inner.pack(fill="both", expand=True, padx=18, pady=(12, 14))
+        row = tk.Frame(inner, bg=PANEL)
+        row.pack()
+        self.ed_cv = tk.Canvas(row, width=S * 8, height=S * 8, highlightthickness=0, bd=0, bg=PANEL)
+        self.ed_cv.pack(side="left")
+        self.ed_cv.bind("<Button-1>", lambda e: self._ed_click(e, False))
+        self.ed_cv.bind("<Button-3>", lambda e: self._ed_click(e, True))
+        side = tk.Frame(row, bg=PANEL)
+        side.pack(side="left", fill="y", padx=(18, 0))
+        self.ed_pal = tk.Canvas(side, width=S * 2 + 6, height=S * 7, highlightthickness=0, bd=0, bg=PANEL)
+        self.ed_pal.pack(anchor="n")
+        self.ed_pal.bind("<Button-1>", self._ed_pick)
+        self._ed_photos, self._ed_sel = {}, "wP"
+        opt = tk.Frame(inner, bg=PANEL)
+        opt.pack(fill="x", pady=(12, 0))
+        self.ed_turn = tk.StringVar(value="w")
+        self.ed_tw = RButton(opt, text="w", kind="seg", command=lambda: self._ed_turn("w"))
+        self.ed_tw.pack(side="left")
+        self.ed_tb = RButton(opt, text="b", kind="seg", command=lambda: self._ed_turn("b"))
+        self.ed_tb.pack(side="left", padx=(6, 18))
+        self.ed_cr = {}
+        for k in ("K", "Q", "k", "q"):
+            v = tk.BooleanVar(value=False)
+            cb = tk.Checkbutton(opt, text=k, variable=v, bg=PANEL, fg=FG, selectcolor=PANEL2, activebackground=PANEL,
+                                activeforeground=FG, font=("Segoe UI", 10), command=self._ed_draw)
+            cb.pack(side="left")
+            self.ed_cr[k] = (v, cb)
+        btns = tk.Frame(inner, bg=PANEL)
+        btns.pack(fill="x", pady=(10, 0))
+        self.ed_start_btn = RButton(btns, text="start", kind="small", command=lambda: self._ed_set(chess.Board()))
+        self.ed_start_btn.pack(side="left")
+        self.ed_clear_btn = RButton(btns, text="clear", kind="small", command=lambda: self._ed_set(chess.Board(None)))
+        self.ed_clear_btn.pack(side="left", padx=(6, 0))
+        self.ed_flip_btn = RButton(btns, text="flip", kind="small", command=self._ed_flip)
+        self.ed_flip_btn.pack(side="left", padx=(6, 0))
+        fr = tk.Frame(inner, bg=PANEL)
+        fr.pack(fill="x", pady=(10, 0))
+        tk.Label(fr, text="FEN", bg=PANEL, fg=MUTED, font=fsemi(10)).pack(side="left")
+        self.ed_fen = tk.StringVar()
+        fe = self.ed_fen_entry = ttk.Entry(fr, textvariable=self.ed_fen, width=58, font=("Consolas", 10))
+        fe.pack(side="left", padx=(8, 8), fill="x", expand=True)
+        fe.bind("<Return>", lambda e: self._ed_fen_apply())
+        self.ed_fen_btn = RButton(fr, text="ok", kind="small", command=self._ed_fen_apply)
+        self.ed_fen_btn.pack(side="left")
+        bot = tk.Frame(inner, bg=PANEL)
+        bot.pack(fill="x", pady=(12, 0))
+        self.ed_status = tk.Label(bot, bg=PANEL, fg=MUTED, font=("Segoe UI", 10), anchor="w", justify="left", wraplength=420)
+        self.ed_status.pack(side="left", fill="x", expand=True)
+        self.ed_go_btn = RButton(bot, text="go", kind="play", command=self._ed_go)
+        self.ed_go_btn.pack(side="right")
+        self.ed_hint = tk.Label(inner, bg=PANEL, fg=MUTED, font=("Segoe UI", 9), anchor="w", justify="left", wraplength=560)
+        self.ed_hint.pack(anchor="w", pady=(8, 0))
+        self._ed_flipped = False
+
+    def _ed_lang(self):
+        self.ed_box.title.configure(text=pick("Розставити позицію", "Set up a position"))
+        self.ed_tw.configure(text=pick("Ходять білі", "White to move"))
+        self.ed_tb.configure(text=pick("Ходять чорні", "Black to move"))
+        for k, t in (("K", pick("Б 0-0", "W O-O")), ("Q", pick("Б 0-0-0", "W O-O-O")),
+                     ("k", pick("Ч 0-0", "B O-O")), ("q", pick("Ч 0-0-0", "B O-O-O"))):
+            self.ed_cr[k][1].configure(text=t)
+        self.ed_start_btn.configure(text=pick("Початкова", "Starting"))
+        self.ed_clear_btn.configure(text=pick("Очистити", "Clear"))
+        self.ed_flip_btn.configure(text=pick("Перевернути", "Flip"))
+        self.ed_fen_btn.configure(text=pick("Застосувати", "Apply"))
+        self.ed_go_btn.configure(text=pick("Грати з цієї позиції", "Play from this position"))
+        self.ed_hint.configure(text=pick("Виберіть фігуру праворуч і клікайте по клітинках. Клік тією самою фігурою або "
+                                         "правою кнопкою - прибрати. Можна вставити FEN.",
+                                         "Pick a piece on the right and click squares. Click with the same piece or the "
+                                         "right button to remove. You can also paste a FEN."))
+
+    def _ed_photo(self, code):
+        if code not in self._ed_photos:
+            ps = round(self.ED_SQ * PIECE_SCALE)
+            self._ed_photos[code] = tk.PhotoImage(master=self, data=piece_png(code, ps))
+        return self._ed_photos[code]
+
+    def _ed_set(self, board):
+        self._ed_board = chess.Board(board.board_fen() + " w - - 0 1")
+        self._ed_board.clear_stack()
+        self.ed_turn.set("w" if board.turn == chess.WHITE else "b")
+        for k, (v, _cb) in self.ed_cr.items():
+            v.set(k in board.castling_xfen())
+        self._ed_draw()
+
+    def _ed_turn(self, t):
+        self.ed_turn.set(t)
+        self._ed_draw()
+
+    def _ed_flip(self):
+        self._ed_flipped = not self._ed_flipped
+        self._ed_draw()
+
+    def _ed_fen_of(self):
+        """FEN з дошки редактора; рокіровка - лише там, де король і тура на місці."""
+        b = self._ed_board.copy()
+        b.turn = self.ed_turn.get() == "w"
+        cr = "".join(k for k in "KQkq" if self.ed_cr[k][0].get())
+        b.set_castling_fen(cr or "-")
+        b.castling_rights = b.clean_castling_rights()
+        return b.fen()
+
+    def _ed_draw(self):
+        S, c = self.ED_SQ, self.ed_cv
+        th = BOARD_THEMES.get(self.board_var.get(), BOARD_THEMES["Green"])
+        c.delete("all")
+        for sq in chess.SQUARES:
+            f, r = chess.square_file(sq), chess.square_rank(sq)
+            x, y = ((7 - f) * S, r * S) if self._ed_flipped else (f * S, (7 - r) * S)
+            c.create_rectangle(x, y, x + S, y + S, width=0, fill=th["light"] if (f + r) % 2 else th["dark"])
+            p = self._ed_board.piece_at(sq)
+            if p:
+                c.create_image(x + S / 2, y + S / 2, image=self._ed_photo(("w" if p.color else "b") + p.symbol().upper()))
+        pal = self.ed_pal
+        pal.delete("all")
+        for i, t in enumerate("KQRBNP"):
+            for j, col in enumerate("wb"):
+                code, x, y = col + t, j * (S + 6), i * S
+                if code == self._ed_sel:
+                    pal.create_rectangle(x + 1, y + 1, x + S - 1, y + S - 1, outline=ACCENT, width=3)
+                pal.create_image(x + S / 2, y + S / 2, image=self._ed_photo(code))
+        self.ed_tw.set_kind("segon" if self.ed_turn.get() == "w" else "seg")
+        self.ed_tb.set_kind("segon" if self.ed_turn.get() == "b" else "seg")
+        fen = self._ed_fen_of()
+        if self.focus_get() is not self.ed_fen_entry:
+            self.ed_fen.set(fen)
+        err = self._ed_problem(chess.Board(fen))
+        self.ed_status.configure(text=err or pick("Позиція правильна.", "The position is legal."), fg="#e07a5f" if err else MUTED)
+        self.ed_go_btn.configure(state="disabled" if err else "normal")
+
+    @staticmethod
+    def _ed_problem(b):
+        st = b.status()
+        if st & (chess.STATUS_NO_WHITE_KING | chess.STATUS_NO_BLACK_KING | chess.STATUS_TOO_MANY_KINGS):
+            return pick("Потрібно рівно по одному королю кожного кольору.", "Each side needs exactly one king.")
+        if st & chess.STATUS_PAWNS_ON_BACKRANK:
+            return pick("Пішаки не можуть стояти на першій чи останній горизонталі.", "Pawns cannot stand on the first or last rank.")
+        if st & chess.STATUS_OPPOSITE_CHECK:
+            return pick("Король того, хто не ходить, під шахом.", "The king of the side not to move is in check.")
+        if not b.is_valid():
+            return pick("Така позиція неможлива.", "This position is not possible.")
+        if b.is_game_over():
+            return pick("У цій позиції партія вже закінчена.", "The game is already over in this position.")
+        return None
+
+    def _ed_square(self, e):
+        S = self.ED_SQ
+        if not (0 <= e.x < S * 8 and 0 <= e.y < S * 8):
+            return None
+        cx, cy = int(e.x // S), int(e.y // S)
+        return chess.square(7 - cx, cy) if self._ed_flipped else chess.square(cx, 7 - cy)
+
+    def _ed_click(self, e, erase):
+        sq = self._ed_square(e)
+        if sq is None:
+            return
+        p, code = self._ed_board.piece_at(sq), self._ed_sel
+        cur = p and ("w" if p.color else "b") + p.symbol().upper()
+        if erase or cur == code:
+            self._ed_board.remove_piece_at(sq)
+        else:
+            self._ed_board.set_piece_at(sq, chess.Piece.from_symbol(code[1] if code[0] == "w" else code[1].lower()))
+        self._ed_draw()
+
+    def _ed_pick(self, e):
+        S = self.ED_SQ
+        i, j = int(e.y // S), int(e.x // (S + 6))
+        if 0 <= i < 6 and 0 <= j < 2:
+            self._ed_sel = "wb"[j] + "KQRBNP"[i]
+            self._ed_draw()
+
+    def _ed_fen_apply(self):
+        try:
+            b = chess.Board(self.ed_fen.get().strip())
+        except ValueError:
+            self.ed_status.configure(text=pick("Неправильний FEN.", "Invalid FEN."), fg="#e07a5f")
+            return
+        self.focus_set()
+        self._ed_set(b)
+
+    def _ed_go(self):
+        fen = self._ed_fen_of()
+        if self._ed_problem(chess.Board(fen)):
+            return
+        self.ed_box.hide()
+        self._start_free_fen(fen)
+
+    def _start_free_fen(self, fen):
+        """Вільна гра з довільної позиції (розставленої в редакторі)."""
+        self._start_free({
+            "free": True, "fens": [fen], "evals": [0], "pos_info": [None], "moves": [], "book_path": [False],
+            "depth": None,
+            "summary": {"white": "Білі", "black": "Чорні", "white_rating": None, "black_rating": None,
+                        "white_acc": 0.0, "black_acc": 0.0, "white_counts": {}, "black_counts": {},
+                        "result": "*", "opening": None}})
+        self.status_var.set(pick("Позицію розставлено: ходіть фігурами, Stockfish оцінює кожен хід.",
+                                 "Position set: move the pieces, Stockfish rates every move."))
 
     def _preload_book(self):
         try:

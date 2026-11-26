@@ -193,7 +193,7 @@ function applyLang() {
   T('title', 'Аналізатор', 'Chess Analyzer');
   if (A.alienMode) $('title').textContent = '👽 C̷h̴e̵s̶s̷ ̸A̵n̶a̷l̴y̵z̶e̷r̸';
   $('ver').textContent = 'v' + D.APP_VERSION;
-  T('bCc', 'Останні партії', 'Last games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Games of the week'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
+  T('bCc', 'Останні партії', 'Last games'); T('bBots', '🤖 Боти', '🤖 Bots'); T('bStudies', '📚  Дослідження', '📚  Studies'); T('nGw', '🏆  Партії тижня', '🏆  Weekly games');   // 1.31.28: коротше - три кнопки в ряд T('bEdit', 'Позиція', 'Position'); try { accChanged(); } catch (_) { /* ще не готово */ } T('listTitle', 'ОЦІНКИ ХОДІВ', 'MOVE GRADES'); T('gpTitle', '📊 Оцінка партії', '📊 Game review'); T('bGrades', '📊 Оцінка', '📊 Review');
   setRunLabel();
   $('varTitle').textContent = tr('ВАШ ВАРІАНТ');
   $('vBack').textContent = tr('↩ До партії'); $('vUndo').textContent = tr('⟲ Скасувати хід');
@@ -1270,6 +1270,81 @@ function startFree(res = null) {
   goto(0, false);
   setStatus(() => pick('Грай з початкової позиції: перетягни фігуру або торкнися її.', 'Play from the starting position: drag a piece or tap it.'));
   getBook();
+}
+
+// ---------- 1.31.28: редактор позиції
+const ED = { grid: null, turn: 'w', cr: { K: false, Q: false, k: false, q: false }, sel: 'wP', flip: false };
+function edLoad(fen) {
+  const rows = fen.split(' ')[0].split('/'), g = [];
+  for (const row of rows) { const r = []; for (const ch of row) { if (/\d/.test(ch)) for (let i = 0; i < +ch; i++) r.push(null); else r.push(ch); } g.push(r); }
+  ED.grid = g.length === 8 && g.every(r => r.length === 8) ? g : Array.from({ length: 8 }, () => Array(8).fill(null));
+  const p = fen.split(' ');
+  ED.turn = p[1] === 'b' ? 'b' : 'w';
+  for (const k of 'KQkq') ED.cr[k] = (p[2] || '').includes(k);
+}
+function edFen() {      // grid[0] - 8-ма горизонталь; рокіровка - лише якщо король і тура на місці
+  const pl = ED.grid.map(r => { let o = '', n = 0; for (const c of r) { if (!c) n++; else { if (n) o += n; n = 0; o += c; } } return o + (n || ''); }).join('/');
+  const at = (f, r) => ED.grid[7 - r][f];
+  const ok = { K: at(4, 0) === 'K' && at(7, 0) === 'R', Q: at(4, 0) === 'K' && at(0, 0) === 'R', k: at(4, 7) === 'k' && at(7, 7) === 'r', q: at(4, 7) === 'k' && at(0, 7) === 'r' };
+  const cr = [...'KQkq'].filter(k => ED.cr[k] && ok[k]).join('') || '-';
+  return `${pl} ${ED.turn} ${cr} - 0 1`;
+}
+function edProblem(fen) {
+  const flat = ED.grid.flat();
+  if (flat.filter(c => c === 'K').length !== 1 || flat.filter(c => c === 'k').length !== 1) return pick('Потрібно рівно по одному королю кожного кольору.', 'Each side needs exactly one king.');
+  if ([...ED.grid[0], ...ED.grid[7]].some(c => c === 'P' || c === 'p')) return pick('Пішаки не можуть стояти на першій чи останній горизонталі.', 'Pawns cannot stand on the first or last rank.');
+  try {
+    const other = fen.replace(/ [wb] /, ED.turn === 'w' ? ' b ' : ' w ');
+    if (new Chess(other).inCheck()) return pick('Король того, хто не ходить, під шахом.', 'The king of the side not to move is in check.');
+    const c = new Chess(fen);
+    if (c.isCheckmate() || c.isStalemate() || c.isInsufficientMaterial()) return pick('У цій позиції партія вже закінчена.', 'The game is already over in this position.');
+  } catch (_) { return pick('Така позиція неможлива.', 'This position is not possible.'); }
+  return null;
+}
+function edRender() {
+  const th = D.BOARD_THEMES[cfg.board] || Object.values(D.BOARD_THEMES)[0];
+  const img = c => c ? `<img src="data:image/png;base64,${D.PIECES[(c === c.toUpperCase() ? 'w' : 'b') + c.toUpperCase()]}" alt="">` : '';
+  let sq = '';
+  for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) {
+    const r = ED.flip ? 7 - i : i, f = ED.flip ? 7 - j : j;
+    sq += `<div data-ed="${r},${f}" style="background:${(r + f) % 2 ? th.dark : th.light}">${img(ED.grid[r][f])}</div>`;
+  }
+  const pal = [...'KQRBNP'].flatMap(t => ['w' + t, 'b' + t]).map(code => `<div data-edp="${code}" class="${ED.sel === code ? 'on' : ''}">${img(code[0] === 'w' ? code[1] : code[1].toLowerCase())}</div>`).join('')
+    + `<div data-edp="x" class="${ED.sel === 'x' ? 'on' : ''}">✕</div>`;
+  const fen = edFen(), err = edProblem(fen);
+  $('boxBody').innerHTML = `<div class="edboard">${sq}</div><div class="edpal">${pal}</div>`
+    + `<div class="row"><button data-edt="w" class="${ED.turn === 'w' ? 'primary' : ''}">${esc(pick('Ходять білі', 'White to move'))}</button><button data-edt="b" class="${ED.turn === 'b' ? 'primary' : ''}">${esc(pick('Ходять чорні', 'Black to move'))}</button></div>`
+    + `<div class="row edcr">${[['K', pick('Б 0-0', 'W O-O')], ['Q', pick('Б 0-0-0', 'W O-O-O')], ['k', pick('Ч 0-0', 'B O-O')], ['q', pick('Ч 0-0-0', 'B O-O-O')]].map(([k, l]) => `<label><input type="checkbox" data-edc="${k}"${ED.cr[k] ? ' checked' : ''}> ${esc(l)}</label>`).join('')}</div>`
+    + `<div class="row"><button id="edStart">${esc(pick('Початкова', 'Starting'))}</button><button id="edClear">${esc(pick('Очистити', 'Clear'))}</button><button id="edFlip">${esc(pick('Перевернути', 'Flip'))}</button></div>`
+    + `<div class="row ccrow"><input id="edFen" type="text" autocapitalize="off" autocomplete="off" spellcheck="false" value="${esc(fen)}"><button id="edFenOk">${esc(pick('Застосувати', 'Apply'))}</button></div>`
+    + `<div class="hint" id="edStatus" style="${err ? 'color:#e07a5f' : ''}">${esc(err || pick('Позиція правильна.', 'The position is legal.'))}</div>`
+    + `<div class="hint">${esc(pick('Виберіть фігуру внизу й торкайтеся клітинок. Торкання тією самою фігурою або ✕ - прибрати.', 'Pick a piece below and tap squares. Tap with the same piece or ✕ to remove.'))}</div>`
+    + `<div class="row"><button id="edGo" class="primary"${err ? ' disabled' : ''}>${esc(pick('Грати з цієї позиції', 'Play from this position'))}</button></div>`;
+  const B = $('boxBody');
+  B.querySelectorAll('[data-ed]').forEach(d => d.addEventListener('click', () => {
+    const [r, f] = d.dataset.ed.split(',').map(Number), cur = ED.grid[r][f];
+    const want = ED.sel === 'x' ? null : (ED.sel[0] === 'w' ? ED.sel[1] : ED.sel[1].toLowerCase());
+    ED.grid[r][f] = cur === want ? null : want;
+    edRender();
+  }));
+  B.querySelectorAll('[data-edp]').forEach(d => d.addEventListener('click', () => { ED.sel = d.dataset.edp; edRender(); }));
+  B.querySelectorAll('[data-edt]').forEach(d => d.addEventListener('click', () => { ED.turn = d.dataset.edt; edRender(); }));
+  B.querySelectorAll('[data-edc]').forEach(d => d.addEventListener('change', () => { ED.cr[d.dataset.edc] = d.checked; edRender(); }));
+  $('edStart').addEventListener('click', () => { edLoad(START_FEN); edRender(); });
+  $('edClear').addEventListener('click', () => { edLoad('8/8/8/8/8/8/8/8 w - - 0 1'); edRender(); });
+  $('edFlip').addEventListener('click', () => { ED.flip = !ED.flip; edRender(); });
+  $('edFenOk').addEventListener('click', () => {
+    const f = $('edFen').value.trim();
+    try { new Chess(f); } catch (_) { $('edStatus').textContent = pick('Неправильний FEN.', 'Invalid FEN.'); $('edStatus').style.color = '#e07a5f'; return; }
+    edLoad(f); edRender();
+  });
+  $('edGo').addEventListener('click', () => { const f = edFen(); if (edProblem(f)) return; closeBox(); startFreeFen(f); });
+}
+function startFreeFen(fen) {
+  startFree({ free: true, fens: [fen], evals: [0], pos_info: [null], moves: [], book_path: [false], depth: null,
+    summary: { white: 'Білі', black: 'Чорні', white_rating: null, black_rating: null, white_acc: 0, black_acc: 0,
+      white_counts: {}, black_counts: {}, result: '*', opening: null } });
+  setStatus(() => pick('Позицію розставлено: ходіть фігурами, Stockfish оцінює кожен хід.', 'Position set: move the pieces, Stockfish rates every move.'));
 }
 
 function resetView() {
@@ -3387,6 +3462,10 @@ function openBox(kind) {
     $('boxTitle').textContent = pick('👤  Акаунт', '👤  Account');
     body.innerHTML = accBody();
     accWire();
+  } else if (kind === 'editor') {       // 1.31.28: розставити позицію
+    $('boxTitle').textContent = pick('Розставити позицію', 'Set up a position');
+    edLoad(board.fen || START_FEN);
+    edRender();
   } else if (kind === 'support') {      // 1.31.27: підтримка
     $('boxTitle').textContent = pick('Підтримка', 'Support');
     body.innerHTML = `<div class="hint">${esc(pick("Напишіть автору програми: питання, ідею чи проблему. Відповідь з'явиться тут, у «Моїх зверненнях».", 'Write to the author of the app: a question, an idea or a problem. The reply will appear here, in «My requests».'))}</div>`
@@ -3984,7 +4063,7 @@ function wire() {
   click('bDonate', openDonate);
   click('bAcc', () => { if (A.boxKind === 'acc') closeBox(); else accOpen(); });   // 1.31.0
   accChanged(); setTimeout(accRefresh, 1500); setTimeout(syncRun, 1500); setInterval(syncRun, 300000);   // 1.31.1; 1.31.20: одразу
-  click('bCc', lastOpen); click('bBots', () => toggleBox('bots')); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
+  click('bCc', lastOpen); click('bBots', () => toggleBox('bots')); click('bEdit', () => { if (A.boxKind === 'editor') closeBox(); else { tele('f.editor'); openBox('editor'); } }); click('nGw', () => { if (A.boxKind === 'gotwlist') closeBox(); else { tele('f.gotwlist'); openBox('gotwlist'); } }); click('nDb', () => { if (A.boxKind === 'db') closeBox(); else { tele('f.masters'); openBox('db'); } });
   click('bbUndo', () => undoVar()); click('bbHint', botHint); click('bbResign', botResign);
   document.addEventListener('click', e => { if (e.target.closest('[data-credits]')) openBox('credits'); });
   document.addEventListener('click', e => { if (e.target.closest('[data-gotw]')) openBox('gotw'); });   // 1.28.3
